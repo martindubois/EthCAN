@@ -1,0 +1,18 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      Export.txt
+
+# CODE REVIEW
+
+# ===== File also in the installer ==========================================
+
+_DocUser .
+	EthCan.ReadMe.txt
+
+EthCAN_Lib/_DocUser .
+	EthCAN.EthCAN_Lib.ReadMe.txt
+
+EthCAN_Tool/_DocUser .
+	EthCAN.EthCAN_Tool.ReadMe.txt

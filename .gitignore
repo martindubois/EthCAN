@@ -1,0 +1,26 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS.
+# Product   EthCAN
+# File      .gitignore
+
+/KmsDoc/
+/doxygen_en/
+/doxygen_fr/
+
+# Linux
+
+/Binaries/
+/Libraries/
+/Packages/
+
+*~
+*.bak
+*.o
+
+# Windows
+
+/Installer/
+
+.vs/
+x64/

@@ -1,0 +1,13 @@
+kmsquebe
+KateVoeg99
+binary
+cd public_html
+cd en
+cd EthCAN
+mput doxygen_en\html\*.css
+mput doxygen_en\html\*.html
+mput doxygen_en\html\*.js
+mput doxygen_en\html\*.png
+cd ..
+cd ..
+quit

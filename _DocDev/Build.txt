@@ -1,0 +1,47 @@
+
+Author    KMS - Martin Dubois, P.Eng.
+Copyright (C) 2021 KMS
+Product   EthCAN
+File      _DocDev/Build.txt
+
+CODE REVIEW
+
+Name                _________________________________________________________
+
+Date and time       20 ______ - ______ - ______               ______ : ______
+
+Operating system    [ ] Ubuntu 18.04                           [ ] Windows 10
+
+[ ] File "Common/Version.h"
+
+Version             ______ . ______ . ______ . ______ - _____________________
+
+[ ] File "_DocUser/EthCAN.ReadMe.txt"
+[ ] File "EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt"
+[ ] File "EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt"
+
+===== Linux only ============================================================
+[ ] File "Scripts/control"
+[ ] Tool "Terminal" - In the product folder
+        ./RunDoxygen.sh
+        ./Build.sh
+[ ] Copy the exported file to the server
+
+===== Windows only ==========================================================
+[ ] Tool "PowerShell" - In the product folder
+        .\RunDoxygen.cmd
+		.\UploadDocumentation.cmd
+[ ] Connect the signing key to the computer
+[ ] Tool "PowerShell" - In the product folder
+        .\Build.cmd
+[ ] Disconnect the signing key from the computer
+
+[ ] Tool "GIT"
+    - Index modified file and commit them using
+      "{Major.Minor.Build}[_Type]_Linux|Windows" as message
+    - Add the tag {Major.Minor.Build}[_Type]_Linux|Windows"
+    - Push the repository to the servers
+
+Time and duration   ______ : ______             ______ heures, ______ minutes
+
+Signature           _________________________________________________________

@@ -1,0 +1,15 @@
+
+## Author    KMS - Martin Dubois, P.Eng.
+## Copyright (C) 2021 KMS
+## Product   EthCAN
+## File      DoxyFile_en.txt
+
+ENABLED_SECTIONS   = en
+GENERATE_LATEX     = NO
+HAVE_DOT           = NO
+HIDE_UNDOC_MEMBERS = YES
+INPUT              = Includes
+OUTPUT_DIRECTORY   = doxygen_en
+OUTPUT_LANGUAGE    = English
+PROJECT_NAME       = "EthCAN"
+SEARCHENGINE       = NO
