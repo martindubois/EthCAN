@@ -5,6 +5,7 @@
 # File      .gitignore
 
 /KmsDoc/
+/Import/
 /doxygen_en/
 /doxygen_fr/
 
@@ -23,4 +24,5 @@
 /Installer/
 
 .vs/
+Debug/
 x64/

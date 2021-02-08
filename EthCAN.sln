@@ -3,9 +3,66 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EthCAN_Lib", "EthCAN_Lib\EthCAN_Lib.vcxproj", "{E2A71320-EB4C-4591-8623-8C6516BC73BD}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EthCAN_Lib_Test", "EthCAN_Lib_Test\EthCAN_Lib_Test.vcxproj", "{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD} = {E2A71320-EB4C-4591-8623-8C6516BC73BD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EthCAN_Tool", "EthCAN_Tool\EthCAN_Tool.vcxproj", "{37E33E01-14AA-4E75-A2BB-D61340083375}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{61E93677-2B04-463E-BEE0-6A5919680033}"
+	ProjectSection(SolutionItems) = preProject
+		Includes\EthCAN_Protocol.h = Includes\EthCAN_Protocol.h
+		Includes\EthCAN_Result.h = Includes\EthCAN_Result.h
+		Includes\EthCAN_Types.h = Includes\EthCAN_Types.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EthCAN", "EthCAN", "{684313AD-E442-426B-B92F-F931C9D83B50}"
+	ProjectSection(SolutionItems) = preProject
+		Includes\EthCAN\Device.h = Includes\EthCAN\Device.h
+		Includes\EthCAN\System.h = Includes\EthCAN\System.h
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD}.Debug|x64.ActiveCfg = Debug|x64
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD}.Debug|x64.Build.0 = Debug|x64
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD}.Debug|x86.ActiveCfg = Debug|Win32
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD}.Debug|x86.Build.0 = Debug|Win32
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD}.Release|x64.ActiveCfg = Release|x64
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD}.Release|x64.Build.0 = Release|x64
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD}.Release|x86.ActiveCfg = Release|Win32
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD}.Release|x86.Build.0 = Release|Win32
+		{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}.Debug|x64.ActiveCfg = Debug|x64
+		{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}.Debug|x64.Build.0 = Debug|x64
+		{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}.Debug|x86.ActiveCfg = Debug|Win32
+		{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}.Debug|x86.Build.0 = Debug|Win32
+		{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}.Release|x64.ActiveCfg = Release|x64
+		{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}.Release|x64.Build.0 = Release|x64
+		{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}.Release|x86.ActiveCfg = Release|Win32
+		{BBDE5530-5F26-4BC7-A1BA-B2D2556F69CA}.Release|x86.Build.0 = Release|Win32
+		{37E33E01-14AA-4E75-A2BB-D61340083375}.Debug|x64.ActiveCfg = Debug|x64
+		{37E33E01-14AA-4E75-A2BB-D61340083375}.Debug|x64.Build.0 = Debug|x64
+		{37E33E01-14AA-4E75-A2BB-D61340083375}.Debug|x86.ActiveCfg = Debug|Win32
+		{37E33E01-14AA-4E75-A2BB-D61340083375}.Debug|x86.Build.0 = Debug|Win32
+		{37E33E01-14AA-4E75-A2BB-D61340083375}.Release|x64.ActiveCfg = Release|x64
+		{37E33E01-14AA-4E75-A2BB-D61340083375}.Release|x64.Build.0 = Release|x64
+		{37E33E01-14AA-4E75-A2BB-D61340083375}.Release|x86.ActiveCfg = Release|Win32
+		{37E33E01-14AA-4E75-A2BB-D61340083375}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{684313AD-E442-426B-B92F-F931C9D83B50} = {61E93677-2B04-463E-BEE0-6A5919680033}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {752912DE-71BA-48F2-AC05-153630E4E923}
