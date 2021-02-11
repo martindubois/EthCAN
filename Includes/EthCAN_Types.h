@@ -11,7 +11,15 @@
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
+#define EthCAN_ID_EXTENDED (0x80000000)
+
 #define EthCAN_FLAG_EXTENDED (0x01)
+
+#define EthCAN_FLAG_SERVER_USB    (0x00000001)
+#define EthCAN_FLAG_STORE_FILTERS (0x00000100)
+#define EthCAN_FLAG_STORE_IPv4    (0x00000200)
+#define EthCAN_FLAG_STORE_MASK    (0x00000400)
+#define EthCAN_FLAG_STORE_SERVER  (0x00000800)
 
 // Data type
 /////////////////////////////////////////////////////////////////////////////
@@ -21,17 +29,19 @@ typedef struct
 {
     char mName[16]; ///< The device name
 
+    uint32_t mFlags; ///< See EthCAN_FLAG_...
+
     uint32_t mCAN_Filters[6]; ///< The CAN filters
     uint32_t mCAN_Masks[2]; ///< The CAN mask
     uint8_t  mCAN_Rate; ///< See EthCAN_Rate
 
-    uint8_t mReserved0[31];
+    uint8_t mReserved0[27];
 
     uint32_t mIPv4_Addr; ///< The static IPv4 address
     uint32_t mIPv4_Mask; ///< The static IPv4 mask
 
-    uint8_t  mMessageDest_IPv4[4]; ///< The message destination IPv4 address
-    uint16_t mMessageDest_Port; ///< The message destination port
+    uint32_t mServer_IPv4; ///< The server IPv4 address
+    uint16_t mServer_Port; ///< The server port
 
     uint8_t  mReserved1[128 - 46];
 }
@@ -106,5 +116,7 @@ typedef enum
     EthCAN_RATE_500_Kb,
     EthCAN_RATE_666_Kb,
     EthCAN_RATE_1_Mb,
+
+    EthCAN_RATE_QTY
 }
 EthCAN_Rate;
