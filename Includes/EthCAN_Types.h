@@ -35,7 +35,7 @@ typedef struct
     uint32_t mCAN_Masks[2]; ///< The CAN mask
     uint8_t  mCAN_Rate; ///< See EthCAN_Rate
 
-    uint8_t mReserved0[27];
+    uint8_t mReserved0[11];
 
     uint32_t mIPv4_Addr; ///< The static IPv4 address
     uint32_t mIPv4_Mask; ///< The static IPv4 mask
@@ -43,7 +43,7 @@ typedef struct
     uint32_t mServer_IPv4; ///< The server IPv4 address
     uint16_t mServer_Port; ///< The server port
 
-    uint8_t  mReserved1[128 - 46];
+    uint8_t  mReserved1[128 - 78];
 }
 EthCAN_Config;
 
@@ -89,9 +89,10 @@ typedef struct
     uint8_t mHardware_Compat; ///< The hardware compatibility
 
     uint32_t mMessageId; ///< The last message id
-    uint32_t mRequestId; ///< The last request id
+    uint32_t mRequestId_UDP; ///< The last request id
+    uint32_t mRequestId_USB; ///< The last request id
 
-    uint8_t mReserved1[ 128 - 52 ];
+    uint8_t mReserved1[ 128 - 56 ];
 }
 EthCAN_Info;
 
