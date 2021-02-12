@@ -26,24 +26,15 @@ namespace EthCAN
     // Public
     /////////////////////////////////////////////////////////////////////////
 
-    void Device::Display(FILE* aOut, EthCAN_Rate aIn)
-    {
-        FILE* lOut = (NULL == aOut) ? stdout : aOut;
-
-        const char* lName = GetRateName(aIn);
-        if (NULL == lName)
-        {
-            fprintf(lOut, "Invalid rate (%u)\n", aIn);
-        }
-        else
-        {
-            fprintf(lOut, "%s\n", lName);
-        }
-    }
-
     void Device::Display(FILE* aOut, const EthCAN_Config& aIn)
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
+
+        if (NULL == &aIn)
+        {
+            fprintf(lOut, "Invalid reference\n");
+            return;
+        }
 
         unsigned int i;
 
@@ -77,9 +68,35 @@ namespace EthCAN
         fprintf(lOut, "    Server Port : %u\n", aIn.mServer_Port);
     }
 
+    void Device::Display(FILE* aOut, const EthCAN_Frame& aIn)
+    {
+        FILE* lOut = (NULL == aOut) ? stdout : aOut;
+
+        if (NULL == &aIn)
+        {
+            fprintf(lOut, "Invalid reference\n");
+            return;
+        }
+
+        fprintf(lOut, "%s %08x", 0 != (aIn.mFlags & EthCAN_FLAG_EXTENDED) ? "Ext." : "Std ", aIn.mDestId);
+
+        for (unsigned int i = 0; i < aIn.mDataSize_byte; i++)
+        {
+            fprintf(lOut, " %02x", aIn.mData[i]);
+        }
+
+        fprintf(lOut, "\n");
+    }
+
     void Device::Display(FILE* aOut, const EthCAN_Info& aIn)
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
+
+        if (NULL == &aIn)
+        {
+            fprintf(lOut, "Invalid reference\n");
+            return;
+        }
 
         fprintf(lOut, "        Ethernet address : "); ::Display(lOut, aIn.mEth_Addr);
 
@@ -104,12 +121,29 @@ namespace EthCAN
         fprintf(lOut, "        IPv4 mask    : "); ::Display(lOut, aIn.mIPv4_Mask);
 
         fprintf(lOut,
-            "        Last message id : %u\n"
-            "        Name            : %s\n"
-            "        Last request id : %u\n",
+            "        Last message id     : %u\n"
+            "        Name                : %s\n"
+            "        Last request id UDP : %u\n"
+            "        Last request id USB : %u\n",
             aIn.mMessageId,
             aIn.mName,
-            aIn.mRequestId);
+            aIn.mRequestId_UDP,
+            aIn.mRequestId_USB);
+    }
+
+    void Device::Display(FILE* aOut, EthCAN_Rate aIn)
+    {
+        FILE* lOut = (NULL == aOut) ? stdout : aOut;
+
+        const char* lName = GetRateName(aIn);
+        if (NULL == lName)
+        {
+            fprintf(lOut, "Invalid rate (%u)\n", aIn);
+        }
+        else
+        {
+            fprintf(lOut, "%s\n", lName);
+        }
     }
 
     const char* Device::GetRateName(EthCAN_Rate aIn)

@@ -21,7 +21,8 @@ namespace EthCAN
     public:
 
         /// \brief Display debug information
-        virtual void Debug(FILE* aOut) const;
+        /// \param aOut The output stream
+        virtual void Debug(FILE* aOut = NULL) const;
 
         /// \brief Increment the reference count
         void IncRefCount();

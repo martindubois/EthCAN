@@ -479,7 +479,6 @@ void Device_Impl::Eth_Receive()
 bool Device_Impl::OnLoopIteration()
 {
     assert(0 != mInfo.mIPv4_Addr);
-    assert(NULL != mReceiver);
     assert(NULL != mSocket_Server);
 
     uint8_t lBuffer[256];
@@ -544,7 +543,7 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
     {
         if (aHeader->mTotalSize_byte != aSize_byte)
         {
-            fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_INVALID_RESPONSE_SIZE");
+            fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_INVALID_RESPONSE_SIZE\n");
             mReq_Result = EthCAN_ERROR_INVALID_RESPONSE_SIZE;
         }
         else
@@ -555,14 +554,14 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
                 unsigned int lSize_byte = aSize_byte - sizeof(EthCAN_Header);
                 if (aHeader->mDataSize_byte != lSize_byte)
                 {
-                    fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_INVALID_DATA_SIZE");
+                    fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_INVALID_DATA_SIZE\n");
                     mReq_Result = EthCAN_ERROR_INVALID_DATA_SIZE;
                 }
                 else
                 {
                     if (mReq_OutSize_byte < lSize_byte)
                     {
-                        fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_UNEXPECTED_DATA");
+                        fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_UNEXPECTED_DATA\n");
                         mReq_Result = EthCAN_ERROR_UNEXPECTED_DATA;
                     }
                     else

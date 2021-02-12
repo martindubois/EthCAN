@@ -1,0 +1,72 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      EthCAN_Tool/Tests/SetupA.txt
+
+Echo == Detect - First because we need a device to work with
+
+Detect
+Error Exit
+
+Echo == Select - First because we need a device to work with
+
+Select
+Error Exit
+
+Echo == Device Config Get
+
+Device Config Get
+Error Exit
+
+Echo == Device Config Reset
+
+Device Config Reset
+Error Exit
+
+Echo == Device Config Set
+
+Device Config Set
+Error Exit
+
+Echo == Device Config Store
+
+Device Config Store
+Error Exit
+
+Echo == Device Receiver Start
+
+Device Receiver Start
+Error Exit
+
+Echo == Device Receiver Stop
+
+Device Receiver Stop
+Error Exit
+
+Echo == Device Debug
+
+Device Debug
+Error Exit
+
+Echo == Device GetInfo
+
+Device GetInfo
+Error Exit
+
+Echo == Device Send - Before reseting
+
+Device Send
+
+Echo == Device Reset - Before releasing
+
+Device Reset
+
+Echo == Device Release
+
+Device Release
+Error Exit
+
+Echo == Exit
+
+Exit 0

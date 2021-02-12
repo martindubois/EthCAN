@@ -11,6 +11,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EthCAN_Lib_Test", "EthCAN_L
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EthCAN_Tool", "EthCAN_Tool\EthCAN_Tool.vcxproj", "{37E33E01-14AA-4E75-A2BB-D61340083375}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E2A71320-EB4C-4591-8623-8C6516BC73BD} = {E2A71320-EB4C-4591-8623-8C6516BC73BD}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{61E93677-2B04-463E-BEE0-6A5919680033}"
 	ProjectSection(SolutionItems) = preProject

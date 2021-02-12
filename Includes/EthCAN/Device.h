@@ -34,17 +34,22 @@ namespace EthCAN
         /// \brief Display
         /// \param aOut The output stream
         /// \param aIn  The data to display
-        static void Display(FILE* aOut, EthCAN_Rate aIn);
-
-        /// \brief Display
-        /// \param aOut The output stream
-        /// \param aIn  The data to display
         static void Display(FILE* aOut, const EthCAN_Config& aIn);
 
         /// \brief Display
         /// \param aOut The output stream
         /// \param aIn  The data to display
+        static void Display(FILE* aOut, const EthCAN_Frame& aIn);
+
+        /// \brief Display
+        /// \param aOut The output stream
+        /// \param aIn  The data to display
         static void Display(FILE* aOut, const EthCAN_Info& aIn);
+
+        /// \brief Display
+        /// \param aOut The output stream
+        /// \param aIn  The data to display
+        static void Display(FILE* aOut, EthCAN_Rate aIn);
 
         /// \brief Retrieve the name of a CAN rate
         /// \param aIn See EthCAN_Rate

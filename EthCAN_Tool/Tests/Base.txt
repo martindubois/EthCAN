@@ -1,0 +1,138 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      EthCAN_Tool/Tests/Base.txt
+
+Echo == Config CAN Filters {0_hex} {1} {2} {3} {4} {5}
+
+Config CAN Filters
+Config CAN Filters NotValid
+
+Error Clear
+Config CAN Filters 0 0 0 0 0 0
+Error Exit
+
+Echo == Config CAN Masks [Mask0_hex] ...
+
+Config CAN Masks
+Config CAN Masks NotValid
+
+Error Clear
+Config CAN Masks 0 0
+Error Exit
+
+Echo == Config CAN Rate [Rate_Kbps]
+
+Config CAN Rate NotValid
+
+Error Clear
+Config CAN Rate
+Error Exit
+
+Echo == Config Display
+
+Config Display
+Error Exit
+
+Echo == Config Flags [Flags_hex]
+
+Config Flags NotValid
+
+Error Clear
+Config Flags
+Error Exit
+
+Echo == Config IP {Addr} {Mask}
+
+Config IP
+Config IP 256.0.0.1 256.0.0.0
+
+Error Clear
+Config IP 0.0.0.0 0.0.0.0
+Error Exit
+
+Echo == Config Name [Name]
+
+Config Name
+Error Exit
+
+Echo == Config Server {IPv4} [Port]
+
+Config Server
+
+Error Clear
+Config Server 0.0.0.0 0
+Error Exit
+
+Echo == Device Config Get
+
+Device Config Get
+
+Echo == Device Config Reset
+
+Device Config Reset
+
+Echo == Device Config Set
+
+Device Config Set
+
+Echo == Device Config Store
+
+Device Config Store
+
+Echo == Device Receiver Start
+
+Device Receiver Start
+
+Echo == Device Receiver Stop
+
+Device Receiver Stop
+
+Echo == Device Debug
+
+Device Debug
+
+Echo == Device GetInfo
+
+Device GetInfo
+
+Echo == Device Release
+
+Device Release
+
+Echo == Device Reset
+
+Device Reset
+
+Echo == Device Send
+
+Device Send
+
+Echo == Debug
+
+Debug
+
+Echo == Detect
+
+Error Clear
+Detect
+Error Exit
+
+Echo == GetVersion
+
+GetVersion
+Error Exit
+
+Echo == List
+
+List
+Error Exit
+
+Echo == Select
+
+Select
+
+Echo == Exit
+
+Exit 0

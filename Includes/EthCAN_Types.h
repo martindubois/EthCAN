@@ -15,11 +15,11 @@
 
 #define EthCAN_FLAG_EXTENDED (0x01)
 
-#define EthCAN_FLAG_SERVER_USB    (0x00000001)
-#define EthCAN_FLAG_STORE_FILTERS (0x00000100)
-#define EthCAN_FLAG_STORE_IPv4    (0x00000200)
-#define EthCAN_FLAG_STORE_MASK    (0x00000400)
-#define EthCAN_FLAG_STORE_SERVER  (0x00000800)
+#define EthCAN_FLAG_SERVER_USB        (0x00000001)
+#define EthCAN_FLAG_STORE_CAN_FILTERS (0x00000100)
+#define EthCAN_FLAG_STORE_CAN_MASKS   (0x00000200)
+#define EthCAN_FLAG_STORE_IPv4        (0x00000400)
+#define EthCAN_FLAG_STORE_SERVER      (0x00000800)
 
 // Data type
 /////////////////////////////////////////////////////////////////////////////
