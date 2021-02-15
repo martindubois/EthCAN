@@ -11,7 +11,7 @@ Error Exit
 
 Echo == Select - First because we need a device to work with
 
-Select
+Select Index
 Error Exit
 
 Echo == Device Config Get

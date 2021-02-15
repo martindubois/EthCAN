@@ -15,35 +15,55 @@
 
 #define EthCAN_FLAG_EXTENDED (0x01)
 
-#define EthCAN_FLAG_SERVER_USB        (0x00000001)
-#define EthCAN_FLAG_STORE_CAN_FILTERS (0x00000100)
-#define EthCAN_FLAG_STORE_CAN_MASKS   (0x00000200)
-#define EthCAN_FLAG_STORE_IPv4        (0x00000400)
-#define EthCAN_FLAG_STORE_SERVER      (0x00000800)
+#define EthCAN_FLAG_SERVER_USB (0x01)
+#define EthCAN_FLAG_WIFI_AP    (0x02)
+
+#define EthCAN_FLAG_STORE_CAN_FILTERS (0x01)
+#define EthCAN_FLAG_STORE_CAN_MASKS   (0x02)
+#define EthCAN_FLAG_STORE_IPv4        (0x04)
+#define EthCAN_FLAG_STORE_SERVER      (0x08)
+#define EthCAN_FLAG_STORE_WIFI        (0x10)
+
+#define EthCAN_STORE_ALL (0x1f)
 
 // Data type
 /////////////////////////////////////////////////////////////////////////////
 
 /// \brief EthCAN_Config
+/// \note If the WiFi is configured, the wired Ethernet is disabled.
+/// \note Static IPv4 address is configured for WiFi and wired Ethernet.
+/// \note If the USB server is enabled, information about the networked
+///       server is ignored.
 typedef struct
 {
-    char mName[16]; ///< The device name
-
-    uint32_t mFlags; ///< See EthCAN_FLAG_...
+    char mName[16]; ///< The device name - Used for the DHCP request and to find the device
 
     uint32_t mCAN_Filters[6]; ///< The CAN filters
-    uint32_t mCAN_Masks[2]; ///< The CAN mask
-    uint8_t  mCAN_Rate; ///< See EthCAN_Rate
+    uint32_t mCAN_Masks[2];   ///< The CAN mask
+    uint8_t  mCAN_Rate;       ///< See EthCAN_Rate
 
-    uint8_t mReserved0[11];
+    uint8_t mReserved0;
 
-    uint32_t mIPv4_Addr; ///< The static IPv4 address
+    uint8_t mFlags; ///< See EthCAN_FLAG_SERVER_USB
+
+    uint8_t mReserved1;
+
+    uint32_t mIPv4_Addr; ///< The static IPv4 address - If 0, the device use DHCP
     uint32_t mIPv4_Mask; ///< The static IPv4 mask
 
     uint32_t mServer_IPv4; ///< The server IPv4 address
-    uint16_t mServer_Port; ///< The server port
+    uint16_t mServer_Port; ///< The server port - If 0, the server is disabled
 
-    uint8_t  mReserved1[128 - 78];
+    // 16 + 24 + 8 + 1 + 1 + 1 + 1 + 4 + 4 + 4 + 2
+    // = 32    + 9     + 2     + 5     + 8     + 2
+    // = 41            + 7             + 10
+    // = 48                            + 10
+    // = 58 bytes
+
+    uint8_t mReserved2[6];
+
+    char mWiFi_Name    [32]; ///< The WiFi name - If empty, the WiFi is disabled
+    char mWifi_Password[32]; ///< The WiFi password
 }
 EthCAN_Config;
 

@@ -227,8 +227,6 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
     EthCAN_Result lResult = Config_Get(&lConfig);
     if (EthCAN_OK == lResult)
     {
-        lConfig.mFlags &= ~EthCAN_FLAG_STORE_SERVER;
-
         try
         {
             if (IsConnectedEth())
@@ -295,7 +293,7 @@ EthCAN_Result Device_Impl::Receiver_Stop()
     {
         lConfig.mServer_IPv4 = 0;
         lConfig.mServer_Port = 0;
-        lConfig.mFlags &= ~(EthCAN_FLAG_SERVER_USB | EthCAN_FLAG_STORE_SERVER);
+        lConfig.mFlags &= ~ EthCAN_FLAG_SERVER_USB;
 
         lResult = Config_Set(&lConfig);
     }
@@ -446,6 +444,8 @@ void Device_Impl::Config_Verify(const EthCAN_Config& aIn)
     // TODO aIn.mName[16]
     // TODO aIn.mServer_IPv4
     // TODO aIn.mServer_Port
+    // TODO aIn.mWiFi_Name
+    // TODO aIn.mWiFi_Password
 }
 
 void Device_Impl::Eth_Receive()

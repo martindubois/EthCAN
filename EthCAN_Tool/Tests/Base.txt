@@ -4,7 +4,7 @@
 # Product   EthCAN
 # File      EthCAN_Tool/Tests/Base.txt
 
-Echo == Config CAN Filters {0_hex} {1} {2} {3} {4} {5}
+Echo == Config CAN Filters {0_hex} ... {5_hex}
 
 Config CAN Filters
 Config CAN Filters NotValid
@@ -13,7 +13,7 @@ Error Clear
 Config CAN Filters 0 0 0 0 0 0
 Error Exit
 
-Echo == Config CAN Masks [Mask0_hex] ...
+Echo == Config CAN Masks {0_hex} {1_Hex}
 
 Config CAN Masks
 Config CAN Masks NotValid
@@ -65,6 +65,11 @@ Error Clear
 Config Server 0.0.0.0 0
 Error Exit
 
+Echo == Config WiFi [Name] [Password]
+
+Config WiFi
+Error Exit
+
 Echo == Device Config Get
 
 Device Config Get
@@ -77,7 +82,7 @@ Echo == Device Config Set
 
 Device Config Set
 
-Echo == Device Config Store
+Echo == Device Config Store [Flags_hex]
 
 Device Config Store
 
@@ -105,7 +110,7 @@ Echo == Device Reset
 
 Device Reset
 
-Echo == Device Send
+Echo == Device Send [Ext] [Id] [Count] ...
 
 Device Send
 
@@ -129,9 +134,53 @@ Echo == List
 List
 Error Exit
 
-Echo == Select
+Echo == Select Ethernet {Eth-Addr}
 
-Select
+Select Ethernet
+
+Echo == Select Index [Index]
+
+Select Index
+
+Echo == Select IP {IPv4}
+
+Select IP
+
+Echo == Select Name [Name]
+
+Select Name
+
+Echo == Select USB [Index]
+
+Select USB
+
+Echo == Setup AccessPoint {IPv4} {Mask} [SSID] [Password]
+
+Setup AccessPoint
+
+Echo == Setup Bridge [Index0] [Index1]
+
+Setup Bridge
+
+Echo == Setup DHCP
+
+Setup DHCP
+
+Echo == Setup Link {Index0} {Index1} {IPv4} {Mask} [SSID] [Password]
+
+Setup Link
+
+Echo == Setup Sniffer
+
+Setup Sniffer
+
+Echo == Setup StaticIP {IPv4} {Mask}
+
+Setup StaticIP
+
+Echo == Setup WiFi [SSID] [Password]
+
+Setup WiFi
 
 Echo == Exit
 

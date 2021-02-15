@@ -38,34 +38,32 @@ namespace EthCAN
 
         unsigned int i;
 
-        fprintf(lOut, "    CAN Filters :");
+        fprintf(lOut, "    CAN Filters  :");
         for (i = 0; i < 6; i++)
         {
             fprintf(lOut, " 0x%x", aIn.mCAN_Filters[i]);
         }
         fprintf(lOut, "\n");
 
-        fprintf(lOut, "    CAN Masks :");
+        fprintf(lOut, "    CAN Masks    :");
         for (i = 0; i < 2; i++)
         {
             fprintf(lOut, " 0x%x", aIn.mCAN_Masks[i]);
         }
         fprintf(lOut, "\n");
 
-        fprintf(lOut, "    CAN Rate : "); Display(lOut, static_cast<EthCAN_Rate>(aIn.mCAN_Rate));
+        fprintf(lOut, "    CAN Rate     : "); Display(lOut, static_cast<EthCAN_Rate>(aIn.mCAN_Rate));
 
         // TODO Device.Display
         //      Display flags by name
-        fprintf(lOut, "    Flags : 0x%08x\n", aIn.mFlags);
-
+        fprintf(lOut, "    Flags        : 0x%02x\n", aIn.mFlags);
         fprintf(lOut, "    IPv4 Address : "); ::Display(lOut, aIn.mIPv4_Addr);
         fprintf(lOut, "    IPv4 Mask    : "); ::Display(lOut, aIn.mIPv4_Mask);
-
-        fprintf(lOut, "    Name : %s\n", aIn.mName);
-
+        fprintf(lOut, "    Name         : %s\n", aIn.mName);
         fprintf(lOut, "    Server IPv4  : "); ::Display(lOut, aIn.mServer_IPv4);
-
-        fprintf(lOut, "    Server Port : %u\n", aIn.mServer_Port);
+        fprintf(lOut, "    Server Port  : %u\n", aIn.mServer_Port);
+        fprintf(lOut, "    WiFI Name    : %s\n", aIn.mWiFi_Name);
+        fprintf(lOut, "    WiFi Password: %s\n", aIn.mWifi_Password);
     }
 
     void Device::Display(FILE* aOut, const EthCAN_Frame& aIn)
