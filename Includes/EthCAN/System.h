@@ -78,11 +78,13 @@ namespace EthCAN
         virtual Device * Device_Find_Name(const char * aName) = 0;
 
         /// \brief Find a device connected using USB link
+        /// \param aIndex The USB connected device index
         /// \retval NULL  Not found
         /// \retval Other The address of the Device instance
-        virtual Device * Device_Find_USB() = 0;
+        virtual Device * Device_Find_USB(unsigned int aIndex) = 0;
 
         /// \brief Get a device by index
+        /// \param aIndex The device index
         /// \retval NULL  Invalid index
         /// \retval Other The address of the Device instance
         virtual Device * Device_Get(unsigned int aIndex) = 0;

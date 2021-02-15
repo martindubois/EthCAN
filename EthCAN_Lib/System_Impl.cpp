@@ -109,8 +109,10 @@ EthCAN::Device* System_Impl::Device_Find_Name(const char* aName)
     return NULL;
 }
 
-EthCAN::Device* System_Impl::Device_Find_USB()
+EthCAN::Device* System_Impl::Device_Find_USB(unsigned int aIndex)
 {
+    unsigned int lIndex = 0;
+
     for (unsigned int i = 0; i < mDeviceCount; i++)
     {
         assert(NULL != mDevices);
@@ -118,9 +120,14 @@ EthCAN::Device* System_Impl::Device_Find_USB()
 
         if (mDevices[i]->IsConnectedUSB())
         {
-            mDevices[i]->IncRefCount();
+            if (aIndex = lIndex)
+            {
+                mDevices[i]->IncRefCount();
 
-            return mDevices[i];
+                return mDevices[i];
+            }
+
+            lIndex++;
         }
     }
 
