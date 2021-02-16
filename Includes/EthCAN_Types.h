@@ -15,16 +15,16 @@
 
 #define EthCAN_FLAG_EXTENDED (0x01)
 
+#define EthCAN_FLAG_STORE_CAN    (0x01)
+#define EthCAN_FLAG_STORE_IPv4   (0x02)
+#define EthCAN_FLAG_STORE_SERVER (0x04)
+#define EthCAN_FLAG_STORE_WIFI   (0x08)
+
+#define EthCAN_FLAG_STORE_ALL (0x0f)
+
 #define EthCAN_FLAG_SERVER_USB (0x01)
-#define EthCAN_FLAG_WIFI_AP    (0x02)
 
-#define EthCAN_FLAG_STORE_CAN_FILTERS (0x01)
-#define EthCAN_FLAG_STORE_CAN_MASKS   (0x02)
-#define EthCAN_FLAG_STORE_IPv4        (0x04)
-#define EthCAN_FLAG_STORE_SERVER      (0x08)
-#define EthCAN_FLAG_STORE_WIFI        (0x10)
-
-#define EthCAN_STORE_ALL (0x1f)
+#define EthCAN_FLAG_WIFI_AP (0x01)
 
 // Data type
 /////////////////////////////////////////////////////////////////////////////
@@ -42,28 +42,29 @@ typedef struct
     uint32_t mCAN_Masks[2];   ///< The CAN mask
     uint8_t  mCAN_Rate;       ///< See EthCAN_Rate
 
-    uint8_t mReserved0;
+    uint8_t mReserved0[3];
 
-    uint8_t mFlags; ///< See EthCAN_FLAG_SERVER_USB
+    uint32_t mIPv4_Addr;    ///< The static IPv4 address - If 0, the device use DHCP
+    uint32_t mIPv4_Gateway; ///< The gateway address
+    uint32_t mIPv4_Mask;    ///< The static IPv4 mask
 
-    uint8_t mReserved1;
+    uint32_t mServer_IPv4;  ///< The server IPv4 address
+    uint16_t mServer_Port;  ///< The server port - If 0, the server is disabled
+    uint8_t  mServer_Flags; ///< Is the USB server enabled?
 
-    uint32_t mIPv4_Addr; ///< The static IPv4 address - If 0, the device use DHCP
-    uint32_t mIPv4_Mask; ///< The static IPv4 mask
+    // 16 + 24 + 8 + 1 + 3 + 4 + 4 + 4 + 4 + 2 + 1
+    // = 48    + 9     + 7     + 8     + 6     + 1
+    // = 57            + 15            + 7
+    // = 72                            + 7
+    // = 79
 
-    uint32_t mServer_IPv4; ///< The server IPv4 address
-    uint16_t mServer_Port; ///< The server port - If 0, the server is disabled
+    uint8_t mReserved1[192 - 79 - 65];
 
-    // 16 + 24 + 8 + 1 + 1 + 1 + 1 + 4 + 4 + 4 + 2
-    // = 32    + 9     + 2     + 5     + 8     + 2
-    // = 41            + 7             + 10
-    // = 48                            + 10
-    // = 58 bytes
+    // = 65 bytes
 
-    uint8_t mReserved2[6];
-
+    char mWiFi_Flags;        ///< Is the WiFi access poing enabled?
     char mWiFi_Name    [32]; ///< The WiFi name - If empty, the WiFi is disabled
-    char mWifi_Password[32]; ///< The WiFi password
+    char mWiFi_Password[32]; ///< The WiFi password
 }
 EthCAN_Config;
 
@@ -90,29 +91,36 @@ typedef struct
 
     uint8_t mReserved0[2];
 
-    uint32_t mIPv4_Addr; ///< The current IPv4 address
-    uint32_t mIPv4_Mask; ///< The current IPv4 mask
+    uint32_t mIPv4_Addr;    ///< The current IPv4 address
+    uint32_t mIPv4_Gateway; ///< The current IPv4 gateway
+    uint32_t mIPv4_Mask;    ///< The current IPv4 mask
 
-    uint8_t mFirmware0_Major; ///< The firmware 0 major
-    uint8_t mFirmware0_Minor; ///< The firmware 0 minor
-    uint8_t mFirmware0_Build; ///< The firmware 0 build
+    uint8_t mFirmware0_Major;  ///< The firmware 0 major
+    uint8_t mFirmware0_Minor;  ///< The firmware 0 minor
+    uint8_t mFirmware0_Build;  ///< The firmware 0 build
     uint8_t mFirmware0_Compat; ///< The firmware 0 compatibility
 
-    uint8_t mFirmware1_Major; ///< The firmware 1 major
-    uint8_t mFirmware1_Minor; ///< The firmware 1 minor
-    uint8_t mFirmware1_Build; ///< The firmware 1 build
+    uint8_t mFirmware1_Major;  ///< The firmware 1 major
+    uint8_t mFirmware1_Minor;  ///< The firmware 1 minor
+    uint8_t mFirmware1_Build;  ///< The firmware 1 build
     uint8_t mFirmware1_Compat; ///< The firmware 1 compatibility
 
-    uint8_t mHardware_Major; ///< The hardware major
-    uint8_t mHardware_Minor; ///< The hardware minor
-    uint8_t mHardware_Rev; ///< The hardware revision
+    uint8_t mHardware_Major;  ///< The hardware major
+    uint8_t mHardware_Minor;  ///< The hardware minor
+    uint8_t mHardware_Rev;    ///< The hardware revision
     uint8_t mHardware_Compat; ///< The hardware compatibility
 
-    uint32_t mMessageId; ///< The last message id
+    uint32_t mMessageId;     ///< The last message id
     uint32_t mRequestId_UDP; ///< The last request id
     uint32_t mRequestId_USB; ///< The last request id
 
-    uint8_t mReserved1[ 128 - 56 ];
+    // 16 + 6 + 2 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4
+    // = 22   + 6     + 8     + 8     + 8     + 8
+    // = 28           + 16            + 16
+    // = 44                           + 16
+    // = 60
+
+    uint8_t mReserved1[ 128 - 60 ];
 }
 EthCAN_Info;
 
