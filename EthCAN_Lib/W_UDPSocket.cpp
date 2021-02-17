@@ -26,10 +26,10 @@ static void Thread_Uninit();
 // Public
 /////////////////////////////////////////////////////////////////////////////
 
-uint32_t UDPSocket::GetIPv4(uint32_t aAddr, uint32_t aMask) const
+uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask) const
 {
-    assert(0 != aAddr);
-    assert(0 != aMask);
+    assert(0 != aAddress);
+    assert(0 != aNetMask);
 
     uint8_t lBuffer[4096];
     ULONG lSize_byte = sizeof(lBuffer);
@@ -42,7 +42,7 @@ uint32_t UDPSocket::GetIPv4(uint32_t aAddr, uint32_t aMask) const
 
     for (unsigned int i = 0; i < lTable->dwNumEntries; i++)
     {
-        if ((lTable->table[i].dwAddr & lTable->table[i].dwMask) == (aAddr & aMask))
+        if ((lTable->table[i].dwAddr & lTable->table[i].dwMask) == (aAddress & aNetMask))
         {
             return lTable->table[i].dwAddr;
         }

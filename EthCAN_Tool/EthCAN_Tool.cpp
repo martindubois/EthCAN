@@ -37,7 +37,6 @@ static const KmsLib::ToolBase::CommandInfo CONFIG_CAN_COMMANDS[] =
 };
 
 static void Config_Display(KmsLib::ToolBase* aToolBase, const char* aArg);
-static void Config_Flags  (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Config_IPv4   (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Config_Name   (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Config_Server (KmsLib::ToolBase* aToolBase, const char* aArg);
@@ -45,13 +44,13 @@ static void Config_WiFi   (KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo CONFIG_COMMANDS[] =
 {
-    { "CAN"    , NULL          , "CAN ..."                                                 , CONFIG_CAN_COMMANDS },
-    { "Display", Config_Display, "Display                        See Device::Display"      , NULL },
-    { "Flags"  , Config_Flags  , "Flags [Flags_hex]              See EthCAN_Config::mFlags", NULL },
-    { "IP"     , Config_IPv4   , "IP {Addr} {Mask}               See EthCAN_Config"        , NULL },
-    { "Name"   , Config_Name   , "Name [Name]                    See EthCAN_Config::mName" , NULL },
-    { "Server" , Config_Server , "Server {IPv4} [Port]           See EthCAN_Config"        , NULL },
-    { "WiFi"   , Config_WiFi   , "WiFi [Name] [Password]         See EthCAN_Config"        , NULL },
+    { "CAN"    , NULL          , "CAN ..."                                                , CONFIG_CAN_COMMANDS },
+    { "Display", Config_Display, "Display                       See Device::Display"      , NULL },
+    { "IP"     , Config_IPv4   , "IP {Address} {Gateway} {NetMask}\n"
+                                 "                              See EthCAN_Config"        , NULL },
+    { "Name"   , Config_Name   , "Name [Name]                   See EthCAN_Config::mName" , NULL },
+    { "Server" , Config_Server , "Server {Address} [Port]       See EthCAN_Config"        , NULL },
+    { "WiFi"   , Config_WiFi   , "WiFi [Name] [Password]        See EthCAN_Config"        , NULL },
 
     { NULL, NULL, NULL, NULL }
 };
@@ -109,11 +108,11 @@ static void Select_USB     (KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo SELECT_COMMANDS[] =
 {
-    { "Ethernet", Select_Ethernet, "Ethernet {Eth-Addr}           See System::Device_Find_Eth" , NULL },
+    { "Ethernet", Select_Ethernet, "Ethernet {Address}            See System::Device_Find_Eth" , NULL },
     { "Index"   , Select_Index   , "Index [Index]                 See System::Device_Get"      , NULL },
-    { "IP"      , Select_IP      , "IP {IPv4}                     See System::Device_Find_IPv4", NULL },
+    { "IP"      , Select_IP      , "IP {Address}                  See System::Device_Find_IPv4", NULL },
     { "Name"    , Select_Name    , "Name [Name]                   See System::Device_Find_Name", NULL },
-    { "USB"     , Select_Index   , "USB [D-Idx]                   See System::Device_Find_USB" , NULL },
+    { "USB"     , Select_Index   , "USB [Index]                   See System::Device_Find_USB" , NULL },
 
     { NULL, NULL, NULL, NULL }
 };
@@ -128,14 +127,15 @@ static void Setup_WiFi       (KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo SETUP_COMMANDS[] =
 {
-    { "AccessPoint", Setup_AccessPoint, "AccessPoint {IPv4} {Mask} [SSID] [Password]\n"
+    { "AccessPoint", Setup_AccessPoint, "AccessPoint {Address} {NetMask} [SSID] [Password]\n"
                                         "                              Setup the sel. EthCAN as an access point", NULL },
     { "Bridge"     , Setup_Bridge     , "Bridge [Index0] [Index1]      Setup a bridge between two EthCAN"       , NULL },
     { "DHCP"       , Setup_DHCP       , "DHCP                          Setup the selected EthCan to use DHCP"   , NULL },
     { "Link"       , Setup_Link       , "Link {Index0} {Index1} {IPv4} {Mask} [SSID] [Password]\n"
                                         "                              Setup a direct link between thwo EthCAN" , NULL },
     { "Sniffer"    , Setup_Sniffer    , "Sniffer                       Setup the selected EthCAN as sniffer"    , NULL },
-    { "StaticIP"   , Setup_StaticIP   , "StaticIP {IPv4} {Mask}        Setup the sel. EthCAN with a static IP"  , NULL },
+    { "StaticIP"   , Setup_StaticIP   , "StaticIP {Address} {Gateway} {NetMask}\n"
+                                        "                              Setup the sel. EthCAN with a static IP"  , NULL },
     { "WiFi"       , Setup_WiFi       , "WiFi [SSID] [Password]        Setup the WiFi for the selected EthCAN"  , NULL },
 
     { NULL, NULL, NULL, NULL }
@@ -167,7 +167,8 @@ static const KmsLib::ToolBase::CommandInfo COMMANDS[] =
 
 static void DisplayResult(KmsLib::ToolBase* aToolBase, EthCAN_Result aResult);
 
-static bool Parse_Address_Mask (KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aAddr, uint32_t* aMask);
+static bool Parse_Address_Gateway_NetMask(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aAddress, uint32_t* aGateway, uint32_t* aNetMask);
+static bool Parse_Address_NetMask(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aAddr, uint32_t* aMask);
 static bool Parse_Ethernet     (KmsLib::ToolBase* aToolBase, const char** aArg, uint8_t aOut[6]);
 static bool Parse_IPv4         (KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aOut);
 static bool Parse_SSID_Password(KmsLib::ToolBase* aToolBase, const char** aArg, char* aName, char* aPassword);
@@ -176,7 +177,7 @@ static bool Receiver(EthCAN::Device* aDevice, void* aContext, const EthCAN_Frame
 
 static void ReleaseDevice();
 
-static void Setup_IPv4(KmsLib::ToolBase* aToolBase, uint32_t aAddr, uint32_t aMask);
+static void Setup_IPv4(KmsLib::ToolBase* aToolBase, uint32_t aAddress, uint32_t aGateway, uint32_t aNetMask);
 
 // Static variables
 /////////////////////////////////////////////////////////////////////////////
@@ -288,23 +289,11 @@ void Config_Display(KmsLib::ToolBase* aToolBase, const char* aArg)
     KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
 }
 
-void Config_Flags(KmsLib::ToolBase* aToolBase, const char* aArg)
-{
-    const char* lArg = aArg;
-    unsigned int lFlags;
-    if (aToolBase->Parse(&lArg, &lFlags, 0, 0x01, true, 0))
-    {
-        sConfig.mFlags = lFlags;
-
-        KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
-    }
-}
-
 void Config_IPv4(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     const char* lArg = aArg;
 
-    if (Parse_Address_Mask(aToolBase, &lArg, &sConfig.mIPv4_Addr, &sConfig.mIPv4_Mask))
+    if (Parse_Address_Gateway_NetMask(aToolBase, &lArg, &sConfig.mIPv4_Address, &sConfig.mIPv4_Gateway, &sConfig.mIPv4_NetMask))
     {
         KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
     }
@@ -337,7 +326,7 @@ void Config_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     const char* lArg = aArg;
     if (   aToolBase->Parse(&lArg, sConfig.mWiFi_Name    , sizeof(sConfig.mWiFi_Name    ), "")
-        && aToolBase->Parse(&lArg, sConfig.mWifi_Password, sizeof(sConfig.mWifi_Password), ""))
+        && aToolBase->Parse(&lArg, sConfig.mWiFi_Password, sizeof(sConfig.mWiFi_Password), ""))
     {
         KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
     }
@@ -597,13 +586,13 @@ void Setup_AccessPoint(KmsLib::ToolBase* aToolBase, const char* aArg)
     USE_SELECTED_DEVICE;
 
     const char* lArg = aArg;
-    unsigned int lAddr;
-    unsigned int lMask;
+    unsigned int lAddress;
+    unsigned int lNetMask;
     char lName[32];
     char lPassword[32];
 
-    if (   Parse_Address_Mask (aToolBase, &lArg, &lAddr, &lMask)
-        && Parse_SSID_Password(aToolBase, &lArg, lName, lPassword))
+    if (   Parse_Address_NetMask(aToolBase, &lArg, &lAddress, &lNetMask)
+        && Parse_SSID_Password  (aToolBase, &lArg, lName, lPassword))
     {
         EthCAN_Config lConfig;
         unsigned int lStep = 1;
@@ -613,11 +602,12 @@ void Setup_AccessPoint(KmsLib::ToolBase* aToolBase, const char* aArg)
         if (EthCAN_OK == lRet)
         {
             printf("%u. Modifying the configuration...\n", lStep); lStep++;
-            lConfig.mFlags |= EthCAN_FLAG_WIFI_AP;
-            lConfig.mIPv4_Addr = lAddr;
-            lConfig.mIPv4_Mask = lMask;
+            lConfig.mIPv4_Address = lAddress;
+            lConfig.mIPv4_Gateway = 0;
+            lConfig.mIPv4_NetMask = lNetMask;
+            lConfig.mWiFi_Flags |= EthCAN_FLAG_WIFI_AP;
             strcpy_s(lConfig.mWiFi_Name    , lName);
-            strcpy_s(lConfig.mWifi_Password, lPassword);
+            strcpy_s(lConfig.mWiFi_Password, lPassword);
 
             printf("%u. Setting the configuration...\n", lStep); lStep++;
             lRet = sDevice->Config_Set(&lConfig);
@@ -685,7 +675,7 @@ void Setup_Bridge(KmsLib::ToolBase* aToolBase, const char* aArg)
             if (EthCAN_OK == lRet)
             {
                 printf("%u. Modifying the configuration...\n", lStep); lStep++;
-                lConfigs[i].mFlags &= ~EthCAN_FLAG_SERVER_USB;
+                lConfigs[i].mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
                 lConfigs[i].mServer_Port = EthCAN_UDP_PORT;
 
                 // TODO Setup filters and masks
@@ -701,8 +691,8 @@ void Setup_Bridge(KmsLib::ToolBase* aToolBase, const char* aArg)
         }
 
         printf("%u. Modifying the configurations...\n", lStep); lStep++;
-        lConfigs[0].mServer_IPv4 = lInfos[1].mIPv4_Addr;
-        lConfigs[1].mServer_IPv4 = lInfos[0].mIPv4_Addr;
+        lConfigs[0].mServer_IPv4 = lInfos[1].mIPv4_Address;
+        lConfigs[1].mServer_IPv4 = lInfos[0].mIPv4_Address;
 
         for (i = 0; i < 2; i++)
         {
@@ -713,7 +703,7 @@ void Setup_Bridge(KmsLib::ToolBase* aToolBase, const char* aArg)
                 if (EthCAN_OK == lRet)
                 {
                     printf("%u. Storing the configuration...\n", lStep); lStep++;
-                    lRet = lDevices[i]->Config_Store(EthCAN_FLAG_STORE_CAN_FILTERS | EthCAN_FLAG_STORE_CAN_MASKS | EthCAN_FLAG_STORE_SERVER);
+                    lRet = lDevices[i]->Config_Store(EthCAN_FLAG_STORE_CAN | EthCAN_FLAG_STORE_SERVER);
                     if (EthCAN_OK == lRet)
                     {
                         printf("%u. Reseting the EthCAN...\n", lStep); lStep++;
@@ -733,7 +723,7 @@ void Setup_DHCP(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_SELECTED_DEVICE;
 
-    Setup_IPv4(aToolBase, 0, 0);
+    Setup_IPv4(aToolBase, 0, 0, 0);
 }
 
 void Setup_Link(KmsLib::ToolBase* aToolBase, const char* aArg)
@@ -747,14 +737,14 @@ void Setup_Link(KmsLib::ToolBase* aToolBase, const char* aArg)
 
     const char* lArg = aArg;
     unsigned int lIndex[2];
-    unsigned int lAddr;
-    unsigned int lMask;
+    unsigned int lAddress;
+    unsigned int lNetMask;
     char lName[32];
     char lPassword[32];
 
     if (   aToolBase->Parse(&lArg, lIndex + 0, 0, lCount - 2, false)
         && aToolBase->Parse(&lArg, lIndex + 1, 1, lCount - 1, false)
-        && Parse_Address_Mask(aToolBase, &lArg, &lAddr, &lMask)
+        && Parse_Address_NetMask(aToolBase, &lArg, &lAddress, &lNetMask)
         && aToolBase->Parse(&lArg, lName    , sizeof(lName    ), "")
         && aToolBase->Parse(&lArg, lPassword, sizeof(lPassword), ""))
     {
@@ -784,25 +774,28 @@ void Setup_Link(KmsLib::ToolBase* aToolBase, const char* aArg)
             }
 
             printf("%u. Modifying the configuration...\n", lStep); lStep++;
-            lConfigs[i].mFlags &= ~(EthCAN_FLAG_SERVER_USB | EthCAN_FLAG_WIFI_AP);
+            lConfigs[i].mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
             lConfigs[i].mServer_Port = EthCAN_UDP_PORT;
+            lConfigs[i].mWiFi_Flags &= ~EthCAN_FLAG_WIFI_AP;
             strcpy_s(lConfigs[i].mWiFi_Name    , lName);
-            strcpy_s(lConfigs[i].mWifi_Password, lPassword);
+            strcpy_s(lConfigs[i].mWiFi_Password, lPassword);
 
             // TODO Setup filters and masks
         }
 
         printf("%u. Modifying the configurations...\n", lStep); lStep++;
-        lConfigs[0].mIPv4_Addr = lAddr;
-        lConfigs[0].mIPv4_Mask = lMask;
-        lConfigs[0].mServer_IPv4 = lAddr + 0x01000000;
-        lConfigs[1].mIPv4_Addr = lAddr + 0x01000000;
-        lConfigs[1].mIPv4_Mask = lMask;
-        lConfigs[1].mServer_IPv4 = lAddr;
+        lConfigs[0].mIPv4_Address = lAddress;
+        lConfigs[0].mIPv4_Gateway = 0;
+        lConfigs[0].mIPv4_NetMask = lNetMask;
+        lConfigs[0].mServer_IPv4  = lAddress + 0x01000000;
+        lConfigs[1].mIPv4_Address = lAddress + 0x01000000;
+        lConfigs[1].mIPv4_Gateway = 0;
+        lConfigs[1].mIPv4_NetMask = lNetMask;
+        lConfigs[1].mServer_IPv4  = lAddress;
 
         if ('\0' != lName[0])
         {
-            lConfigs[0].mFlags |= EthCAN_FLAG_WIFI_AP;
+            lConfigs[0].mWiFi_Flags |= EthCAN_FLAG_WIFI_AP;
         }
 
         for (i = 0; i < 2; i++)
@@ -814,7 +807,7 @@ void Setup_Link(KmsLib::ToolBase* aToolBase, const char* aArg)
                 if (EthCAN_OK == lRet)
                 {
                     printf("%u. Storing the configuration...\n", lStep); lStep++;
-                    lRet = lDevices[i]->Config_Store(EthCAN_FLAG_STORE_CAN_FILTERS | EthCAN_FLAG_STORE_CAN_MASKS | EthCAN_FLAG_STORE_IPv4 | EthCAN_FLAG_STORE_SERVER | EthCAN_FLAG_STORE_WIFI);
+                    lRet = lDevices[i]->Config_Store(EthCAN_FLAG_STORE_CAN | EthCAN_FLAG_STORE_IPv4 | EthCAN_FLAG_STORE_SERVER | EthCAN_FLAG_STORE_WIFI);
                     if (EthCAN_OK == lRet)
                     {
                         printf("%u. Reseting the EthCAN...\n", lStep); lStep++;
@@ -868,12 +861,13 @@ void Setup_StaticIP(KmsLib::ToolBase* aToolBase, const char* aArg)
     USE_SELECTED_DEVICE;
 
     const char* lArg = aArg;
-    uint32_t lAddr;
-    uint32_t lMask;
+    uint32_t lAddress;
+    uint32_t lGateway;
+    uint32_t lNetMask;
 
-    if (Parse_Address_Mask(aToolBase, &lArg, &lAddr, &lMask))
+    if (Parse_Address_Gateway_NetMask(aToolBase, &lArg, &lAddress, &lGateway, &lNetMask))
     {
-        Setup_IPv4(aToolBase, lAddr, lMask);
+        Setup_IPv4(aToolBase, lAddress, lGateway, lNetMask);
     }
 }
 
@@ -895,9 +889,9 @@ void Setup_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
         if (EthCAN_OK == lRet)
         {
             printf("%u. Modifying the configuration...\n", lStep); lStep++;
-            lConfig.mFlags &= ~EthCAN_FLAG_WIFI_AP;
+            lConfig.mWiFi_Flags &= ~EthCAN_FLAG_WIFI_AP;
             strcpy_s(lConfig.mWiFi_Name    , lName);
-            strcpy_s(lConfig.mWifi_Password, lPassword);
+            strcpy_s(lConfig.mWiFi_Password, lPassword);
 
             printf("%u. Setting the configuration...\n", lStep); lStep++;
             lRet = sDevice->Config_Set(&lConfig);
@@ -985,7 +979,7 @@ void List(KmsLib::ToolBase* aToolBase, const char* aArg)
             i,
             lCon,
             lInfo.mEth_Addr[0], lInfo.mEth_Addr[1], lInfo.mEth_Addr[2], lInfo.mEth_Addr[3], lInfo.mEth_Addr[4], lInfo.mEth_Addr[5],
-            lInfo.mIPv4_Addr & 0xff, lInfo.mIPv4_Addr >> 8 & 0xff, lInfo.mIPv4_Addr >> 16 & 0xff, lInfo.mIPv4_Addr >> 24 & 0xff,
+            lInfo.mIPv4_Address & 0xff, lInfo.mIPv4_Address >> 8 & 0xff, lInfo.mIPv4_Address >> 16 & 0xff, lInfo.mIPv4_Address >> 24 & 0xff,
             lInfo.mName);
 
         lDev->Release();
@@ -1011,10 +1005,18 @@ void DisplayResult(KmsLib::ToolBase* aToolBase, EthCAN_Result aResult)
     }
 }
 
-bool Parse_Address_Mask(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aAddr, uint32_t* aMask)
+bool Parse_Address_Gateway_NetMask(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aAddress, uint32_t* aGateway, uint32_t* aNetMask)
 {
-    return Parse_IPv4(aToolBase, aArg, aAddr)
-        && Parse_IPv4(aToolBase, aArg, aMask);
+    return Parse_IPv4(aToolBase, aArg, aAddress)
+        && Parse_IPv4(aToolBase, aArg, aGateway)
+        && Parse_IPv4(aToolBase, aArg, aNetMask);
+
+}
+
+bool Parse_Address_NetMask(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aAddress, uint32_t* aNetMask)
+{
+    return Parse_IPv4(aToolBase, aArg, aAddress)
+        && Parse_IPv4(aToolBase, aArg, aNetMask);
 }
 
 bool Parse_Ethernet(KmsLib::ToolBase* aToolBase, const char** aArg, uint8_t aOut[6])
@@ -1107,7 +1109,7 @@ void ReleaseDevice()
     }
 }
 
-void Setup_IPv4(KmsLib::ToolBase* aToolBase, uint32_t aAddr, uint32_t aMask)
+void Setup_IPv4(KmsLib::ToolBase* aToolBase, uint32_t aAddress, uint32_t aGateway, uint32_t aNetMask)
 {
     EthCAN_Config lConfig;
     unsigned int lStep = 1;
@@ -1117,8 +1119,9 @@ void Setup_IPv4(KmsLib::ToolBase* aToolBase, uint32_t aAddr, uint32_t aMask)
     if (EthCAN_OK == lRet)
     {
         printf("%u. Modifying the configuration...\n", lStep); lStep++;
-        lConfig.mIPv4_Addr = aAddr;
-        lConfig.mIPv4_Mask = aMask;
+        lConfig.mIPv4_Address = aAddress;
+        lConfig.mIPv4_Gateway = aGateway;
+        lConfig.mIPv4_NetMask = aNetMask;
 
         printf("%u. Setting the configuration...\n", lStep); lStep++;
         lRet = sDevice->Config_Set(&lConfig);

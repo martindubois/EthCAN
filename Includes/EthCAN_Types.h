@@ -44,9 +44,9 @@ typedef struct
 
     uint8_t mReserved0[3];
 
-    uint32_t mIPv4_Addr;    ///< The static IPv4 address - If 0, the device use DHCP
+    uint32_t mIPv4_Address; ///< The static IPv4 address - If 0, the device use DHCP
     uint32_t mIPv4_Gateway; ///< The gateway address
-    uint32_t mIPv4_Mask;    ///< The static IPv4 mask
+    uint32_t mIPv4_NetMask; ///< The static IPv4 mask
 
     uint32_t mServer_IPv4;  ///< The server IPv4 address
     uint16_t mServer_Port;  ///< The server port - If 0, the server is disabled
@@ -91,9 +91,9 @@ typedef struct
 
     uint8_t mReserved0[2];
 
-    uint32_t mIPv4_Addr;    ///< The current IPv4 address
+    uint32_t mIPv4_Address; ///< The current IPv4 address
     uint32_t mIPv4_Gateway; ///< The current IPv4 gateway
-    uint32_t mIPv4_Mask;    ///< The current IPv4 mask
+    uint32_t mIPv4_NetMask; ///< The current IPv4 mask
 
     uint8_t mFirmware0_Major;  ///< The firmware 0 major
     uint8_t mFirmware0_Minor;  ///< The firmware 0 minor

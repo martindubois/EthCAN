@@ -54,6 +54,19 @@ Echo == Device GetInfo
 Device GetInfo
 Error Exit
 
+Echo == Setup AccessPoint {Address} {NetMasl} {SSID} {Password} - Before resetting
+
+Error Clear
+Error Exit
+Setup AccessPoint
+
+Echo == Setup Sniffer - Before Reseting
+
+Error Clear
+Setup Sniffer
+Device Receiver Stop
+Error Exit
+
 Echo == Device Send - Before reseting
 
 Device Send
@@ -66,6 +79,23 @@ Echo == Device Release
 
 Device Release
 Error Exit
+
+Echo == List
+
+List
+Error Exit
+
+Echo == Select Ethernet {Address}
+
+Select Ethernet 03:04:05:06:07:08
+
+Echo == Select IP {Address}
+
+Select IP 3.4.5.6
+
+Echo == Select Name [Name]
+
+Select Name
 
 Echo == Exit
 

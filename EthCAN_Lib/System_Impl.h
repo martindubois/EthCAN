@@ -28,7 +28,7 @@ public:
     virtual EthCAN::Device* Device_Find_Eth(const uint8_t aEth[6]);
     virtual EthCAN::Device* Device_Find_IPv4(const uint32_t aIPv4);
     virtual EthCAN::Device* Device_Find_Name(const char* aName);
-    virtual EthCAN::Device* Device_Find_USB(unsigned int aIndex);
+    virtual EthCAN::Device* Device_Find_USB(unsigned int aIndex = 0);
 
     virtual EthCAN::Device* Device_Get(unsigned int aIndex);
     virtual unsigned int    Device_GetCount() const;

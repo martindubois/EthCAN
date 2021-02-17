@@ -38,32 +38,32 @@ namespace EthCAN
 
         unsigned int i;
 
-        fprintf(lOut, "    CAN Filters  :");
+        fprintf(lOut, "    CAN Filters    :");
         for (i = 0; i < 6; i++)
         {
             fprintf(lOut, " 0x%x", aIn.mCAN_Filters[i]);
         }
         fprintf(lOut, "\n");
 
-        fprintf(lOut, "    CAN Masks    :");
+        fprintf(lOut, "    CAN Masks      :");
         for (i = 0; i < 2; i++)
         {
             fprintf(lOut, " 0x%x", aIn.mCAN_Masks[i]);
         }
         fprintf(lOut, "\n");
 
-        fprintf(lOut, "    CAN Rate     : "); Display(lOut, static_cast<EthCAN_Rate>(aIn.mCAN_Rate));
+        fprintf(lOut, "    CAN Rate       : "); Display(lOut, static_cast<EthCAN_Rate>(aIn.mCAN_Rate));
 
         // TODO Device.Display
         //      Display flags by name
-        fprintf(lOut, "    Flags        : 0x%02x\n", aIn.mFlags);
-        fprintf(lOut, "    IPv4 Address : "); ::Display(lOut, aIn.mIPv4_Addr);
-        fprintf(lOut, "    IPv4 Mask    : "); ::Display(lOut, aIn.mIPv4_Mask);
-        fprintf(lOut, "    Name         : %s\n", aIn.mName);
-        fprintf(lOut, "    Server IPv4  : "); ::Display(lOut, aIn.mServer_IPv4);
-        fprintf(lOut, "    Server Port  : %u\n", aIn.mServer_Port);
-        fprintf(lOut, "    WiFI Name    : %s\n", aIn.mWiFi_Name);
-        fprintf(lOut, "    WiFi Password: %s\n", aIn.mWifi_Password);
+        fprintf(lOut, "    IPv4 Address   : "); ::Display(lOut, aIn.mIPv4_Address);
+        fprintf(lOut, "    IPv4 Gateway   : "); ::Display(lOut, aIn.mIPv4_Gateway);
+        fprintf(lOut, "    IPv4 Net. Mask : "); ::Display(lOut, aIn.mIPv4_NetMask);
+        fprintf(lOut, "    Name           : %s\n", aIn.mName);
+        fprintf(lOut, "    Server IPv4    : "); ::Display(lOut, aIn.mServer_IPv4);
+        fprintf(lOut, "    Server Port    : %u\n", aIn.mServer_Port);
+        fprintf(lOut, "    WiFI Name      : %s\n", aIn.mWiFi_Name);
+        fprintf(lOut, "    WiFi Password  : %s\n", aIn.mWiFi_Password);
     }
 
     void Device::Display(FILE* aOut, const EthCAN_Frame& aIn)
@@ -96,37 +96,33 @@ namespace EthCAN
             return;
         }
 
-        fprintf(lOut, "        Ethernet address : "); ::Display(lOut, aIn.mEth_Addr);
+        fprintf(lOut, "        Ethernet address    : "); ::Display(lOut, aIn.mEth_Addr);
 
-        fprintf(lOut,
-            "        Firmware 0 : %u.%u.%u.%u\n"
-            "        Firmware 1 : %u.%u.%u.%u\n"
-            "        Hardware   : %u.%u.%u.%u\n",
+        fprintf(lOut, "        Firmware 0          : %u.%u.%u.%u\n",
             aIn.mFirmware0_Major,
             aIn.mFirmware0_Minor,
             aIn.mFirmware0_Build,
-            aIn.mFirmware0_Compat,
+            aIn.mFirmware0_Compat);
+
+        fprintf(lOut, "        Firmware 1          : %u.%u.%u.%u\n",
             aIn.mFirmware1_Major,
             aIn.mFirmware1_Minor,
             aIn.mFirmware1_Build,
-            aIn.mFirmware1_Compat,
+            aIn.mFirmware1_Compat);
+
+        fprintf(lOut, "        Hardware            : %u.%u.%u.%u\n",
             aIn.mHardware_Major,
             aIn.mHardware_Minor,
             aIn.mHardware_Rev,
             aIn.mHardware_Compat);
 
-        fprintf(lOut, "        IPv4 address : "); ::Display(lOut, aIn.mIPv4_Addr);
-        fprintf(lOut, "        IPv4 mask    : "); ::Display(lOut, aIn.mIPv4_Mask);
-
-        fprintf(lOut,
-            "        Last message id     : %u\n"
-            "        Name                : %s\n"
-            "        Last request id UDP : %u\n"
-            "        Last request id USB : %u\n",
-            aIn.mMessageId,
-            aIn.mName,
-            aIn.mRequestId_UDP,
-            aIn.mRequestId_USB);
+        fprintf(lOut, "        IPv4 Address        : "); ::Display(lOut, aIn.mIPv4_Address);
+        fprintf(lOut, "        IPv4 Gateway        : "); ::Display(lOut, aIn.mIPv4_Gateway);
+        fprintf(lOut, "        IPv4 Net. Mask      : "); ::Display(lOut, aIn.mIPv4_NetMask);
+        fprintf(lOut, "        Last message id     : %u\n", aIn.mMessageId);
+        fprintf(lOut, "        Name                : %s\n", aIn.mName);
+        fprintf(lOut, "        Last request id UDP : %u\n", aIn.mRequestId_UDP);
+        fprintf(lOut, "        Last request id USB : %u\n", aIn.mRequestId_USB);
     }
 
     void Device::Display(FILE* aOut, EthCAN_Rate aIn)

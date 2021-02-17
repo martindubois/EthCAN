@@ -331,7 +331,7 @@ bool System_Impl::OnDetectData(const void* aData, unsigned int aSize_byte, uint3
         {
             const EthCAN_Info* lInfo = reinterpret_cast<const EthCAN_Info*>(lHeader + 1);
 
-            if ((0 == aFrom) || (lInfo->mIPv4_Addr == aFrom))
+            if ((0 == aFrom) || (lInfo->mIPv4_Address == aFrom))
             {
                 return OnInfo(*lInfo, aSerial);
             }

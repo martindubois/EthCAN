@@ -17,7 +17,7 @@ public:
 
     void Broadcast(const void* aData, unsigned int aSize_byte);
 
-    uint32_t GetIPv4(uint32_t aAddr, uint32_t aMask) const;
+    uint32_t GetIPv4(uint32_t aAddress, uint32_t aNetMask) const;
 
     uint16_t GetPort() const;
 

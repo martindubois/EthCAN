@@ -57,7 +57,7 @@ bool Device_Impl::Is(const uint8_t aEth[6]) const
 
 bool Device_Impl::Is(uint32_t aIPv4) const
 {
-    return mInfo.mIPv4_Addr == aIPv4;
+    return mInfo.mIPv4_Address == aIPv4;
 }
 
 bool Device_Impl::Is(const char* aName) const
@@ -233,17 +233,17 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
             {
                 mSocket_Server = new UDPSocket();
 
-                lConfig.mServer_IPv4 = mSocket_Server->GetIPv4(mInfo.mIPv4_Addr, mInfo.mIPv4_Mask);
+                lConfig.mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
+                lConfig.mServer_IPv4 = mSocket_Server->GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
                 lConfig.mServer_Port = mSocket_Server->GetPort();
-                lConfig.mFlags &= ~EthCAN_FLAG_SERVER_USB;
             }
             else
             {
                 assert(IsConnectedUSB());
 
+                lConfig.mServer_Flags |= EthCAN_FLAG_SERVER_USB;
                 lConfig.mServer_IPv4 = 0;
                 lConfig.mServer_Port = 0;
-                lConfig.mFlags |= EthCAN_FLAG_SERVER_USB;
             }
 
             lResult = Config_Set(&lConfig);
@@ -293,7 +293,7 @@ EthCAN_Result Device_Impl::Receiver_Stop()
     {
         lConfig.mServer_IPv4 = 0;
         lConfig.mServer_Port = 0;
-        lConfig.mFlags &= ~ EthCAN_FLAG_SERVER_USB;
+        lConfig.mServer_Flags &= ~ EthCAN_FLAG_SERVER_USB;
 
         lResult = Config_Set(&lConfig);
     }
@@ -430,17 +430,9 @@ void Device_Impl::Config_Verify(const EthCAN_Config& aIn)
     }
 
     // TODO aIn.mFlags
-
-    if (0 != aIn.mIPv4_Addr)
-    {
-        throw EthCAN_ERROR_INVALID_IPv4_ADDRESS;
-    }
-
-    if (0 != aIn.mIPv4_Mask)
-    {
-        throw EthCAN_ERROR_INVALID_IPv4_MASK;
-    }
-
+    // TODO aIn.mIPv4_Address
+    // TODO aIn.mIPv4_Gateway
+    // TODO aIn.mIPv4_Subnet
     // TODO aIn.mName[16]
     // TODO aIn.mServer_IPv4
     // TODO aIn.mServer_Port
@@ -478,7 +470,7 @@ void Device_Impl::Eth_Receive()
 
 bool Device_Impl::OnLoopIteration()
 {
-    assert(0 != mInfo.mIPv4_Addr);
+    assert(0 != mInfo.mIPv4_Address);
     assert(NULL != mSocket_Server);
 
     uint8_t lBuffer[256];
@@ -487,7 +479,7 @@ bool Device_Impl::OnLoopIteration()
     bool lResult = true;
 
     unsigned int lSize_byte = mSocket_Server->Receive(lBuffer, sizeof(lBuffer), 500, &lFrom);
-    if ((mInfo.mIPv4_Addr == lFrom)
+    if ((mInfo.mIPv4_Address == lFrom)
         && (sizeof(EthCAN_Header) + sizeof(EthCAN_Frame)) == lSize_byte)
     {
         lResult = OnRequest(reinterpret_cast<EthCAN_Header*>(lBuffer), lSize_byte);
@@ -666,7 +658,7 @@ void Device_Impl::Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, u
     {
         assert(NULL != mSocket_Client);
 
-        mSocket_Client->Send(lBuffer, lSize_byte, mInfo.mIPv4_Addr);
+        mSocket_Client->Send(lBuffer, lSize_byte, mInfo.mIPv4_Address);
     }
     else if (IsConnectedUSB())
     {

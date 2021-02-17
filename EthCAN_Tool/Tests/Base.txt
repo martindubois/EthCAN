@@ -35,18 +35,10 @@ Echo == Config Display
 Config Display
 Error Exit
 
-Echo == Config Flags [Flags_hex]
-
-Config Flags NotValid
-
-Error Clear
-Config Flags
-Error Exit
-
-Echo == Config IP {Addr} {Mask}
+Echo == Config IP {Address} {Gateway} {NetMask}
 
 Config IP
-Config IP 256.0.0.1 256.0.0.0
+Config IP 256.0.0.1 0.0.0.0 256.0.0.0
 
 Error Clear
 Config IP 0.0.0.0 0.0.0.0
@@ -154,7 +146,7 @@ Echo == Select USB [Index]
 
 Select USB
 
-Echo == Setup AccessPoint {IPv4} {Mask} [SSID] [Password]
+Echo == Setup AccessPoint {Address} {NetMask} [SSID] [Password]
 
 Setup AccessPoint
 
@@ -166,7 +158,7 @@ Echo == Setup DHCP
 
 Setup DHCP
 
-Echo == Setup Link {Index0} {Index1} {IPv4} {Mask} [SSID] [Password]
+Echo == Setup Link {Index0} {Index1} {Address} {NetMask} [SSID] [Password]
 
 Setup Link
 
@@ -174,7 +166,7 @@ Echo == Setup Sniffer
 
 Setup Sniffer
 
-Echo == Setup StaticIP {IPv4} {Mask}
+Echo == Setup StaticIP {Address} {Gateway} {NetMask}
 
 Setup StaticIP
 

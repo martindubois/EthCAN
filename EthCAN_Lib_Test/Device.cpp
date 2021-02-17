@@ -122,10 +122,10 @@ KMS_TEST_BEGIN(Device_SetupB)
     KMS_TEST_COMPARE(EthCAN_OK                  , lD0->Config_Set(&lCfg));
     EthCAN::Device::Display(NULL, lCfg);
 
-    lCfg.mIPv4_Mask = 0x03040506;
+    lCfg.mIPv4_NetMask = 0x03040506;
     KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_IPv4_MASK, lD0->Config_Set(&lCfg));
 
-    lCfg.mIPv4_Addr = 0x03040506;
+    lCfg.mIPv4_Address = 0x03040506;
     KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_IPv4_ADDRESS, lD0->Config_Set(&lCfg));
 
     lCfg.mCAN_Rate = 0xff;

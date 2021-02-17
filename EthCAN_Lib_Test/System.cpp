@@ -117,7 +117,7 @@ KMS_TEST_BEGIN(System_SetupA)
 
     // Device_Find_IPv4
     KMS_TEST_ASSERT(NULL == lS0->Device_Find_IPv4(IPv4_NOT_FOUND));
-    lD0 = lS0->Device_Find_IPv4(lInfo.mIPv4_Addr);
+    lD0 = lS0->Device_Find_IPv4(lInfo.mIPv4_Address);
     KMS_TEST_ASSERT(NULL != lD0);
 
     lD0->Release();
