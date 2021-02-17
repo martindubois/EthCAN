@@ -5,7 +5,10 @@
 // File      Firmware0/UDP.cpp
 
 #include <Arduino.h>
+
 #include <WiFi.h>
+
+#include "Component.h"
 
 #include "CAN.h"
 #include "Config.h"
@@ -51,13 +54,15 @@ void UDP_Loop()
         }
         else
         {
-            Serial.println("ERROR - UDP packet larger than the buffer");
+            MSG_ERROR("UDP_Loop - UDP packet larger than the buffer");
         }
     }
 }
 
 void UDP_Setup()
 {
+    MSG_DEBUG("UDP_Setup()");
+
     sUDP.begin(EthCAN_UDP_PORT);
 }
 
@@ -89,17 +94,17 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
             case EthCAN_REQUEST_RESET       : OnReset      (lHeader); break;
             case EthCAN_REQUEST_SEND        : OnSend       (lHeader); break;
 
-            default: Serial.println("ERROR - Invalid request code");
+            default: MSG_ERROR("OnPacket - Invalid request code");
             }
         }
         else
         {
-            Serial.println("ERROR - Invalid request size");
+            MSG_ERROR("OnPacket - Invalid request size");
         }
     }
     else
     {
-        Serial.println("ERROR - UDP packet smaller than the request header");
+        MSG_ERROR("OnPacket - UDP packet smaller than the request header");
     }
 }
 

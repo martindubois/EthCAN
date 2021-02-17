@@ -8,6 +8,10 @@
 
 #include <EEPROM.h>
 
+#include "Component.h"
+
+#include "Info.h"
+
 #include "Config.h"
 
 // Constants
@@ -31,6 +35,8 @@
 #define STORE_WIFI_NAME     ( 96) // 32 bytes
 #define STORE_WIFI_PASSWORD (128) // 32 bytes
 
+#define STORE_SIZE_byte (160)
+
 // Global variables
 /////////////////////////////////////////////////////////////////////////////
 
@@ -47,16 +53,23 @@ static void Store(uint8_t aOffset, const void * aIn, unsigned int aSize_byte);
 
 void Config_Load()
 {
+    MSG_DEBUG("Config_Load()");
+
+    EEPROM.begin(STORE_SIZE_byte);
+
     uint8_t lWhat;
 
     Load(&lWhat, STORE_WHAT, sizeof(lWhat));
+    Serial.println(lWhat);
 
-    if ((0 == lWhat) || (0xff == lWhat))
+    if (0xff == lWhat)
     {
+        MSG_WARNING("Config_Load - No configuration");
         return;
     }
 
     Load(gConfig.mName, STORE_NAME, sizeof(gConfig.mName));
+    Serial.println(gConfig.mName);
 
     if (0 != (lWhat & EthCAN_FLAG_STORE_CAN))
     {
@@ -97,6 +110,8 @@ void Config_Load()
 
 void Config_Reset()
 {
+    MSG_DEBUG("Config_Reset()");
+
     unsigned int i;
 
     for (i = 0; i < 6; i ++)
@@ -111,7 +126,7 @@ void Config_Reset()
 
     gConfig.mCAN_Rate = EthCAN_RATE_1_Mb;
 
-    gConfig.mName[0] = '\0';
+    strcpy(gConfig.mName, "EthCAN");
 
     gConfig.mIPv4_Addr    = 0;
     gConfig.mIPv4_Gateway = 0;
@@ -128,8 +143,11 @@ void Config_Reset()
 
 EthCAN_Result Config_Set(const EthCAN_Header * aIn)
 {
+    MSG_DEBUG("Config_Set(  )");
+
     if (sizeof(EthCAN_Config) > aIn->mDataSize_byte)
     {
+        MSG_ERROR("Config_Set - EthCAN_ERROR_INVALID_DATA_SIZE");
         return EthCAN_ERROR_INVALID_DATA_SIZE;
     }
 
@@ -138,16 +156,25 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn)
     // TODO Firmware.Config.Validate
 
     gConfig = *lConfig;
+
+    strcpy(gInfo.mName, gConfig.mName);
   
     return EthCAN_OK;
 }
 
 EthCAN_Result Config_Store(const EthCAN_Header * aIn)
 {
+    MSG_DEBUG("Config_Store()");
+
     uint8_t lIn = aIn->mFlags;
     uint8_t lWhat;
     
     Load(&lWhat, STORE_WHAT, sizeof(lWhat));
+    if (0xff == lWhat)
+    {
+        MSG_DEBUG("Config_Store - New configuration");
+        lWhat = 0;
+    }
 
     Store(STORE_NAME, &gConfig.mName, sizeof(gConfig.mName));
 

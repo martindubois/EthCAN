@@ -6,6 +6,8 @@
 
 #include <Arduino.h>
 
+#include "Component.h"
+
 extern "C"
 {
     #include "Includes/EthCAN_Types.h"
@@ -23,13 +25,18 @@ void CAN_Loop()
 
 void CAN_Setup()
 {
-    Serial2.begin(115200, SERIAL_8N1, 36, 4);
+    MSG_DEBUG("CAN_Setup()");
+
+    Serial2.begin(115200, SERIAL_8N1, 36, 4, false);
 }
 
 EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 {
+    MSG_DEBUG("CAN_Send(  )");
+
     if (sizeof(EthCAN_Frame) > aIn->mDataSize_byte)
     {
+        MSG_ERROR("CAN_Send - EthCAN_INVALID_DATA_SIZE");
         return EthCAN_ERROR_INVALID_DATA_SIZE;
     }
 
