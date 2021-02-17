@@ -15,6 +15,7 @@ extern "C"
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
+extern void CAN_Config();
 extern void CAN_Loop();
 extern void CAN_Setup();
 

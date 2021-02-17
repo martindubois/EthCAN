@@ -10,4 +10,4 @@
 /////////////////////////////////////////////////////////////////////////////
 
 extern void USB_Loop();
-extern void USB_Setup();
+extern void USB_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame);

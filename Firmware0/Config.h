@@ -22,6 +22,7 @@ extern EthCAN_Config gConfig;
 /////////////////////////////////////////////////////////////////////////////
 
 extern void Config_Load();
+extern void Config_OnFrame(const EthCAN_Frame & aFrame);
 extern void Config_Reset();
 
 extern EthCAN_Result Config_Set  (const EthCAN_Header * aIn);
