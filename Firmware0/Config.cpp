@@ -10,7 +10,10 @@
 
 #include "Component.h"
 
+#include "CAN.h"
 #include "Info.h"
+#include "UDP.h"
+#include "USB.h"
 
 #include "Config.h"
 
@@ -45,6 +48,8 @@ EthCAN_Config gConfig;
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
+static void Init();
+
 static void Load(void * aOut, uint8_t aOffset, unsigned int aSize_byte);
 static void Store(uint8_t aOffset, const void * aIn, unsigned int aSize_byte);
 
@@ -53,15 +58,15 @@ static void Store(uint8_t aOffset, const void * aIn, unsigned int aSize_byte);
 
 void Config_Load()
 {
-    MSG_DEBUG("Config_Load()");
+    // MSG_DEBUG("Config_Load()");
+
+    Init();
 
     EEPROM.begin(STORE_SIZE_byte);
 
     uint8_t lWhat;
 
     Load(&lWhat, STORE_WHAT, sizeof(lWhat));
-    Serial.println(lWhat);
-
     if (0xff == lWhat)
     {
         MSG_WARNING("Config_Load - No configuration");
@@ -69,7 +74,7 @@ void Config_Load()
     }
 
     Load(gConfig.mName, STORE_NAME, sizeof(gConfig.mName));
-    Serial.println(gConfig.mName);
+    MSG_INFO("Name : ", gConfig.mName);
 
     if (0 != (lWhat & EthCAN_FLAG_STORE_CAN))
     {
@@ -108,37 +113,43 @@ void Config_Load()
     }
 }
 
+void Config_OnFrame(const EthCAN_Frame & aFrame)
+{
+    MSG_DEBUG("Config_OnFrame(  )");
+
+    EthCAN_Header lHeader;
+
+    gInfo.mMessageId ++;
+
+    lHeader.mId             = gInfo.mMessageId;
+    lHeader.mCode           = EthCAN_REQUEST_SEND;
+    lHeader.mDataSize_byte  = sizeof(aFrame);
+    lHeader.mFlags          = EthCAN_FLAG_NO_RESPONSE;
+    lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(aFrame);
+    lHeader.mResult         = EthCAN_RESULT_REQUEST;
+    lHeader.mSalt           = 0;
+    lHeader.mSign           = 0;
+
+    if (0 == (gConfig.mServer_Flags & EthCAN_FLAG_SERVER_USB))
+    {
+        USB_OnFrame(lHeader, aFrame);
+    }
+    else
+    {
+        if (0 != gConfig.mServer_Port)
+        {
+            UDP_OnFrame(lHeader, aFrame, gConfig.mServer_IPv4, gConfig.mServer_Port);
+        }
+    }
+}
+
 void Config_Reset()
 {
     MSG_DEBUG("Config_Reset()");
 
-    unsigned int i;
+    Init();
 
-    for (i = 0; i < 6; i ++)
-    {
-        gConfig.mCAN_Filters[i] = 0;
-    }
-
-    for (i = 0; i < 2; i ++)
-    {
-        gConfig.mCAN_Masks[i] = 0;
-    }
-
-    gConfig.mCAN_Rate = EthCAN_RATE_1_Mb;
-
-    strcpy(gConfig.mName, "EthCAN");
-
-    gConfig.mIPv4_Addr    = 0;
-    gConfig.mIPv4_Gateway = 0;
-    gConfig.mIPv4_Mask    = 0;
-
-    gConfig.mServer_Flags = 0;
-    gConfig.mServer_IPv4  = 0;
-    gConfig.mServer_Port  = 0;
-
-    gConfig.mWiFi_Flags       = 0;
-    gConfig.mWiFi_Name    [0] = '\0';
-    gConfig.mWiFi_Password[0] = '\0';
+    CAN_Config();
 }
 
 EthCAN_Result Config_Set(const EthCAN_Header * aIn)
@@ -158,13 +169,15 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn)
     gConfig = *lConfig;
 
     strcpy(gInfo.mName, gConfig.mName);
+
+    CAN_Config();
   
     return EthCAN_OK;
 }
 
 EthCAN_Result Config_Store(const EthCAN_Header * aIn)
 {
-    MSG_DEBUG("Config_Store()");
+    MSG_DEBUG("Config_Store(  )");
 
     uint8_t lIn = aIn->mFlags;
     uint8_t lWhat;
@@ -209,6 +222,9 @@ EthCAN_Result Config_Store(const EthCAN_Header * aIn)
     lWhat |= lIn;
     Store(STORE_WHAT, &lWhat, sizeof(lWhat));
 
+    // TODO Firmware0.Config.Store
+    //      Do not commit if nothing changed.
+
     EEPROM.commit();
     
     return EthCAN_OK;
@@ -216,6 +232,39 @@ EthCAN_Result Config_Store(const EthCAN_Header * aIn)
 
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
+
+void Init()
+{
+    // MSG_DEBUG("Init()");
+
+    unsigned int i;
+
+    for (i = 0; i < 6; i ++)
+    {
+        gConfig.mCAN_Filters[i] = 0;
+    }
+
+    for (i = 0; i < 2; i ++)
+    {
+        gConfig.mCAN_Masks[i] = 0;
+    }
+
+    gConfig.mCAN_Rate = EthCAN_RATE_1_Mb;
+
+    strcpy(gConfig.mName, "EthCAN");
+
+    gConfig.mIPv4_Addr    = 0;
+    gConfig.mIPv4_Gateway = 0;
+    gConfig.mIPv4_Mask    = 0;
+
+    gConfig.mServer_Flags = 0;
+    gConfig.mServer_IPv4  = 0;
+    gConfig.mServer_Port  = 0;
+
+    gConfig.mWiFi_Flags       = 0;
+    gConfig.mWiFi_Name    [0] = '\0';
+    gConfig.mWiFi_Password[0] = '\0';
+}
 
 void Load(void * aOut, uint8_t aOffset, unsigned int aSize_byte)
 {

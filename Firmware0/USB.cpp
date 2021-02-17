@@ -96,9 +96,14 @@ void USB_Loop()
     }
 }
 
-
-void USB_Setup()
+void USB_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame)
 {
+    MSG_DEBUG("UDP_OnFrame( ,  )");
+
+    Serial.write(&SYNC, sizeof(SYNC));
+
+    Serial.write(reinterpret_cast<const uint8_t *>(&aHeader), sizeof(aHeader));
+    Serial.write(reinterpret_cast<const uint8_t *>(&aFrame ), sizeof(aFrame ));
 }
 
 // Static functions
@@ -237,6 +242,8 @@ void OnSend(const EthCAN_Header * aIn)
 
 void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn)
 {
+    MSG_DEBUG("Header_Init()");
+
     aOut->mCode           = aIn->mCode;
     aOut->mDataSize_byte  = 0;
     aOut->mFlags          = 0;

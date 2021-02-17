@@ -19,4 +19,4 @@ extern EthCAN_Info gInfo;
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
-extern void Info_Init();
+extern void Info_Init(const char * aName);

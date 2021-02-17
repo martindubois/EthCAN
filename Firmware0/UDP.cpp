@@ -59,9 +59,21 @@ void UDP_Loop()
     }
 }
 
+void UDP_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame, uint32_t aIPv4, uint16_t aPort)
+{
+    MSG_DEBUG("UDP_OnFrame( , , ,  )");
+
+    sUDP.beginPacket(aIPv4, aPort);
+    {
+        sUDP.write(reinterpret_cast<const uint8_t *>(&aHeader), sizeof(aHeader));
+        sUDP.write(reinterpret_cast<const uint8_t *>(&aFrame ), sizeof(aFrame ));
+    }
+    sUDP.endPacket();
+}
+
 void UDP_Setup()
 {
-    MSG_DEBUG("UDP_Setup()");
+    // MSG_DEBUG("UDP_Setup()");
 
     sUDP.begin(EthCAN_UDP_PORT);
 }
@@ -71,6 +83,8 @@ void UDP_Setup()
 
 void OnPacket(const void * aPacket, unsigned int aSize_byte)
 {
+    MSG_DEBUG("OnPacket( ,  )");
+
     if (sizeof(EthCAN_Header) <= aSize_byte)
     {
         const EthCAN_Header * lHeader = reinterpret_cast<const EthCAN_Header *>(aPacket);
@@ -78,11 +92,6 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
         if (sizeof(EthCAN_Header) + lHeader->mDataSize_byte <= lHeader->mTotalSize_byte)
         {
             gInfo.mRequestId_UDP = lHeader->mId;
-
-            Serial.print("DEBUG - Request - Code = ");
-            Serial.print(lHeader->mCode);
-            Serial.print(", Id = ");
-            Serial.println(lHeader->mId);
 
             switch (lHeader->mCode)
             {
@@ -212,6 +221,8 @@ void OnSend(const EthCAN_Header * aIn)
 
 void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn)
 {
+    MSG_DEBUG("Header_Init( ,  )");
+
     aOut->mCode           = aIn->mCode;
     aOut->mDataSize_byte  = 0;
     aOut->mFlags          = 0;

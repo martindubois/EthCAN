@@ -12,8 +12,6 @@
 
 #include "Common/Version.h"
 
-#include "Config.h"
-
 #include "Info.h"
 
 // Global variables
@@ -24,16 +22,19 @@ EthCAN_Info gInfo;
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
-void Info_Init()
+void Info_Init(const char * aName)
 {
-    MSG_DEBUG("Info_Init()");
+    // MSG_DEBUG("Info_Init(  )");
 
     esp_eth_get_mac(gInfo.mEth_Addr);
+
+    // TODO Firmware0.Info
+    //      Add the WiFi mac address
 
     gInfo.mFirmware0_Major  = VERSION_MAJOR;
     gInfo.mFirmware0_Minor  = VERSION_MINOR;
     gInfo.mFirmware0_Build  = VERSION_BUILD;
     gInfo.mFirmware0_Compat = VERSION_COMPATIBILITY;
 
-    strcpy(gInfo.mName, gConfig.mName);
+    strcpy(gInfo.mName, aName);
 }
