@@ -25,7 +25,7 @@ class UDPSocket;
 namespace EthCAN
 {
 
-    /// \Brief Device
+    /// \brief Device
     class Device : public Object
     {
 
@@ -79,7 +79,7 @@ namespace EthCAN
         virtual EthCAN_Result Config_Reset(uint8_t aFlags = 0) = 0;
 
         /// \brief Set the configuration
-        /// \param aIn    The configuration
+        /// \param aInOut The configuration
         /// \param aFlags See EthCAN_FLAG_NO_RESPONSE
         /// \retval EthCAN_OK
         /// \see Config_Get Config_Store

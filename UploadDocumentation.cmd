@@ -5,7 +5,7 @@ rem Copyright (C) 2021 KMS
 rem Product   EthCAN
 rem File      UploadDocumentation.cmd
 
-echo  Executing  OploadDocumentation.cmd  ...
+echo  Executing  UploadDocumentation.cmd  ...
 
 rem  ===== Execution ========================================================
 

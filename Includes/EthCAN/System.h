@@ -66,13 +66,13 @@ namespace EthCAN
         virtual Device * Device_Find_Eth(const uint8_t aEth[6]) = 0;
 
         /// \brief Find a device by IPv4 address
-        /// \param aIP The IPv4 address
+        /// \param aIPv4 The IPv4 address
         /// \retval NULL  Not found
         /// \retval Other The address of the Device instance
         virtual Device * Device_Find_IPv4(const uint32_t aIPv4) = 0;
 
         /// \brief Find a device by name
-        /// \param aIP The name
+        /// \param aName The name
         /// \retval NULL  Not found
         /// \retval Other The address of the Device instance
         virtual Device * Device_Find_Name(const char * aName) = 0;
@@ -81,7 +81,7 @@ namespace EthCAN
         /// \param aIndex The USB connected device index
         /// \retval NULL  Not found
         /// \retval Other The address of the Device instance
-        virtual Device * Device_Find_USB(unsigned int aIndex) = 0;
+        virtual Device * Device_Find_USB(unsigned int aIndex = 0) = 0;
 
         /// \brief Get a device by index
         /// \param aIndex The device index
