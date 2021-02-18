@@ -32,6 +32,22 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5976DBF3-E310-4686-B524-3CDCAE3D7F32}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		Test.cmd = Test.cmd
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_DocDev", "_DocDev", "{B0B472B8-CE0B-4EE0-A396-F7E647A4BEE6}"
+	ProjectSection(SolutionItems) = preProject
+		_DocDev\Build.txt = _DocDev\Build.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{67AA1949-97A5-4961-A246-DC92D70C0164}"
+	ProjectSection(SolutionItems) = preProject
+		Common\Version.h = Common\Version.h
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_DocUser", "_DocUser", "{3E0A8A1D-20FB-46D7-ADC2-2080449B4C39}"
+	ProjectSection(SolutionItems) = preProject
+		_DocUser\EthCAN.ReadMe.txt = _DocUser\EthCAN.ReadMe.txt
 	EndProjectSection
 EndProject
 Global

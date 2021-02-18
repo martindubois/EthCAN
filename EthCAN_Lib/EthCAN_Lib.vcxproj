@@ -41,6 +41,9 @@
     <ClInclude Include="Thread.h" />
     <ClInclude Include="UDPSocket.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="_DocUser\EthCAN.EthCAN_Lib.ReadMe.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

@@ -16,6 +16,9 @@
     <Filter Include="Tests">
       <UniqueIdentifier>{1bb74798-b51e-476a-95c2-99a69baad15f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="_DocUser">
+      <UniqueIdentifier>{000bb08a-4357-4565-8098-52bfd11928e9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="EthCAN_Tool.cpp">
@@ -34,5 +37,13 @@
     <Text Include="Tests\SetupA.txt">
       <Filter>Tests</Filter>
     </Text>
+    <Text Include="_DocUser\EthCAN.EthCAN_Tool.ReadMe.txt">
+      <Filter>_DocUser</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Common\Version.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>
