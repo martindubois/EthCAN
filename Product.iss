@@ -14,13 +14,13 @@ AppName=EthCAN
 AppPublisher=KMS
 AppPublisherURL=http://www.kms-quebec.com
 AppSupportURL=http://www.kms-quebec.com
-AppVersion=1.0.3
+AppVersion=0.0.1
 ArchitecturesAllowed=x64
 ArchitecturesInstallIn64BitMode=x64
 DefaultDirName={pf}\EthCAN
 LicenseFile=License.txt
 MinVersion=10.0
-OutputBaseFilename=EthCAN_1.0.3
+OutputBaseFilename=EthCAN_0.0.1
 OutputDir=Installer
 
 [Files]

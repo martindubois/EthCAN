@@ -421,23 +421,25 @@ void Device_Impl::Config_Verify(const EthCAN_Config& aIn)
 {
     assert(NULL != &aIn);
 
-    // TODO aIn.mCAN_Filter
-    // TODO aIn.mCAN_Masks
+    // TODO Device.Config_Verify
+    //      aIn.mCAN_Filter
+    //      aIn.mCAN_Masks
 
     if (EthCAN_RATE_QTY <= aIn.mCAN_Rate)
     {
         throw EthCAN_ERROR_INVALID_CAN_RATE;
     }
 
-    // TODO aIn.mFlags
-    // TODO aIn.mIPv4_Address
-    // TODO aIn.mIPv4_Gateway
-    // TODO aIn.mIPv4_Subnet
-    // TODO aIn.mName[16]
-    // TODO aIn.mServer_IPv4
-    // TODO aIn.mServer_Port
-    // TODO aIn.mWiFi_Name
-    // TODO aIn.mWiFi_Password
+    // TODO Device.Config_Verify
+    //      aIn.mFlags
+    //      aIn.mIPv4_Address
+    //      aIn.mIPv4_Gateway
+    //      aIn.mIPv4_Subnet
+    //      aIn.mName[16]
+    //      aIn.mServer_IPv4
+    //      aIn.mServer_Port
+    //      aIn.mWiFi_Name
+    //      aIn.mWiFi_Password
 }
 
 void Device_Impl::Eth_Receive()

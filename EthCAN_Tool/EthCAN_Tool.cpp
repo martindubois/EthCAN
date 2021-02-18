@@ -125,6 +125,8 @@ static void Setup_Sniffer    (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Setup_StaticIP   (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Setup_WiFi       (KmsLib::ToolBase* aToolBase, const char* aArg);
 
+// TODO EthCAN_Tool.Setup.Wireshark
+
 static const KmsLib::ToolBase::CommandInfo SETUP_COMMANDS[] =
 {
     { "AccessPoint", Setup_AccessPoint, "AccessPoint {Address} {NetMask} [SSID] [Password]\n"
@@ -438,11 +440,15 @@ void Device_Send(KmsLib::ToolBase* aToolBase, const char* aArg)
     EthCAN_Frame lFrame;
 
     if (   aToolBase->Parse(&lArg, &lExt, true)
-        && aToolBase->Parse(&lArg, &lFrame.mDestId, 0, 0x1fffffff, true, 0)
+        && aToolBase->Parse(&lArg, &lFrame.mId, 0, 0x1fffffff, true, 0)
         && aToolBase->Parse(&lArg, &lCount, 1, 8, false, 1))
     {
         lFrame.mDataSize_byte = lCount;
-        lFrame.mFlags = lExt ? EthCAN_FLAG_EXTENDED : 0;
+
+        if (lExt)
+        {
+            lFrame.mId |= EthCAN_ID_EXTENDED;
+        }
 
         bool lParsed = true;
 
@@ -668,7 +674,7 @@ void Setup_Bridge(KmsLib::ToolBase* aToolBase, const char* aArg)
             lDevices[i] = sSystem->Device_Get(lIndex[0]);
             assert(NULL != lDevices[i]);
 
-            // TODO Verify the device is connected to a network
+            // TODO EthCAN_Tool Verify the device is connected to a network
 
             printf("%u. Retrieving the configuration...\n", lStep); lStep++;
             lRet = lDevices[i]->Config_Get(lConfigs + i);
@@ -678,7 +684,7 @@ void Setup_Bridge(KmsLib::ToolBase* aToolBase, const char* aArg)
                 lConfigs[i].mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
                 lConfigs[i].mServer_Port = EthCAN_UDP_PORT;
 
-                // TODO Setup filters and masks
+                // TODO EthCAN_Tool.Setup filters and masks
 
                 printf("%u. Retrieving the information...\n", lStep); lStep++;
                 lRet = lDevices[i]->GetInfo(lInfos + i);
@@ -780,7 +786,7 @@ void Setup_Link(KmsLib::ToolBase* aToolBase, const char* aArg)
             strcpy_s(lConfigs[i].mWiFi_Name    , lName);
             strcpy_s(lConfigs[i].mWiFi_Password, lPassword);
 
-            // TODO Setup filters and masks
+            // TODO EthCAN_Tool.Setup filters and masks
         }
 
         printf("%u. Modifying the configurations...\n", lStep); lStep++;

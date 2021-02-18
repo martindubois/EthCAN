@@ -76,7 +76,7 @@ namespace EthCAN
             return;
         }
 
-        fprintf(lOut, "%s %08x", 0 != (aIn.mFlags & EthCAN_FLAG_EXTENDED) ? "Ext." : "Std ", aIn.mDestId);
+        fprintf(lOut, "%s %08x", 0 != (aIn.mId & EthCAN_ID_EXTENDED) ? "Ext." : "Std ", aIn.mId & ~ EthCAN_ID_EXTENDED);
 
         for (unsigned int i = 0; i < aIn.mDataSize_byte; i++)
         {

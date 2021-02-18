@@ -5,7 +5,8 @@
 // File      Firmware0/CAN.cpp
 
 // TODO Firmware1
-//      Use our own firmware on the Serial CAN bus module
+//      Use our own firmware on the Serial CAN bus module and use faster
+//      UART speed.
 
 #include <Arduino.h>
 
