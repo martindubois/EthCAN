@@ -33,15 +33,17 @@ public:
 
     // ===== EthCAN::Device =================================================
 
+    virtual EthCAN_Result Config_Erase(uint8_t aFlags = 0);
     virtual EthCAN_Result Config_Get(EthCAN_Config* aOut);
     virtual EthCAN_Result Config_Reset(uint8_t aFlags = 0);
     virtual EthCAN_Result Config_Set(EthCAN_Config* aInOut, uint8_t aFlags = 0);
     virtual EthCAN_Result Config_Store(uint8_t aFlags = 0);
 
     virtual EthCAN_Result GetInfo(EthCAN_Info* aOut);
+    virtual EthCAN_Result GetInfoLine(char* aOut, unsigned int aSize_byte) const;
 
-    virtual bool IsConnectedEth();
-    virtual bool IsConnectedUSB();
+    virtual bool IsConnectedEth() const;
+    virtual bool IsConnectedUSB() const;
 
     virtual EthCAN_Result Receiver_Start(Receiver aFunction, void* aContext);
     virtual EthCAN_Result Receiver_Stop();

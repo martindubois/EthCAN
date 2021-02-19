@@ -32,14 +32,6 @@ KMS_TEST_BEGIN(System_Base)
     lS0 = EthCAN::System::Create();
     KMS_TEST_ASSERT(NULL != lS0);
 
-    // GetResultName
-    KMS_TEST_ASSERT(NULL != EthCAN::System::GetResultName(EthCAN_OK));
-    KMS_TEST_ASSERT(NULL == EthCAN::System::GetResultName(EthCAN_OK_QTY));
-    KMS_TEST_ASSERT(NULL != EthCAN::System::GetResultName(EthCAN_ERROR));
-    KMS_TEST_ASSERT(NULL == EthCAN::System::GetResultName(EthCAN_ERROR_QTY));
-    KMS_TEST_ASSERT(NULL != EthCAN::System::GetResultName(EthCAN_RESULT_INVALID));
-    KMS_TEST_ASSERT(NULL != EthCAN::System::GetResultName(EthCAN_RESULT_REQUEST));
-
     // GetVersion
     KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_OUTPUT_BUFFER, EthCAN::System::GetVersion(NULL));
     KMS_TEST_COMPARE(EthCAN_OK, EthCAN::System::GetVersion(lV));
@@ -110,7 +102,7 @@ KMS_TEST_BEGIN(System_SetupA)
 
     // Device_Find_Eth
     KMS_TEST_ASSERT(NULL == lS0->Device_Find_Eth(ETH_NOT_FOUND));
-    lD0 = lS0->Device_Find_Eth(lInfo.mEth_Addr);
+    lD0 = lS0->Device_Find_Eth(lInfo.mEth_Address);
     KMS_TEST_ASSERT(NULL != lD0);
 
     lD0->Release();

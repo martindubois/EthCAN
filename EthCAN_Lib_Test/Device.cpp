@@ -18,33 +18,12 @@ static bool Receiver(EthCAN::Device* aDevice, void* aContext, const EthCAN_Frame
 // Tests
 /////////////////////////////////////////////////////////////////////////////
 
-KMS_TEST_BEGIN(Device_Base)
-{
-    EthCAN_Config lCfg;
-    EthCAN_Info lInfo;
-
-    memset(&lCfg , 0, sizeof(lCfg ));
-    memset(&lInfo, 0, sizeof(lInfo));
-
-    lCfg.mCAN_Rate = 0xcc;
-
-    // Display
-    EthCAN::Device::Display(NULL, lCfg);
-    EthCAN::Device::Display(NULL, lInfo);
-
-    EthCAN::Device::Display(NULL, EthCAN_RATE_100_Kb);
-
-    // GetRateName
-    KMS_TEST_ASSERT(NULL != EthCAN::Device::GetRateName(EthCAN_RATE_10_Kb));
-    KMS_TEST_ASSERT(NULL == EthCAN::Device::GetRateName(EthCAN_RATE_QTY));
-}
-KMS_TEST_END
-
 KMS_TEST_BEGIN(Device_SetupA)
 {
     EthCAN_Config lCfg;
     EthCAN::Device* lD0;
     EthCAN_Info lInfo;
+    char lLine[128];
     EthCAN::System* lS0;
 
     memset(&lCfg, 0, sizeof(lCfg));
@@ -62,7 +41,6 @@ KMS_TEST_BEGIN(Device_SetupA)
 
     // Config_Get
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Get(&lCfg));
-    EthCAN::Device::Display(NULL, lCfg);
 
     // Config_Reset
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Reset());
@@ -75,6 +53,9 @@ KMS_TEST_BEGIN(Device_SetupA)
 
     // GetInfo
     KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfo(&lInfo));
+
+    // GetInfoLine
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfoLine(lLine, sizeof(lLine)));
 
     // IsConnectedEth
     KMS_TEST_ASSERT(lD0->IsConnectedEth());
@@ -112,7 +93,6 @@ KMS_TEST_BEGIN(Device_SetupB)
     // Config_Get
     KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_OUTPUT_BUFFER, lD0->Config_Get(NULL));
     KMS_TEST_COMPARE(EthCAN_OK                         , lD0->Config_Get(&lCfg));
-    EthCAN::Device::Display(NULL, lCfg);
 
     // Config_Reset
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Reset());
@@ -120,7 +100,6 @@ KMS_TEST_BEGIN(Device_SetupB)
     // Config_Set
     KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_BUFFER, lD0->Config_Set(NULL));
     KMS_TEST_COMPARE(EthCAN_OK                  , lD0->Config_Set(&lCfg));
-    EthCAN::Device::Display(NULL, lCfg);
 
     lCfg.mIPv4_NetMask = 0x03040506;
     KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_IPv4_MASK, lD0->Config_Set(&lCfg));
@@ -137,6 +116,9 @@ KMS_TEST_BEGIN(Device_SetupB)
     // GetInfo
     KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_OUTPUT_BUFFER, lD0->GetInfo(NULL));
     KMS_TEST_COMPARE(EthCAN_OK                         , lD0->GetInfo(&lInfo));
+
+    // GetInfoLine
+    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_OUTPUT_BUFFER, lD0->GetInfoLine(NULL, 0));
 
     // IsConnectedEth
     KMS_TEST_ASSERT(lD0->IsConnectedEth());

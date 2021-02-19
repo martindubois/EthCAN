@@ -345,7 +345,7 @@ bool System_Impl::OnInfo(const EthCAN_Info& aIn, Serial* aSerial)
 {
     assert(NULL != &aIn);
 
-    Device_Impl* lDevice = dynamic_cast<Device_Impl*>(Device_Find_Eth(aIn.mEth_Addr));
+    Device_Impl* lDevice = dynamic_cast<Device_Impl*>(Device_Find_Eth(aIn.mEth_Address));
     if (NULL == lDevice)
     {
         lDevice = Device_Add();

@@ -15,6 +15,7 @@
 
 // ===== Includes ===========================================================
 #include <EthCAN/Device.h>
+#include <EthCAN/Display.h>
 #include <EthCAN/System.h>
 
 // ===== Common =============================================================
@@ -55,6 +56,7 @@ static const KmsLib::ToolBase::CommandInfo CONFIG_COMMANDS[] =
     { NULL, NULL, NULL, NULL }
 };
 
+static void Device_Config_Erase(KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Device_Config_Get  (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Device_Config_Reset(KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Device_Config_Set  (KmsLib::ToolBase* aToolBase, const char* aArg);
@@ -62,6 +64,7 @@ static void Device_Config_Store(KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo DEVICE_CONFIG_COMMANDS[] =
 {
+    { "Erase", Device_Config_Erase, "Erase                         See Device::Config_Erase", NULL },
     { "Get"  , Device_Config_Get  , "Get                           See Device::Config_Get"  , NULL },
     { "Reset", Device_Config_Reset, "Reset                         See Device::Config_Reset", NULL },
     { "Set"  , Device_Config_Set  , "Set                           See Device::Config_Set"  , NULL },
@@ -147,6 +150,7 @@ static void Debug     (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Detect    (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void GetVersion(KmsLib::ToolBase* aToolBase, const char* aArg);
 static void List      (KmsLib::ToolBase* aToolBase, const char* aArg);
+static void Production(KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo COMMANDS[] =
 {
@@ -156,6 +160,7 @@ static const KmsLib::ToolBase::CommandInfo COMMANDS[] =
     { "Device"    , NULL      , "Device ..."                                          , DEVICE_COMMANDS },
     { "GetVersion", GetVersion, "GetVersion                    See System::GetVersion", NULL },
     { "List"      , List      , "List                          List detected device"  , NULL },
+    { "Production", Production, "Production"                                          , NULL },
     { "Select"    , NULL      , "Select ..."                                          , SELECT_COMMANDS },
     { "Setup"     , NULL      , "Setup ..."                                           , SETUP_COMMANDS  },
 
@@ -286,7 +291,7 @@ void Config_CAN_Rate(KmsLib::ToolBase* aToolBase, const char* aArg)
 
 void Config_Display(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
-    EthCAN::Device::Display(NULL, sConfig);
+    EthCAN::Display(NULL, sConfig);
 
     KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
 }
@@ -340,6 +345,13 @@ void Config_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
         aToolBase->SetError(__LINE__, "No device selected"); \
         return;                                              \
     }
+
+void Device_Config_Erase(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    USE_SELECTED_DEVICE;
+
+    DisplayResult(aToolBase, sDevice->Config_Erase());
+}
 
 void Device_Config_Get(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
@@ -407,7 +419,7 @@ void Device_GetInfo(KmsLib::ToolBase* aToolBase, const char* aArg)
     EthCAN_Result lRet = sDevice->GetInfo(&lInfo);
     if (EthCAN_OK == lRet)
     {
-        EthCAN::Device::Display(NULL, lInfo);
+        EthCAN::Display(NULL, lInfo);
     }
 
     DisplayResult(aToolBase, lRet);
@@ -952,8 +964,8 @@ void List(KmsLib::ToolBase* aToolBase, const char* aArg)
     unsigned int lCount = sSystem->Device_GetCount();
     printf("%u detected devices\n", lCount);
 
-    printf(" # Con  Ethernet address   IPv4 address         Name\n");
-    printf("== ==== ================= =============== =================\n");
+    printf(" # Con  Ethernet address   WiFi address      IPv4 address         Name\n");
+    printf("== ==== ================= ================= =============== =================\n");
 
     for (unsigned int i = 0; i < lCount; i++)
     {
@@ -964,29 +976,11 @@ void List(KmsLib::ToolBase* aToolBase, const char* aArg)
         EthCAN_Result lRet = lDev->GetInfo(&lInfo);
         assert(EthCAN_OK == lRet);
 
-        const char* lCon;
-        if (lDev->IsConnectedEth())
-        {
-            if (lDev->IsConnectedUSB())
-            {
-                lCon = "Both";
-            }
-            else
-            {
-                lCon = "Eth ";
-            }
-        }
-        else
-        {
-            lCon = "USB ";
-        }
+        char lLine[128];
 
-        printf("%2u %s %02x:%02x:%02x:%02x:%02x:%02x %3u.%3u.%3u.%3u %s\n",
-            i,
-            lCon,
-            lInfo.mEth_Addr[0], lInfo.mEth_Addr[1], lInfo.mEth_Addr[2], lInfo.mEth_Addr[3], lInfo.mEth_Addr[4], lInfo.mEth_Addr[5],
-            lInfo.mIPv4_Address & 0xff, lInfo.mIPv4_Address >> 8 & 0xff, lInfo.mIPv4_Address >> 16 & 0xff, lInfo.mIPv4_Address >> 24 & 0xff,
-            lInfo.mName);
+        lRet = lDev->GetInfoLine(lLine, sizeof(lLine));
+
+        printf("%2u %s\n", i, lLine);
 
         lDev->Release();
     }
@@ -994,12 +988,43 @@ void List(KmsLib::ToolBase* aToolBase, const char* aArg)
     KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
 }
 
+void Production(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    printf("1. Detecting devices...\n");
+    Detect(aToolBase, NULL);
+
+    EthCAN::Device* lDev = sSystem->Device_Find_USB();
+    if (NULL == lDev)
+    {
+        aToolBase->SetError(__LINE__, "No USB connected device");
+        return;
+    }
+
+    EthCAN_Info lInfo;
+
+    EthCAN_Result lRet = lDev->GetInfo(&lInfo);
+    if (EthCAN_OK == lRet)
+    {
+        printf("2. Erasing stored configuration...");
+        lRet = lDev->Config_Erase();
+        if (EthCAN_OK == lRet)
+        {
+            printf("Ethernet address : "); EthCAN::Display_EthAddress(NULL, lInfo.mEth_Address);
+            printf("WiFi address     : "); EthCAN::Display_EthAddress(NULL, lInfo.mEth_Address);
+        }
+    }
+
+    lDev->Release();
+
+    DisplayResult(aToolBase, lRet);
+}
+
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
 void DisplayResult(KmsLib::ToolBase* aToolBase, EthCAN_Result aResult)
 {
-    const char* lResultName = EthCAN::System::GetResultName(aResult);
+    const char* lResultName = EthCAN::GetName(aResult);
 
     if (EthCAN::System::IsResultOK(aResult))
     {
@@ -1102,7 +1127,7 @@ bool Parse_SSID_Password(KmsLib::ToolBase* aToolBase, const char** aArg, char* a
 
 bool Receiver(EthCAN::Device* aDevice, void* aContext, const EthCAN_Frame& aFrame)
 {
-    EthCAN::Device::Display(NULL, aFrame);
+    EthCAN::Display(NULL, aFrame);
     return true;
 }
 

@@ -43,6 +43,7 @@ EthCAN_Header;
 /// \brief EthCAN_RequestCode
 typedef enum
 {
+    EthCAN_REQUEST_CONFIG_ERASE,
     EthCAN_REQUEST_CONFIG_GET,
     EthCAN_REQUEST_CONFIG_RESET,
     EthCAN_REQUEST_CONFIG_SET,

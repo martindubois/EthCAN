@@ -25,6 +25,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EthCAN", "EthCAN", "{684313AD-E442-426B-B92F-F931C9D83B50}"
 	ProjectSection(SolutionItems) = preProject
 		Includes\EthCAN\Device.h = Includes\EthCAN\Device.h
+		Includes\EthCAN\Display.h = Includes\EthCAN\Display.h
 		Includes\EthCAN\Object.h = Includes\EthCAN\Object.h
 		Includes\EthCAN\System.h = Includes\EthCAN\System.h
 	EndProjectSection

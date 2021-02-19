@@ -22,16 +22,16 @@ KMS_TEST_GROUP_LIST_BEGIN
     KMS_TEST_GROUP_LIST_ENTRY("Setup-D")
 KMS_TEST_GROUP_LIST_END
 
-extern int Device_Base();
 extern int Device_SetupA();
 extern int Device_SetupB();
+extern int Display_Base();
 extern int System_Base();
 extern int System_SetupA();
 
 KMS_TEST_LIST_BEGIN
-    KMS_TEST_LIST_ENTRY(Device_Base  , "Device - Base"   , 0, 0)
-    KMS_TEST_LIST_ENTRY(Device_SetupA, "System - Setup A", 1, KMS_TEST_FLAG_INTERACTION_NEEDED)
-    KMS_TEST_LIST_ENTRY(Device_SetupB, "System - Setup B", 2, KMS_TEST_FLAG_INTERACTION_NEEDED)
+    KMS_TEST_LIST_ENTRY(Device_SetupA, "Device - Setup A", 1, KMS_TEST_FLAG_INTERACTION_NEEDED)
+    KMS_TEST_LIST_ENTRY(Device_SetupB, "Device - Setup B", 2, KMS_TEST_FLAG_INTERACTION_NEEDED)
+    KMS_TEST_LIST_ENTRY(Display_Base , "Display - Base"  , 0, 0)
     KMS_TEST_LIST_ENTRY(System_Base  , "System - Base"   , 0, 0)
     KMS_TEST_LIST_ENTRY(System_SetupA, "System - Setup A", 1, KMS_TEST_FLAG_INTERACTION_NEEDED)
 KMS_TEST_LIST_END

@@ -84,7 +84,7 @@ typedef struct
 {
     char mName[16]; ///< Name
 
-    uint8_t mEth_Addr[6]; ///< The Ethernet address
+    uint8_t mEth_Address[6]; ///< The MAC address on the wired Ethernet
 
     uint8_t mReserved0[2];
 
@@ -92,34 +92,49 @@ typedef struct
     uint32_t mIPv4_Gateway; ///< The current IPv4 gateway
     uint32_t mIPv4_NetMask; ///< The current IPv4 mask
 
-    uint8_t mFirmware0_Major;  ///< The firmware 0 major
-    uint8_t mFirmware0_Minor;  ///< The firmware 0 minor
-    uint8_t mFirmware0_Build;  ///< The firmware 0 build
-    uint8_t mFirmware0_Compat; ///< The firmware 0 compatibility
+    uint8_t mFirmware0_Version[4];  ///< The firmware 0 version
+    uint8_t mFirmware1_Version[4];  ///< The firmware 1 version
+    uint8_t mHardware_Version [4];  ///< The hardware version
 
-    uint8_t mFirmware1_Major;  ///< The firmware 1 major
-    uint8_t mFirmware1_Minor;  ///< The firmware 1 minor
-    uint8_t mFirmware1_Build;  ///< The firmware 1 build
-    uint8_t mFirmware1_Compat; ///< The firmware 1 compatibility
-
-    uint8_t mHardware_Major;  ///< The hardware major
-    uint8_t mHardware_Minor;  ///< The hardware minor
-    uint8_t mHardware_Rev;    ///< The hardware revision
-    uint8_t mHardware_Compat; ///< The hardware compatibility
-
-    uint32_t mMessageId;     ///< The last message id
+    uint32_t mMessageId    ; ///< The last message id
     uint32_t mRequestId_UDP; ///< The last request id
     uint32_t mRequestId_USB; ///< The last request id
 
     uint16_t mResult_CAN; ///< The result of the CAN configuration
 
-    // 16 + 6 + 2 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 4 + 2
-    // = 22   + 6     + 8     + 8     + 8     + 8     + 2
-    // = 28           + 16            + 16            + 2
-    // = 44                           + 18
-    // = 62
+    uint8_t mReserved1[8];
 
-    uint8_t mReserved1[ 128 - 62 ];
+    uint8_t mWiFi_Address[6]; ///< The MAC address on the WiFi
+
+    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 3 * 4 + 2 + 8 + 6
+    // = 22   + 2 + 12    + 12    + 12    + 10    + 6
+    // = 24       + 24            + 22            + 6
+    // = 48                       + 28
+    // = 76
+
+    uint8_t mReserved2[ 128 - 76 - 40 ];
+
+    // 9 * 4 + 4 + 2 + 1 + 5
+    // = 28  + 6     + 6
+    // = 34          + 6
+    // = 40
+
+    uint32_t mCounter_Errors  ; ///< Errors
+    uint32_t mCounter_Events  ; ///< Events
+    uint32_t mCounter_Fx_byte ; ///< Byte formwarded
+    uint32_t mCounter_Fx_frame; ///< Frame forwarded
+    uint32_t mCounter_Requests; ///< Request received
+    uint32_t mCounter_Rx_byte ; ///< Byte receiver from the CAN bus
+    uint32_t mCounter_Rx_frame; ///< Frame received from the CAN bus
+    uint32_t mCounter_Tx_byte ; ///< Byte transmitted to the CAN bus
+    uint32_t mCounter_Tx_frame; ///< Frame transmitted to the CAN bus
+
+    uint32_t mLastId     ; ///< Last received CAN id
+    uint16_t mLastError  ; ///< Last error
+    uint8_t  mLastRequest; ///< Last request code
+
+    uint8_t mReserved3[5];
+
 }
 EthCAN_Info;
 

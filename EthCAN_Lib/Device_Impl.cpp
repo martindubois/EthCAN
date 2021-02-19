@@ -12,6 +12,7 @@ extern "C"
     #include <EthCAN_Protocol.h>
 }
 
+#include <EthCAN/Display.h>
 #include <EthCAN/System.h>
 
 // ===== EthCAN_Lib =========================================================
@@ -26,11 +27,6 @@ extern "C"
 
 #define MSG_LOOP_ITERATION (1)
 #define MSG_SERIAL_DATA    (2)
-
-// Static function declarations
-/////////////////////////////////////////////////////////////////////////////
-
-static void Display(FILE* aOut, EthCAN_RequestCode aIn);
 
 // Public
 /////////////////////////////////////////////////////////////////////////////
@@ -52,7 +48,7 @@ bool Device_Impl::Is(const uint8_t aEth[6]) const
 {
     assert(NULL != aEth);
 
-    return 0 == memcmp(mInfo.mEth_Addr, aEth, sizeof(mInfo.mEth_Addr));
+    return 0 == memcmp(mInfo.mEth_Address, aEth, sizeof(mInfo.mEth_Address));
 }
 
 bool Device_Impl::Is(uint32_t aIPv4) const
@@ -108,6 +104,23 @@ void Device_Impl::SetInfo(const EthCAN_Info& aInfo, Serial* aSerial)
         lResult = eResult;        \
     }                             \
     return lResult;
+
+EthCAN_Result Device_Impl::Config_Erase(uint8_t aFlags)
+{
+    BEGIN
+    {
+        if (0 != Request(EthCAN_REQUEST_CONFIG_ERASE, aFlags, NULL, 0, NULL, 0))
+        {
+            fprintf(stderr, "Device_Impl::Config_Erase - EthCAN_ERROR_INVALID_DATA_SIZE\n");
+            lResult = EthCAN_ERROR_INVALID_DATA_SIZE;
+        }
+        else
+        {
+            lResult = EthCAN_OK;
+        }
+    }
+    END
+}
 
 EthCAN_Result Device_Impl::Config_Get(EthCAN_Config* aOut)
 {
@@ -189,6 +202,42 @@ EthCAN_Result Device_Impl::Config_Store(uint8_t aFlags)
     END
 }
 
+EthCAN_Result Device_Impl::GetInfoLine(char* aOut, unsigned int aSize_byte) const
+{
+    if (NULL == aOut   ) { return EthCAN_ERROR_INVALID_OUTPUT_BUFFER; }
+    if (55 > aSize_byte) { return EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL; }
+
+    const char* lCon;
+    if (IsConnectedEth())
+    {
+        if (IsConnectedUSB())
+        {
+            lCon = "Both";
+        }
+        else
+        {
+            lCon = "Eth ";
+        }
+    }
+    else
+    {
+        lCon = "USB ";
+    }
+
+    char lEth [24];
+    char lWiFi[24];
+
+    EthCAN::GetName_EthAddress(lEth , sizeof(lEth ), mInfo.mEth_Address);
+    EthCAN::GetName_EthAddress(lWiFi, sizeof(lWiFi), mInfo.mEth_Address);
+
+    sprintf_s(aOut SIZE_INFO(aSize_byte), "%s %s %s %3u.%3u.%3u.%3u %s",
+        lCon, lEth, lWiFi,
+        mInfo.mIPv4_Address & 0xff, mInfo.mIPv4_Address >> 8 & 0xff, mInfo.mIPv4_Address >> 16 & 0xff, mInfo.mIPv4_Address >> 24 & 0xff,
+        mInfo.mName);
+
+    return EthCAN_OK;
+}
+
 EthCAN_Result Device_Impl::GetInfo(EthCAN_Info* aInfo)
 {
     if (NULL == aInfo)
@@ -201,12 +250,12 @@ EthCAN_Result Device_Impl::GetInfo(EthCAN_Info* aInfo)
     return EthCAN_OK;
 }
 
-bool Device_Impl::IsConnectedEth()
+bool Device_Impl::IsConnectedEth() const
 {
     return (NULL != mSocket_Client);
 }
 
-bool Device_Impl::IsConnectedUSB()
+bool Device_Impl::IsConnectedUSB() const
 {
     return (NULL != mSerial);
 }
@@ -260,14 +309,14 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
         }
         catch (EthCAN_Result eResult)
         {
-            fprintf(stderr, "Device_Impl::Receiver_Start - %s\n", EthCAN::System::GetResultName(eResult));
+            fprintf(stderr, "Device_Impl::Receiver_Start - %s\n", EthCAN::GetName(eResult));
             lResult = eResult;
         }
     }
 
     if (EthCAN_OK != lResult)
     {
-        fprintf(stderr, "Device_Impl::Receiver_Start - %s\n", EthCAN::System::GetResultName(lResult));
+        fprintf(stderr, "Device_Impl::Receiver_Start - %s\n", EthCAN::GetName(lResult));
 
         if (NULL != mSocket_Server)
         {
@@ -362,15 +411,15 @@ void Device_Impl::Debug(FILE* aOut) const
 
     fprintf(lOut, "    Information\n");
 
-    Display(lOut, mInfo);
+    EthCAN::Display(lOut, mInfo);
 
     fprintf(lOut, "    Last ID Client  : %u\n", mId_Client);
     fprintf(lOut, "    Last ID Server  : %u\n", mId_Server);
     fprintf(lOut, "    Lost Count      : %u\n", mLostCount);
     fprintf(lOut, "    Receiver        : %s\n", NULL == mReceiver ? "Stopped" : "Started");
-    fprintf(lOut, "    Req. Code       : "); ::Display(lOut, static_cast<EthCAN_RequestCode>(mReq_Code));
+    fprintf(lOut, "    Req. Code       : "); EthCAN::Display(lOut, static_cast<EthCAN_RequestCode>(mReq_Code));
     fprintf(lOut, "    Req. Out Size   : %u bytes\n", mReq_OutSize_byte);
-    fprintf(lOut, "    Req. Result     : %s\n", EthCAN::System::GetResultName(mReq_Result));
+    fprintf(lOut, "    Req. Result     : %s\n", EthCAN::GetName(mReq_Result));
     fprintf(lOut, "    Serial          : %s\n", NULL == mSerial ? "Not connected" : "Connected");
     fprintf(lOut, "    Socket Client   : %s\n", NULL == mSocket_Client ? "Not connected" : "Connected");
     fprintf(lOut, "    Socket Server   : %s\n", NULL == mSocket_Server ? "Not connected" : "Connected");
@@ -672,26 +721,5 @@ void Device_Impl::Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, u
     {
         fprintf(stderr, "Device_Impl::Request_Send - EthCAN_ERROR_NOT_CONNECTED\n");
         throw EthCAN_ERROR_NOT_CONNECTED;
-    }
-}
-
-// Static function declarations
-/////////////////////////////////////////////////////////////////////////////
-
-void Display(FILE* aOut, EthCAN_RequestCode aIn)
-{
-    FILE* lOut = NULL == aOut ? stdout : aOut;
-
-    switch (aIn)
-    {
-    case EthCAN_REQUEST_CONFIG_GET  : fprintf(lOut, "EthCAN_REQUEST_CONFIG_GET\n"); break;
-    case EthCAN_REQUEST_CONFIG_RESET: fprintf(lOut, "EthCAN_REQUEST_CONFIG_RESET\n"); break;
-    case EthCAN_REQUEST_CONFIG_SET  : fprintf(lOut, "EthCAN_REQUEST_CONFIG_SET\n"); break;
-    case EthCAN_REQUEST_CONFIG_STORE: fprintf(lOut, "EthCAN_REQUEST_CONFIG_STORE\n"); break;
-    case EthCAN_REQUEST_INFO_GET    : fprintf(lOut, "EthCAN_REQUEST_INFO_GET\n"); break;
-    case EthCAN_REQUEST_RESET       : fprintf(lOut, "EthCAN_REQUEST_RESET\n"); break;
-    case EthCAN_REQUEST_SEND        : fprintf(lOut, "EthCAN_REQUEST_SEND\n"); break;
-
-    default: fprintf(lOut, "Invalid request (%u)\n", aIn);
     }
 }

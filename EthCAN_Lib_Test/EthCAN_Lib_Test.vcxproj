@@ -164,6 +164,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Device.cpp" />
+    <ClCompile Include="Display.cpp" />
     <ClCompile Include="EthCAN_Lib_Test.cpp" />
     <ClCompile Include="System.cpp" />
   </ItemGroup>

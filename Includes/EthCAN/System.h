@@ -38,12 +38,6 @@ namespace EthCAN
         /// \retval Others The address of the new instance
         static System* Create();
 
-        /// \brief Get the name associated to a result code
-        /// \param aIn See EthCAN_Result
-        /// \retval NULL  The result code is not valid
-        /// \retval Other The address of a constant name
-        static const char* GetResultName(EthCAN_Result aIn);
-
         /// \brief Get the library version
         /// \param aOut The output buffer
         /// \retval EthCAN_OK
