@@ -51,7 +51,8 @@ static const KmsLib::ToolBase::CommandInfo CONFIG_COMMANDS[] =
                                  "                              See EthCAN_Config"        , NULL },
     { "Name"   , Config_Name   , "Name [Name]                   See EthCAN_Config::mName" , NULL },
     { "Server" , Config_Server , "Server {Address} [Port]       See EthCAN_Config"        , NULL },
-    { "WiFi"   , Config_WiFi   , "WiFi [Name] [Password]        See EthCAN_Config"        , NULL },
+    { "WiFi"   , Config_WiFi   , "WiFi [Flags_hex] [Name] [Password]\n"
+                                 "                              See EthCAN_Config"        , NULL },
 
     { NULL, NULL, NULL, NULL }
 };
@@ -178,7 +179,7 @@ static bool Parse_Address_Gateway_NetMask(KmsLib::ToolBase* aToolBase, const cha
 static bool Parse_Address_NetMask(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aAddr, uint32_t* aMask);
 static bool Parse_Ethernet     (KmsLib::ToolBase* aToolBase, const char** aArg, uint8_t aOut[6]);
 static bool Parse_IPv4         (KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aOut);
-static bool Parse_SSID_Password(KmsLib::ToolBase* aToolBase, const char** aArg, char* aName, char* aPassword);
+static bool Parse_SSID_Password(KmsLib::ToolBase* aToolBase, const char** aArg, char* aName, char* aPassword, const char *aNameDefault, const char *aPasswordDefault);
 
 static bool Receiver(EthCAN::Device* aDevice, void* aContext, const EthCAN_Frame& aFrame);
 
@@ -332,9 +333,13 @@ void Config_Server(KmsLib::ToolBase* aToolBase, const char* aArg)
 void Config_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     const char* lArg = aArg;
-    if (   aToolBase->Parse(&lArg, sConfig.mWiFi_Name    , sizeof(sConfig.mWiFi_Name    ), "")
+    unsigned int lFlags;
+    if (   aToolBase->Parse(&lArg, &lFlags, 0, 1, true, 0)
+        && aToolBase->Parse(&lArg, sConfig.mWiFi_Name    , sizeof(sConfig.mWiFi_Name    ), "")
         && aToolBase->Parse(&lArg, sConfig.mWiFi_Password, sizeof(sConfig.mWiFi_Password), ""))
     {
+        sConfig.mWiFi_Flags = lFlags;
+
         KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
     }
 }
@@ -610,7 +615,7 @@ void Setup_AccessPoint(KmsLib::ToolBase* aToolBase, const char* aArg)
     char lPassword[32];
 
     if (   Parse_Address_NetMask(aToolBase, &lArg, &lAddress, &lNetMask)
-        && Parse_SSID_Password  (aToolBase, &lArg, lName, lPassword))
+        && Parse_SSID_Password  (aToolBase, &lArg, lName, lPassword, "EthCAN", "EthCANPassword"))
     {
         EthCAN_Config lConfig;
         unsigned int lStep = 1;
@@ -897,7 +902,7 @@ void Setup_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
     char lName[32];
     char lPassword[32];
 
-    if (Parse_SSID_Password(aToolBase, &lArg, lName, lPassword))
+    if (Parse_SSID_Password(aToolBase, &lArg, lName, lPassword, "", ""))
     {
         EthCAN_Config lConfig;
         unsigned int lStep = 1;
@@ -1119,10 +1124,10 @@ bool Parse_IPv4(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aOut)
     return true;
 }
 
-bool Parse_SSID_Password(KmsLib::ToolBase* aToolBase, const char** aArg, char* aName, char* aPassword)
+bool Parse_SSID_Password(KmsLib::ToolBase* aToolBase, const char** aArg, char* aName, char* aPassword, const char* aNameDefault, const char* aPasswordDefault)
 {
-    return aToolBase->Parse(aArg, aName, 32, "EthCAN")
-        && aToolBase->Parse(aArg, aName, 32, "EthCANPassword");
+    return aToolBase->Parse(aArg, aName    , 32, aNameDefault)
+        && aToolBase->Parse(aArg, aPassword, 32, aPasswordDefault);
 }
 
 bool Receiver(EthCAN::Device* aDevice, void* aContext, const EthCAN_Frame& aFrame)
