@@ -109,9 +109,9 @@ void Info_Init(const char * aName)
 
 void Info_Set_IPv4(uint32_t aAddress, uint32_t aGateway, uint32_t aNetMask)
 {
-    MSG_INFO("IPv4 Address : ", aAddress);
-    MSG_INFO("IPv4 Gateway : ", aGateway);
-    MSG_INFO("IPv4 NetMask : ", aNetMask);
+    MSG_INFO("IPv4 Address : ", static_cast<IPAddress>(aAddress));
+    MSG_INFO("IPv4 Gateway : ", static_cast<IPAddress>(aGateway));
+    MSG_INFO("IPv4 NetMask : ", static_cast<IPAddress>(aNetMask));
 
     sInfo.mIPv4_Address = aAddress;
     sInfo.mIPv4_Gateway = aGateway;
