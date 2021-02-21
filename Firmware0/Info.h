@@ -31,6 +31,7 @@ extern uint16_t Info_Get_MessageId();
 
 extern void Info_Init(const char * aName);
 
+extern void Info_Set_EthAddress(const uint8_t * aIn);
 extern void Info_Set_IPv4(uint32_t aAddress, uint32_t aGateway, uint32_t aNetMask);
 extern void Info_Set_Name(const char * aName);
 extern void Info_Set_Result_CAN(EthCAN_Result aResult);
