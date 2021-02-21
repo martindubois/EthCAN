@@ -6,6 +6,8 @@
 
 #include <ETH.h>
 
+#include <esp_wifi.h>
+
 #include "Component.h"
 
 #include "Common/Version.h"
@@ -85,6 +87,7 @@ void setup()
 void loop()
 {
     CAN_Loop();
+    Config_Loop();
     UDP_Loop();
     USB_Loop();
 }
@@ -100,10 +103,14 @@ void OnWiFiEvent(WiFiEvent_t aEvent)
 
     Info_Count_Events();
 
+    uint8_t lAddress[6];
+
     switch (aEvent)
     {
     case SYSTEM_EVENT_ETH_START: MSG_DEBUG("OnWiFiEvent - ETH_START");
         ETH.setHostname(gConfig.mName);
+        esp_eth_get_mac(lAddress);
+        Info_Set_EthAddress(lAddress);
         break;
 
     case SYSTEM_EVENT_ETH_GOT_IP: MSG_DEBUG("OnWiFiEvent - ETH_GOT_IP");
@@ -119,7 +126,9 @@ void OnWiFiEvent(WiFiEvent_t aEvent)
     case SYSTEM_EVENT_STA_CONNECTED   : MSG_DEBUG("OnWiFiEvent - STA_CONNECTED"   ); break;
 
     case SYSTEM_EVENT_STA_GOT_IP: MSG_DEBUG("OnWiFiEvent - STA_GOT_IP");
+        esp_wifi_get_mac(WIFI_IF_STA, lAddress);
         Info_Set_IPv4(WiFi.localIP(), WiFi.gatewayIP(), WiFi.subnetMask());
+        Info_Set_EthAddress(lAddress);
         break;
 
     case SYSTEM_EVENT_STA_START : MSG_DEBUG("OnWiFiEvent - STA_START" ); break;

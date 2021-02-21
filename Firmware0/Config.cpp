@@ -20,6 +20,10 @@
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
+#define DEFAULT_CAN_FILTER (0)
+#define DEFAULT_CAN_MASK   (0)
+#define DEFAULT_CAN_RATE   (EthCAN_RATE_1_Mb)
+
 #define STORE_WHAT          (  0) //  1 bytes
                                   // 15 bytes
 #define STORE_NAME          ( 16) // 16 bytes
@@ -44,6 +48,11 @@
 /////////////////////////////////////////////////////////////////////////////
 
 EthCAN_Config gConfig;
+
+// Static variable
+/////////////////////////////////////////////////////////////////////////////
+
+static bool sCAN = false;
 
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
@@ -113,6 +122,15 @@ void Config_Load()
     }
 }
 
+void Config_Loop()
+{
+    if (sCAN)
+    {
+        CAN_Config();
+        sCAN = false;
+    }
+}
+
 void Config_OnFrame(const EthCAN_Frame & aFrame)
 {
     MSG_DEBUG("Config_OnFrame(  )");
@@ -143,18 +161,44 @@ void Config_OnFrame(const EthCAN_Frame & aFrame)
     }
 }
 
-void Config_Reset()
+uint8_t Config_Reset()
 {
     MSG_DEBUG("Config_Reset()");
 
     Init();
 
-    CAN_Config();
+    sCAN = DEFAULT_CAN_RATE != gConfig.mCAN_Rate;
+    if (!sCAN)
+    {
+        unsigned int i = 0;
+        for (i = 0; i < 6; i ++)
+        {
+            if (DEFAULT_CAN_FILTER != gConfig.mCAN_Filters[i])
+            {
+                sCAN = true;
+                break;
+            }
+        }
+
+        if (!sCAN)
+        {
+            for (i = 0; i < 2; i ++)
+            {
+                if (DEFAULT_CAN_MASK != gConfig.mCAN_Masks[i])
+                {
+                    sCAN = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    return sCAN ? EthCAN_FLAG_BUSY : 0;
 }
 
-EthCAN_Result Config_Set(const EthCAN_Header * aIn)
+EthCAN_Result Config_Set(const EthCAN_Header * aIn, uint8_t * aFlags)
 {
-    MSG_DEBUG("Config_Set(  )");
+    MSG_DEBUG("Config_Set( ,  )");
 
     if (sizeof(EthCAN_Config) > aIn->mDataSize_byte)
     {
@@ -165,12 +209,39 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn)
 
     // TODO Firmware.Config.Validate
 
+    sCAN = gConfig.mCAN_Rate != lConfig->mCAN_Rate;
+    if (!sCAN)
+    {
+        unsigned int i;
+
+        for (i = 0; i < 6; i ++)
+        {
+            if (gConfig.mCAN_Filters[i] != lConfig->mCAN_Filters[i])
+            {
+                sCAN = true;
+                break;
+            }
+        }
+
+        if (!sCAN)
+        {
+            for (i = 0; i < 2; i ++)
+            {
+                if (gConfig.mCAN_Masks[i] != lConfig->mCAN_Masks[i])
+                {
+                    sCAN = true;
+                    break;
+                }
+            }
+        }
+    }
+
     gConfig = *lConfig;
 
     Info_Set_Name(gConfig.mName);
 
-    CAN_Config();
-  
+    *aFlags = sCAN ? EthCAN_FLAG_BUSY : 0;
+
     return EthCAN_OK;
 }
 
@@ -240,15 +311,15 @@ void Init()
 
     for (i = 0; i < 6; i ++)
     {
-        gConfig.mCAN_Filters[i] = 0;
+        gConfig.mCAN_Filters[i] = DEFAULT_CAN_FILTER;
     }
 
     for (i = 0; i < 2; i ++)
     {
-        gConfig.mCAN_Masks[i] = 0;
+        gConfig.mCAN_Masks[i] = DEFAULT_CAN_MASK;
     }
 
-    gConfig.mCAN_Rate = EthCAN_RATE_1_Mb;
+    gConfig.mCAN_Rate = DEFAULT_CAN_RATE;
 
     strcpy(gConfig.mName, "EthCAN");
 

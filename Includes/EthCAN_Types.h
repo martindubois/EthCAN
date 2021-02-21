@@ -100,17 +100,13 @@ typedef struct
 
     uint16_t mResult_CAN; ///< The result of the CAN configuration
 
-    uint8_t mReserved1[16];
+    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 4 + 2
+    // = 22   + 2 + 12    + 12    + 6
+    // = 24       + 24            + 6
+    // = 48                       + 6
+    // = 54
 
-    uint8_t mWiFi_Address[6]; ///< The MAC address on the WiFi
-
-    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 4 + 2 + 16 + 6
-    // = 22   + 2 + 12    + 12    + 6     + 22
-    // = 24       + 24            + 28
-    // = 48                       + 28
-    // = 76
-
-    uint8_t mReserved2[192 - 76 - 52];
+    uint8_t mReserved2[192 - 54 - 52];
 
     // 9 * 4 + 4 + 3 * 2 + 1 + 5
     // = 36  + 4 + 6     + 6

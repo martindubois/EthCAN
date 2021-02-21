@@ -161,10 +161,12 @@ void OnConfigGet(const EthCAN_Header * aIn)
 
 void OnConfigReset(const EthCAN_Header * aIn)
 {
-    Config_Reset();
+    uint8_t lFlags = Config_Reset();
 
     BEGIN_USB
     {
+        lHeader.mFlags = lFlags;
+
         Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
     }
     END_USB
@@ -172,10 +174,13 @@ void OnConfigReset(const EthCAN_Header * aIn)
 
 void OnConfigSet(const EthCAN_Header * aIn)
 {
-    EthCAN_Result lResult = Config_Set(aIn);
+    uint8_t lFlags;
+
+    EthCAN_Result lResult = Config_Set(aIn, &lFlags);
 
     BEGIN_USB
     {
+        lHeader.mFlags = lFlags;
         lHeader.mResult = static_cast<uint16_t>(lResult);
   
         lHeader.mDataSize_byte  = sizeof(gConfig);

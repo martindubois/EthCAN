@@ -6,10 +6,6 @@
 
 #include <Arduino.h>
 
-#include <ETH.h>
-
-#include <esp_wifi.h>
-
 extern "C"
 {
     #include "Includes/EthCAN_Protocol.h"
@@ -87,8 +83,6 @@ void Info_Init(const char * aName)
 {
     // MSG_DEBUG("Info_Init(  )");
 
-    esp_eth_get_mac(sInfo.mEth_Address);
-
     // TODO Firmware0.Info
     //      Add the WiFi mac address
 
@@ -101,10 +95,16 @@ void Info_Init(const char * aName)
 
     sInfo.mResult_CAN = EthCAN_ERROR_PENDING;
 
-    esp_wifi_get_mac(WIFI_IF_STA, sInfo.mWiFi_Address);
-
     sInfo.mLast_Error_Code   = EthCAN_RESULT_NO_ERROR;
     sInfo.mLast_Request_Code = EthCAN_REQUEST_INVALID;
+}
+
+void Info_Set_EthAddress(const uint8_t * aIn)
+{
+    for (unsigned int i = 0; i < sizeof(sInfo.mEth_Address); i ++)
+    {
+        sInfo.mEth_Address[i] = aIn[i];
+    }
 }
 
 void Info_Set_IPv4(uint32_t aAddress, uint32_t aGateway, uint32_t aNetMask)
