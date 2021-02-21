@@ -225,13 +225,11 @@ EthCAN_Result Device_Impl::GetInfoLine(char* aOut, unsigned int aSize_byte) cons
     }
 
     char lEth [24];
-    char lWiFi[24];
 
     EthCAN::GetName_EthAddress(lEth , sizeof(lEth ), mInfo.mEth_Address);
-    EthCAN::GetName_EthAddress(lWiFi, sizeof(lWiFi), mInfo.mEth_Address);
 
-    sprintf_s(aOut SIZE_INFO(aSize_byte), "%s %s %s %3u.%3u.%3u.%3u %s",
-        lCon, lEth, lWiFi,
+    sprintf_s(aOut SIZE_INFO(aSize_byte), "%s %s %3u.%3u.%3u.%3u %s",
+        lCon, lEth,
         mInfo.mIPv4_Address & 0xff, mInfo.mIPv4_Address >> 8 & 0xff, mInfo.mIPv4_Address >> 16 & 0xff, mInfo.mIPv4_Address >> 24 & 0xff,
         mInfo.mName);
 

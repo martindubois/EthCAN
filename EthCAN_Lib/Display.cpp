@@ -87,19 +87,16 @@ namespace EthCAN
             return;
         }
 
-        fprintf(lOut, "        Ethernet address    : "); Display_EthAddress(lOut, aIn.mEth_Address);
-        fprintf(lOut, "        Firmware 0          : "); Display_Version(lOut, aIn.mFirmware0_Version);
-        fprintf(lOut, "        Firmware 1          : "); Display_Version(lOut, aIn.mFirmware1_Version);
-        fprintf(lOut, "        Hardware            : "); Display_Version(lOut, aIn.mHardware_Version);
-        fprintf(lOut, "        IPv4 Address        : "); Display_IPv4Address(lOut, aIn.mIPv4_Address);
-        fprintf(lOut, "        IPv4 Gateway        : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway);
-        fprintf(lOut, "        IPv4 Net. Mask      : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask);
-        fprintf(lOut, "        Last message id     : %u\n", aIn.mMessageId);
-        fprintf(lOut, "        Name                : %s\n", aIn.mName);
-        fprintf(lOut, "        Last request id UDP : %u\n", aIn.mRequestId_UDP);
-        fprintf(lOut, "        Last request id USB : %u\n", aIn.mRequestId_USB);
-        fprintf(lOut, "        Result CAN          : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mResult_CAN));
-        fprintf(lOut, "        WiFi address        : "); Display_EthAddress(lOut, aIn.mEth_Address);
+        fprintf(lOut, "        Ethernet address : "); Display_EthAddress(lOut, aIn.mEth_Address);
+        fprintf(lOut, "        Firmware 0       : "); Display_Version(lOut, aIn.mFirmware0_Version);
+        fprintf(lOut, "        Firmware 1       : "); Display_Version(lOut, aIn.mFirmware1_Version);
+        fprintf(lOut, "        Hardware         : "); Display_Version(lOut, aIn.mHardware_Version);
+        fprintf(lOut, "        IPv4 Address     : "); Display_IPv4Address(lOut, aIn.mIPv4_Address);
+        fprintf(lOut, "        IPv4 Gateway     : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway);
+        fprintf(lOut, "        IPv4 Net. Mask   : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask);
+        fprintf(lOut, "        Last message id  : %u\n", aIn.mMessageId);
+        fprintf(lOut, "        Name             : %s\n", aIn.mName);
+        fprintf(lOut, "        Result CAN       : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mResult_CAN));
 
         fprintf(lOut, "        Counters\n");
         fprintf(lOut, "            Errors   : %u\n", aIn.mCounter_Errors);
@@ -110,9 +107,11 @@ namespace EthCAN
         fprintf(lOut, "            Tx       : %u bytes, %u frames\n", aIn.mCounter_Tx_byte, aIn.mCounter_Tx_frame);
 
         fprintf(lOut, "        Last\n");
-        fprintf(lOut, "            Error   : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mLastError));
-        fprintf(lOut, "            Id      : "); Display_Id(lOut, aIn.mLastId);
-        fprintf(lOut, "            Request : "); Display(lOut, static_cast<EthCAN_RequestCode>(aIn.mLastRequest));
+        fprintf(lOut, "            Error Code   : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mLast_Error_Code));
+        fprintf(lOut, "            Error Line   : %u\n", aIn.mLast_Error_Line);
+        fprintf(lOut, "            Request Code : "); Display(lOut, static_cast<EthCAN_RequestCode>(aIn.mLast_Request_Code));
+        fprintf(lOut, "            Request Id   : %u\n", aIn.mLast_Request_Id);
+        fprintf(lOut, "            Rx Id        : %u\n", aIn.mLast_Rx_Id);
     }
 
     void Display(FILE* aOut, EthCAN_Rate aIn)

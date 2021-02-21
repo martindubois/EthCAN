@@ -969,8 +969,8 @@ void List(KmsLib::ToolBase* aToolBase, const char* aArg)
     unsigned int lCount = sSystem->Device_GetCount();
     printf("%u detected devices\n", lCount);
 
-    printf(" # Con  Ethernet address   WiFi address      IPv4 address         Name\n");
-    printf("== ==== ================= ================= =============== =================\n");
+    printf(" # Con  Ethernet address   IPv4 address         Name\n");
+    printf("== ==== ================= =============== =================\n");
 
     for (unsigned int i = 0; i < lCount; i++)
     {
