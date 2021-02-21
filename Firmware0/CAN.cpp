@@ -12,11 +12,6 @@
 
 #include "Component.h"
 
-extern "C"
-{
-    #include "Includes/EthCAN_Types.h"
-}
-
 #include "Config.h"
 #include "Info.h"
 
@@ -60,7 +55,7 @@ void CAN_Config()
 {
     // MSG_DEBUG("CAN_Config()");
 
-    gInfo.mResult_CAN = EthCAN_ERROR_PENDING;
+    bool lSet = false;
 
     EthCAN_Result lRet = EnterSettingMode();
     if (EthCAN_OK == lRet)
@@ -97,15 +92,16 @@ void CAN_Config()
 
         if (EthCAN_OK != lRet)
         {
-            gInfo.mResult_CAN = lRet;
+            Info_Set_Result_CAN(lRet);
+            lSet = true;
         }
 
         lRet = LeaveSettingMode();
     }
 
-    if (EthCAN_ERROR_PENDING == gInfo.mResult_CAN)
+    if (!lSet)
     {
-        gInfo.mResult_CAN = lRet;
+        Info_Set_Result_CAN(lRet);
     }
 }
 
@@ -131,6 +127,8 @@ void CAN_Loop()
 
             memcpy(lFrame.mData, sBuffer + 4, 8);
 
+            Info_Count_Rx_Frame(lFrame.mDataSize_byte, lFrame.mId);
+
             Config_OnFrame(lFrame);
 
             sCount = 0;
@@ -153,8 +151,7 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 
     if (sizeof(EthCAN_Frame) > aIn->mDataSize_byte)
     {
-        MSG_ERROR("CAN_Send - EthCAN_INVALID_DATA_SIZE");
-        return EthCAN_ERROR_INVALID_DATA_SIZE;
+        return Info_Count_Error(__LINE__, EthCAN_ERROR_INVALID_DATA_SIZE);
     }
 
     const EthCAN_Frame * lFrame = reinterpret_cast<const EthCAN_Frame *>(aIn + 1);
@@ -171,6 +168,8 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
     memcpy(lData + 6, lFrame->mData, 8);
 
     Serial2.write(lData, sizeof(lData));
+
+    Info_Count_Tx_Frame(lFrame->mDataSize_byte);
   
     return EthCAN_OK;
 }
@@ -286,8 +285,7 @@ EthCAN_Result WaitResponse(const char * aExpected, unsigned int aLength)
                 lEr0 ++;
                 if ('\0' == *lEr0)
                 {
-                    MSG_ERROR("WaitResponse - EthCAN_ERROR_CAN");
-                    return EthCAN_ERROR_CAN;
+                    return Info_Count_Error(__LINE__, EthCAN_ERROR_CAN);
                 }
             }
             else
@@ -299,7 +297,7 @@ EthCAN_Result WaitResponse(const char * aExpected, unsigned int aLength)
         delay(100);
     }
 
-    MSG_ERROR("WaitResponse - EthCAN_ERROR_TIMEOUT");
+    MSG_ERROR("WaitResponse - EthCAN_ERROR_TIMEOUT", "");
     return EthCAN_ERROR_TIMEOUT;
 }
 

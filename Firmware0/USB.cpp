@@ -115,10 +115,7 @@ void OnPacket(const EthCAN_Header * aIn)
 
     if (sizeof(EthCAN_Header) + aIn->mDataSize_byte <= aIn->mTotalSize_byte)
     {
-        gInfo.mRequestId_USB = aIn->mId;
-
-        MSG_DEBUG(aIn->mCode);
-        MSG_DEBUG(aIn->mId);
+        Info_Count_Request(aIn->mCode, aIn->mId);
 
         switch (aIn->mCode)
         {
@@ -130,12 +127,12 @@ void OnPacket(const EthCAN_Header * aIn)
         case EthCAN_REQUEST_RESET       : OnReset      (aIn); break;
         case EthCAN_REQUEST_SEND        : OnSend       (aIn); break;
 
-        default: MSG_ERROR("OnPacket - Invalid request code");
+        default: MSG_ERROR("OnPacket - Invalid request code : ", aIn->mCode);
         }
     }
     else
     {
-        MSG_ERROR("OnPacket - Invalid request size");
+        MSG_ERROR("OnPacket - Invalid request size : ", aIn->mTotalSize_byte);
     }
 }
 
@@ -207,11 +204,11 @@ void OnInfoGet(const EthCAN_Header * aIn)
 {
     BEGIN_USB
     {
-        lHeader.mDataSize_byte  = sizeof(gInfo);
-        lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(gInfo);
+        lHeader.mDataSize_byte  = sizeof(EthCAN_Info);
+        lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(EthCAN_Info);
     
         Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
-        Serial.write(reinterpret_cast<const uint8_t *>(&gInfo  ), sizeof(gInfo));
+        Serial.write(Info_Get(), sizeof(EthCAN_Info));
     }
     END_USB
 }

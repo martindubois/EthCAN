@@ -52,6 +52,8 @@ typedef enum
     EthCAN_REQUEST_RESET,
     EthCAN_REQUEST_SEND,
 
-    EthCAN_REQUEST_QTY
+    EthCAN_REQUEST_QTY,
+
+    EthCAN_REQUEST_INVALID = 0xff
 }
 EthCAN_RequestCode;

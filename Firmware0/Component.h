@@ -22,6 +22,6 @@
 
 #endif
 
-#define MSG_ERROR(M)      Serial.print("ERROR  "  ); Serial.println(M)
+#define MSG_ERROR(M,D)    Serial.print("ERROR  "  ); Serial.print(M); Serial.println(D);
 #define MSG_INFO(M,D)     Serial.print("INFO  "   ); Serial.print(M); Serial.println(D);
 #define MSG_WARNING(M)    Serial.print("WARNING  "); Serial.println(M)

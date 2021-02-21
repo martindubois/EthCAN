@@ -97,27 +97,25 @@ typedef struct
     uint8_t mHardware_Version [4];  ///< The hardware version
 
     uint32_t mMessageId    ; ///< The last message id
-    uint32_t mRequestId_UDP; ///< The last request id
-    uint32_t mRequestId_USB; ///< The last request id
 
     uint16_t mResult_CAN; ///< The result of the CAN configuration
 
-    uint8_t mReserved1[8];
+    uint8_t mReserved1[16];
 
     uint8_t mWiFi_Address[6]; ///< The MAC address on the WiFi
 
-    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 3 * 4 + 2 + 8 + 6
-    // = 22   + 2 + 12    + 12    + 12    + 10    + 6
-    // = 24       + 24            + 22            + 6
+    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 4 + 2 + 16 + 6
+    // = 22   + 2 + 12    + 12    + 6     + 22
+    // = 24       + 24            + 28
     // = 48                       + 28
     // = 76
 
-    uint8_t mReserved2[ 128 - 76 - 40 ];
+    uint8_t mReserved2[192 - 76 - 52];
 
-    // 9 * 4 + 4 + 2 + 1 + 5
-    // = 28  + 6     + 6
-    // = 34          + 6
-    // = 40
+    // 9 * 4 + 4 + 3 * 2 + 1 + 5
+    // = 36  + 4 + 6     + 6
+    // = 40      + 12
+    // = 52
 
     uint32_t mCounter_Errors  ; ///< Errors
     uint32_t mCounter_Events  ; ///< Events
@@ -129,9 +127,11 @@ typedef struct
     uint32_t mCounter_Tx_byte ; ///< Byte transmitted to the CAN bus
     uint32_t mCounter_Tx_frame; ///< Frame transmitted to the CAN bus
 
-    uint32_t mLastId     ; ///< Last received CAN id
-    uint16_t mLastError  ; ///< Last error
-    uint8_t  mLastRequest; ///< Last request code
+    uint32_t mLast_Rx_Id       ; ///< Last received CAN id
+    uint16_t mLast_Error_Code  ; ///< Last error
+    uint16_t mLast_Error_Line  ; ///< Last error line
+    uint16_t mLast_Request_Id  ; ///< Last request id
+    uint8_t  mLast_Request_Code; ///< Last request code
 
     uint8_t mReserved3[5];
 

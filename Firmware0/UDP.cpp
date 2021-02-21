@@ -54,7 +54,7 @@ void UDP_Loop()
         }
         else
         {
-            MSG_ERROR("UDP_Loop - UDP packet larger than the buffer");
+            MSG_ERROR("UDP_Loop - UDP packet larger than the buffer", "");
         }
     }
 }
@@ -91,7 +91,7 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
 
         if (sizeof(EthCAN_Header) + lHeader->mDataSize_byte <= lHeader->mTotalSize_byte)
         {
-            gInfo.mRequestId_UDP = lHeader->mId;
+            Info_Count_Request(lHeader->mCode, lHeader->mId);
 
             switch (lHeader->mCode)
             {
@@ -103,17 +103,17 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
             case EthCAN_REQUEST_RESET       : OnReset      (lHeader); break;
             case EthCAN_REQUEST_SEND        : OnSend       (lHeader); break;
 
-            default: MSG_ERROR("OnPacket - Invalid request code");
+            default: MSG_ERROR("OnPacket - Invalid request code : ", lHeader->mCode);
             }
         }
         else
         {
-            MSG_ERROR("OnPacket - Invalid request size");
+            MSG_ERROR("OnPacket - Invalid request size : ", lHeader->mTotalSize_byte);
         }
     }
     else
     {
-        MSG_ERROR("OnPacket - UDP packet smaller than the request header");
+        MSG_ERROR("OnPacket - UDP packet smaller than the request header : ", aSize_byte);
     }
 }
 
@@ -186,11 +186,11 @@ void OnInfoGet(const EthCAN_Header * aIn)
 {
     BEGIN_UDP
     {
-        lHeader.mDataSize_byte  = sizeof(gInfo);
-        lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(gInfo);
+        lHeader.mDataSize_byte  = sizeof(EthCAN_Info);
+        lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(EthCAN_Info);
     
         sUDP.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
-        sUDP.write(reinterpret_cast<const uint8_t *>(&gInfo  ), sizeof(gInfo));
+        sUDP.write(Info_Get(), sizeof(EthCAN_Info));
     }
     END_UDP
 }

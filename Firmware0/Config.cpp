@@ -87,9 +87,9 @@ void Config_Load()
 
     if (0 != (lWhat & EthCAN_FLAG_STORE_IPv4))
     {
-        Load(&gConfig.mIPv4_Addr   , STORE_IPv4_ADDR   , sizeof(gConfig.mIPv4_Addr));
+        Load(&gConfig.mIPv4_Address, STORE_IPv4_ADDR   , sizeof(gConfig.mIPv4_Address));
         Load(&gConfig.mIPv4_Gateway, STORE_IPv4_GATEWAY, sizeof(gConfig.mIPv4_Gateway));
-        Load(&gConfig.mIPv4_Mask   , STORE_IPv4_MASK   , sizeof(gConfig.mIPv4_Mask));
+        Load(&gConfig.mIPv4_NetMask, STORE_IPv4_MASK   , sizeof(gConfig.mIPv4_NetMask));
         // TODO Firmware.Config.Load
         //      Validate IPv4
     }
@@ -119,9 +119,7 @@ void Config_OnFrame(const EthCAN_Frame & aFrame)
 
     EthCAN_Header lHeader;
 
-    gInfo.mMessageId ++;
-
-    lHeader.mId             = gInfo.mMessageId;
+    lHeader.mId             = Info_Get_MessageId();
     lHeader.mCode           = EthCAN_REQUEST_SEND;
     lHeader.mDataSize_byte  = sizeof(aFrame);
     lHeader.mFlags          = EthCAN_FLAG_NO_RESPONSE;
@@ -133,12 +131,14 @@ void Config_OnFrame(const EthCAN_Frame & aFrame)
     if (0 == (gConfig.mServer_Flags & EthCAN_FLAG_SERVER_USB))
     {
         USB_OnFrame(lHeader, aFrame);
+        Info_Count_Fx_Frame(aFrame.mDataSize_byte);
     }
     else
     {
         if (0 != gConfig.mServer_Port)
         {
             UDP_OnFrame(lHeader, aFrame, gConfig.mServer_IPv4, gConfig.mServer_Port);
+            Info_Count_Fx_Frame(aFrame.mDataSize_byte);
         }
     }
 }
@@ -158,8 +158,7 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn)
 
     if (sizeof(EthCAN_Config) > aIn->mDataSize_byte)
     {
-        MSG_ERROR("Config_Set - EthCAN_ERROR_INVALID_DATA_SIZE");
-        return EthCAN_ERROR_INVALID_DATA_SIZE;
+        return Info_Count_Error(__LINE__, EthCAN_ERROR_INVALID_DATA_SIZE);
     }
 
     const EthCAN_Config * lConfig = reinterpret_cast<const EthCAN_Config *>(aIn + 1);
@@ -168,7 +167,7 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn)
 
     gConfig = *lConfig;
 
-    strcpy(gInfo.mName, gConfig.mName);
+    Info_Set_Name(gConfig.mName);
 
     CAN_Config();
   
@@ -200,9 +199,9 @@ EthCAN_Result Config_Store(const EthCAN_Header * aIn)
 
     if (0 != (lIn & EthCAN_FLAG_STORE_IPv4))
     {
-        Store(STORE_IPv4_ADDR   , &gConfig.mIPv4_Addr   , sizeof(gConfig.mIPv4_Addr));
+        Store(STORE_IPv4_ADDR   , &gConfig.mIPv4_Address, sizeof(gConfig.mIPv4_Address));
         Store(STORE_IPv4_GATEWAY, &gConfig.mIPv4_Gateway, sizeof(gConfig.mIPv4_Gateway));
-        Store(STORE_IPv4_MASK   , &gConfig.mIPv4_Mask   , sizeof(gConfig.mIPv4_Mask));
+        Store(STORE_IPv4_MASK   , &gConfig.mIPv4_NetMask, sizeof(gConfig.mIPv4_NetMask));
     }
 
     if (0 != (lIn & EthCAN_FLAG_STORE_SERVER))
@@ -253,9 +252,9 @@ void Init()
 
     strcpy(gConfig.mName, "EthCAN");
 
-    gConfig.mIPv4_Addr    = 0;
+    gConfig.mIPv4_Address = 0;
     gConfig.mIPv4_Gateway = 0;
-    gConfig.mIPv4_Mask    = 0;
+    gConfig.mIPv4_NetMask = 0;
 
     gConfig.mServer_Flags = 0;
     gConfig.mServer_IPv4  = 0;

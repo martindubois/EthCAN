@@ -290,8 +290,9 @@ namespace EthCAN
         case EthCAN_ERROR_TIMEOUT                : return "EthCAN_ERROR_TIMEOUT";
         case EthCAN_ERROR_UNEXPECTED_DATA        : return "EthCAN_ERROR_UNEXPECTED_DATA";
 
-        case EthCAN_RESULT_INVALID: return "EthCAN_RESULT_INVALID";
-        case EthCAN_RESULT_REQUEST: return "EthCAN_RESULT_REQUEST";
+        case EthCAN_RESULT_INVALID : return "EthCAN_RESULT_INVALID";
+        case EthCAN_RESULT_NO_ERROR: return "EthCAN_RESULT_NO_ERROR";
+        case EthCAN_RESULT_REQUEST : return "EthCAN_RESULT_REQUEST";
         }
 
         return NULL;

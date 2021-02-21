@@ -35,10 +35,10 @@ void setup()
 
     Config_Load();
 
-    if (0 != gConfig.mIPv4_Addr)
+    if (0 != gConfig.mIPv4_Address)
     {
         MSG_DEBUG("Configuring static IPv4 address...");
-        WiFi.config(gConfig.mIPv4_Addr, gConfig.mIPv4_Gateway, gConfig.mIPv4_Mask);
+        WiFi.config(gConfig.mIPv4_Address, gConfig.mIPv4_Gateway, gConfig.mIPv4_NetMask);
     }
 
     if ('\0' == gConfig.mWiFi_Name[0])
@@ -98,6 +98,8 @@ void OnWiFiEvent(WiFiEvent_t aEvent)
 {
     // MSG_DEBUG("OnWiFiEvent(  )");
 
+    Info_Count_Events();
+
     switch (aEvent)
     {
     case SYSTEM_EVENT_ETH_START: MSG_DEBUG("OnWiFiEvent - ETH_START");
@@ -105,10 +107,7 @@ void OnWiFiEvent(WiFiEvent_t aEvent)
         break;
 
     case SYSTEM_EVENT_ETH_GOT_IP: MSG_DEBUG("OnWiFiEvent - ETH_GOT_IP");
-        MSG_INFO("IPv4 Address :", ETH.localIP());
-        gInfo.mIPv4_Addr    = ETH.localIP();
-        gInfo.mIPv4_Gateway = ETH.gatewayIP();
-        gInfo.mIPv4_Mask    = ETH.subnetMask();
+        Info_Set_IPv4(ETH.localIP(), ETH.gatewayIP(), ETH.subnetMask());
         break;
 
     case SYSTEM_EVENT_ETH_CONNECTED : MSG_DEBUG("OnWiFiEvent - ETH_CONNECTED");
@@ -120,10 +119,7 @@ void OnWiFiEvent(WiFiEvent_t aEvent)
     case SYSTEM_EVENT_STA_CONNECTED   : MSG_DEBUG("OnWiFiEvent - STA_CONNECTED"   ); break;
 
     case SYSTEM_EVENT_STA_GOT_IP: MSG_DEBUG("OnWiFiEvent - STA_GOT_IP");
-        MSG_INFO("IPv4 Address : ", WiFi.localIP());
-        gInfo.mIPv4_Addr    = WiFi.localIP();
-        gInfo.mIPv4_Gateway = WiFi.gatewayIP();
-        gInfo.mIPv4_Mask    = WiFi.subnetMask();
+        Info_Set_IPv4(WiFi.localIP(), WiFi.gatewayIP(), WiFi.subnetMask());
         break;
 
     case SYSTEM_EVENT_STA_START : MSG_DEBUG("OnWiFiEvent - STA_START" ); break;
