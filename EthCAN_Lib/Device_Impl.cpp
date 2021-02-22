@@ -111,8 +111,8 @@ EthCAN_Result Device_Impl::Config_Erase(uint8_t aFlags)
     {
         if (0 != Request(EthCAN_REQUEST_CONFIG_ERASE, aFlags, NULL, 0, NULL, 0))
         {
-            fprintf(stderr, "Device_Impl::Config_Erase - EthCAN_ERROR_INVALID_DATA_SIZE\n");
-            lResult = EthCAN_ERROR_INVALID_DATA_SIZE;
+            fprintf(stderr, "Device_Impl::Config_Erase - EthCAN_ERROR_DATA_SIZE\n");
+            lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
         {
@@ -124,17 +124,14 @@ EthCAN_Result Device_Impl::Config_Erase(uint8_t aFlags)
 
 EthCAN_Result Device_Impl::Config_Get(EthCAN_Config* aOut)
 {
-    if (NULL == aOut)
-    {
-        return EthCAN_ERROR_INVALID_OUTPUT_BUFFER;
-    }
+    if (NULL == aOut) { return EthCAN_ERROR_OUTPUT_BUFFER; }
 
     BEGIN
     {
         if (sizeof(EthCAN_Config) != Request(EthCAN_REQUEST_CONFIG_GET, 0, NULL, 0, aOut, sizeof(EthCAN_Config)))
         {
-            fprintf(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_INVALID_DATA_SIZE\n");
-            lResult = EthCAN_ERROR_INVALID_DATA_SIZE;
+            fprintf(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_DATA_SIZE\n");
+            lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
         {
@@ -150,8 +147,8 @@ EthCAN_Result Device_Impl::Config_Reset(uint8_t aFlags)
     {
         if (0 != Request(EthCAN_REQUEST_CONFIG_RESET, aFlags, NULL, 0, NULL, 0))
         {
-            fprintf(stderr, "Device_Impl::Config_Reset - EthCAN_ERROR_INVALID_DATA_SIZE\n");
-            lResult = EthCAN_ERROR_INVALID_DATA_SIZE;
+            fprintf(stderr, "Device_Impl::Config_Reset - EthCAN_ERROR_DATA_SIZE\n");
+            lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
         {
@@ -163,10 +160,7 @@ EthCAN_Result Device_Impl::Config_Reset(uint8_t aFlags)
 
 EthCAN_Result Device_Impl::Config_Set(EthCAN_Config* aInOut, uint8_t aFlags)
 {
-    if (NULL == aInOut)
-    {
-        return EthCAN_ERROR_INVALID_BUFFER;
-    }
+    if (NULL == aInOut) { return EthCAN_ERROR_BUFFER; }
 
     BEGIN
     {
@@ -174,8 +168,8 @@ EthCAN_Result Device_Impl::Config_Set(EthCAN_Config* aInOut, uint8_t aFlags)
 
         if (sizeof(EthCAN_Config) != Request(EthCAN_REQUEST_CONFIG_SET, aFlags, aInOut, sizeof(EthCAN_Config), aInOut, sizeof(EthCAN_Config)))
         {
-            fprintf(stderr, "Device_Impl::Config_Set - EthCAN_ERROR_INVALID_DATA_SIZE\n");
-            lResult = EthCAN_ERROR_INVALID_DATA_SIZE;
+            fprintf(stderr, "Device_Impl::Config_Set - EthCAN_ERROR_DATA_SIZE\n");
+            lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
         {
@@ -191,8 +185,8 @@ EthCAN_Result Device_Impl::Config_Store(uint8_t aFlags)
     {
         if (0 != Request(EthCAN_REQUEST_CONFIG_STORE, aFlags, NULL, 0, NULL, 0))
         {
-            fprintf(stderr, "Device_Impl::Config_Store - EthCAN_ERROR_INVALID_DATA_SIZE\n");
-            lResult = EthCAN_ERROR_INVALID_DATA_SIZE;
+            fprintf(stderr, "Device_Impl::Config_Store - EthCAN_ERROR_DATA_SIZE\n");
+            lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
         {
@@ -204,7 +198,7 @@ EthCAN_Result Device_Impl::Config_Store(uint8_t aFlags)
 
 EthCAN_Result Device_Impl::GetInfoLine(char* aOut, unsigned int aSize_byte) const
 {
-    if (NULL == aOut   ) { return EthCAN_ERROR_INVALID_OUTPUT_BUFFER; }
+    if (NULL == aOut   ) { return EthCAN_ERROR_OUTPUT_BUFFER; }
     if (55 > aSize_byte) { return EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL; }
 
     const char* lCon;
@@ -238,10 +232,7 @@ EthCAN_Result Device_Impl::GetInfoLine(char* aOut, unsigned int aSize_byte) cons
 
 EthCAN_Result Device_Impl::GetInfo(EthCAN_Info* aInfo)
 {
-    if (NULL == aInfo)
-    {
-        return EthCAN_ERROR_INVALID_OUTPUT_BUFFER;
-    }
+    if (NULL == aInfo) { return EthCAN_ERROR_OUTPUT_BUFFER; }
 
     *aInfo = mInfo;
 
@@ -260,7 +251,7 @@ bool Device_Impl::IsConnectedUSB() const
 
 EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
 {
-    if (NULL == aReceiver) { return EthCAN_ERROR_INVALID_FUNCTION; }
+    if (NULL == aReceiver) { return EthCAN_ERROR_FUNCTION; }
     if (NULL != mReceiver) { return EthCAN_ERROR_RUNNING; }
 
     assert(NULL == mContext);
@@ -383,10 +374,7 @@ EthCAN_Result Device_Impl::Reset(uint8_t aFlags)
 
 EthCAN_Result Device_Impl::Send(const EthCAN_Frame& aIn, uint8_t aFlags)
 {
-    if (NULL == &aIn)
-    {
-        return EthCAN_ERROR_INVALID_INPUT_BUFFER;
-    }
+    if (NULL == &aIn) { return EthCAN_ERROR_INPUT_BUFFER; }
 
     BEGIN
     {
@@ -470,11 +458,12 @@ void Device_Impl::Config_Verify(const EthCAN_Config& aIn)
 
     // TODO Device.Config_Verify
     //      aIn.mCAN_Filter
+    //      aIn.mCAN_Flags
     //      aIn.mCAN_Masks
 
     if (EthCAN_RATE_QTY <= aIn.mCAN_Rate)
     {
-        throw EthCAN_ERROR_INVALID_CAN_RATE;
+        throw EthCAN_ERROR_CAN_RATE;
     }
 
     // TODO Device.Config_Verify
@@ -584,8 +573,8 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
     {
         if (aHeader->mTotalSize_byte != aSize_byte)
         {
-            fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_INVALID_RESPONSE_SIZE\n");
-            mReq_Result = EthCAN_ERROR_INVALID_RESPONSE_SIZE;
+            fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_RESPONSE_SIZE\n");
+            mReq_Result = EthCAN_ERROR_RESPONSE_SIZE;
         }
         else
         {
@@ -595,15 +584,15 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
                 unsigned int lSize_byte = aSize_byte - sizeof(EthCAN_Header);
                 if (aHeader->mDataSize_byte != lSize_byte)
                 {
-                    fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_INVALID_DATA_SIZE\n");
-                    mReq_Result = EthCAN_ERROR_INVALID_DATA_SIZE;
+                    fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_SIZE\n");
+                    mReq_Result = EthCAN_ERROR_DATA_SIZE;
                 }
                 else
                 {
                     if (mReq_OutSize_byte < lSize_byte)
                     {
-                        fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_UNEXPECTED_DATA\n");
-                        mReq_Result = EthCAN_ERROR_UNEXPECTED_DATA;
+                        fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_UNEXPECTED\n");
+                        mReq_Result = EthCAN_ERROR_DATA_UNEXPECTED;
                     }
                     else
                     {
@@ -614,6 +603,11 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
                             memcpy(mReq_Out, aHeader + 1, lSize_byte);
 
                             mReq_OutSize_byte = lSize_byte;
+
+                            if (0 != (aHeader->mFlags & EthCAN_FLAG_BUSY))
+                            {
+                                Sleep(2000);
+                            }
                         }
                     }
                 }

@@ -22,6 +22,7 @@
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="Device_Impl.cpp" />
     <ClCompile Include="Display.cpp" />
+    <ClCompile Include="File.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Serial.cpp" />
     <ClCompile Include="System.cpp" />

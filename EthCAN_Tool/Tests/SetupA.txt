@@ -99,4 +99,6 @@ Select Name
 
 Echo == Exit
 
+Echo PASSED!
+
 Exit 0

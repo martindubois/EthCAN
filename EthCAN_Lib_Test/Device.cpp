@@ -91,34 +91,34 @@ KMS_TEST_BEGIN(Device_SetupB)
     KMS_TEST_ASSERT_RETURN(NULL != lD0);
 
     // Config_Get
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_OUTPUT_BUFFER, lD0->Config_Get(NULL));
-    KMS_TEST_COMPARE(EthCAN_OK                         , lD0->Config_Get(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->Config_Get(NULL));
+    KMS_TEST_COMPARE(EthCAN_OK                 , lD0->Config_Get(&lCfg));
 
     // Config_Reset
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Reset());
 
     // Config_Set
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_BUFFER, lD0->Config_Set(NULL));
-    KMS_TEST_COMPARE(EthCAN_OK                  , lD0->Config_Set(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_ERROR_BUFFER, lD0->Config_Set(NULL));
+    KMS_TEST_COMPARE(EthCAN_OK          , lD0->Config_Set(&lCfg));
 
     lCfg.mIPv4_NetMask = 0x03040506;
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_IPv4_MASK, lD0->Config_Set(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_ERROR_IPv4_MASK, lD0->Config_Set(&lCfg));
 
     lCfg.mIPv4_Address = 0x03040506;
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_IPv4_ADDRESS, lD0->Config_Set(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_ERROR_IPv4_ADDRESS, lD0->Config_Set(&lCfg));
 
     lCfg.mCAN_Rate = 0xff;
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_CAN_RATE, lD0->Config_Set(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_ERROR_CAN_RATE, lD0->Config_Set(&lCfg));
 
     // Config_Store
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Store());
 
     // GetInfo
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_OUTPUT_BUFFER, lD0->GetInfo(NULL));
-    KMS_TEST_COMPARE(EthCAN_OK                         , lD0->GetInfo(&lInfo));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->GetInfo(NULL));
+    KMS_TEST_COMPARE(EthCAN_OK                 , lD0->GetInfo(&lInfo));
 
     // GetInfoLine
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_OUTPUT_BUFFER, lD0->GetInfoLine(NULL, 0));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->GetInfoLine(NULL, 0));
 
     // IsConnectedEth
     KMS_TEST_ASSERT(lD0->IsConnectedEth());
@@ -127,9 +127,9 @@ KMS_TEST_BEGIN(Device_SetupB)
     KMS_TEST_ASSERT(!lD0->IsConnectedUSB());
 
     // Receiver_Start
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_FUNCTION, lD0->Receiver_Start(NULL, NULL));
-    KMS_TEST_COMPARE(EthCAN_OK                    , lD0->Receiver_Start(Receiver, NULL));
-    KMS_TEST_COMPARE(EthCAN_ERROR_RUNNING         , lD0->Receiver_Start(Receiver, NULL));
+    KMS_TEST_COMPARE(EthCAN_ERROR_FUNCTION, lD0->Receiver_Start(NULL, NULL));
+    KMS_TEST_COMPARE(EthCAN_OK            , lD0->Receiver_Start(Receiver, NULL));
+    KMS_TEST_COMPARE(EthCAN_ERROR_RUNNING , lD0->Receiver_Start(Receiver, NULL));
 
     // Receiver_Stop
     KMS_TEST_COMPARE(EthCAN_OK               , lD0->Receiver_Stop());
@@ -138,8 +138,8 @@ KMS_TEST_BEGIN(Device_SetupB)
     memset(&lFrame, 0, sizeof(lFrame));
 
     // Send
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_INPUT_BUFFER, lD0->Send(*reinterpret_cast<EthCAN_Frame*>(NULL)));
-    KMS_TEST_COMPARE(EthCAN_OK                        , lD0->Send(lFrame));
+    KMS_TEST_COMPARE(EthCAN_ERROR_INPUT_BUFFER, lD0->Send(*reinterpret_cast<EthCAN_Frame*>(NULL)));
+    KMS_TEST_COMPARE(EthCAN_OK                , lD0->Send(lFrame));
 
     // Reset - After all other test
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Reset());

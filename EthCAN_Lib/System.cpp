@@ -41,10 +41,7 @@ namespace EthCAN
 
     EthCAN_Result System::GetVersion(uint8_t aOut[4])
     {
-        if (NULL == aOut)
-        {
-            return EthCAN_ERROR_INVALID_OUTPUT_BUFFER;
-        }
+        if (NULL == aOut) { return EthCAN_ERROR_OUTPUT_BUFFER; }
 
         aOut[0] = VERSION_MAJOR;
         aOut[1] = VERSION_MINOR;

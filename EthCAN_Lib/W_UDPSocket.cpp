@@ -85,7 +85,7 @@ void UDPSocket::Init()
     mSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (INVALID_SOCKET == mSocket)
     {
-        throw EthCAN_ERROR_INVALID_SOCKET;
+        throw EthCAN_ERROR_SOCKET;
     }
 
     sockaddr_in lAddr;

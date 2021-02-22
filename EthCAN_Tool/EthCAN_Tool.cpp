@@ -15,6 +15,7 @@
 
 // ===== Includes ===========================================================
 #include <EthCAN/Device.h>
+#include <EthCAN/File.h>
 #include <EthCAN/Display.h>
 #include <EthCAN/System.h>
 
@@ -25,14 +26,27 @@
 /////////////////////////////////////////////////////////////////////////////
 
 static void Config_CAN_Filters(KmsLib::ToolBase* aToolBase, const char* aArg);
+static void Config_CAN_Flags  (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Config_CAN_Masks  (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Config_CAN_Rate   (KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo CONFIG_CAN_COMMANDS[] =
 {
     { "Filters", Config_CAN_Filters, "Filters {0_hex} ... {5_hex}   See EthCAN_Config::mCAN_Filters"},
+    { "Flags"  , Config_CAN_Flags  , "Flags {Flags_hex}             See EthCAN_Config::mCAN_Flags"  },
     { "Masks"  , Config_CAN_Masks  , "Masks {0_hex} {1_hex}         See EthCAN_Config::mCAN_Masks"  },
     { "Rate"   , Config_CAN_Rate   , "Rate [Rate_Kbps]              See EthCAN_Config::mCAN_Rate"   },
+
+    { NULL, NULL, NULL, NULL }
+};
+
+static void Config_File_Load(KmsLib::ToolBase* aToolBase, const char* aArg);
+static void Config_File_Save(KmsLib::ToolBase* aToolBase, const char* aArg);
+
+static const KmsLib::ToolBase::CommandInfo CONFIG_FILE_COMMANDS[] =
+{
+    { "Load", Config_File_Load, "Load {Name}                     See EthCAN::File_Load" },
+    { "Save", Config_File_Save, "Save {Name}                     See EthCAN::File_Save" },
 
     { NULL, NULL, NULL, NULL }
 };
@@ -47,6 +61,7 @@ static const KmsLib::ToolBase::CommandInfo CONFIG_COMMANDS[] =
 {
     { "CAN"    , NULL          , "CAN ..."                                                , CONFIG_CAN_COMMANDS },
     { "Display", Config_Display, "Display                       See Device::Display"      , NULL },
+    { "File"   , NULL          , "File ..."                                               , CONFIG_FILE_COMMANDS },
     { "IP"     , Config_IPv4   , "IP {Address} {Gateway} {NetMask}\n"
                                  "                              See EthCAN_Config"        , NULL },
     { "Name"   , Config_Name   , "Name [Name]                   See EthCAN_Config::mName" , NULL },
@@ -245,6 +260,19 @@ void Config_CAN_Filters(KmsLib::ToolBase* aToolBase, const char* aArg)
     KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
 }
 
+void Config_CAN_Flags(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    const char* lArg = aArg;
+    unsigned int lFlags;
+
+    if (aToolBase->Parse(&lArg, &lFlags, 0, EthCAN_FLAG_CAN_ADVANCED, true, 0))
+    {
+        sConfig.mCAN_Flags = lFlags;
+    }
+
+    KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
+}
+
 void Config_CAN_Masks(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     const char* lArg = aArg;
@@ -288,6 +316,16 @@ void Config_CAN_Rate(KmsLib::ToolBase* aToolBase, const char* aArg)
 
         KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
     }
+}
+
+void Config_File_Load(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    DisplayResult(aToolBase, EthCAN::File_Load(&sConfig, aArg));
+}
+
+void Config_File_Save(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    DisplayResult(aToolBase, EthCAN::File_Save(aArg, sConfig));
 }
 
 void Config_Display(KmsLib::ToolBase* aToolBase, const char* aArg)

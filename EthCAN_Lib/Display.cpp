@@ -34,6 +34,10 @@ namespace EthCAN
         }
         fprintf(lOut, "\n");
 
+        // TODO Device.Display
+        //      Display CAN flags by name
+        fprintf(lOut, "    CAN Flags      : 0x%02x\n", aIn.mCAN_Flags);
+
         fprintf(lOut, "    CAN Masks      :");
         for (i = 0; i < 2; i++)
         {
@@ -44,13 +48,15 @@ namespace EthCAN
         fprintf(lOut, "    CAN Rate       : "); Display(lOut, static_cast<EthCAN_Rate>(aIn.mCAN_Rate));
 
         // TODO Device.Display
-        //      Display flags by name
+        //      Display server and WiFi flags by name
         fprintf(lOut, "    IPv4 Address   : "); Display_IPv4Address(lOut, aIn.mIPv4_Address);
         fprintf(lOut, "    IPv4 Gateway   : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway);
         fprintf(lOut, "    IPv4 Net. Mask : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask);
         fprintf(lOut, "    Name           : %s\n", aIn.mName);
+        fprintf(lOut, "    Server Flags   : 0x%02x\n", aIn.mServer_Flags);
         fprintf(lOut, "    Server IPv4    : "); Display_IPv4Address(lOut, aIn.mServer_IPv4);
         fprintf(lOut, "    Server Port    : %u\n", aIn.mServer_Port);
+        fprintf(lOut, "    WiFi Flags     : 0x%02x\n", aIn.mWiFi_Flags);
         fprintf(lOut, "    WiFI Name      : %s\n", aIn.mWiFi_Name);
         fprintf(lOut, "    WiFi Password  : %s\n", aIn.mWiFi_Password);
     }
@@ -253,25 +259,35 @@ namespace EthCAN
         case EthCAN_OK: return "EthCAN_OK";
 
         case EthCAN_ERROR                        : return "EthCAN_ERROR";
+        case EthCAN_ERROR_BUFFER                 : return "EthCAN_ERROR_BUFFER";
         case EthCAN_ERROR_CAN                    : return "EthCAN_ERROR_CAN";
+        case EthCAN_ERROR_CAN_RATE               : return "EthCAN_ERROR_CAN_RATE";
+        case EthCAN_ERROR_DATA_SIZE              : return "EthCAN_ERROR_DATA_SIZE";
+        case EthCAN_ERROR_DATA_UNEXPECTED        : return "EthCAN_ERROR_UNEXPECTED_DATA";
         case EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER : return "EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER";
         case EthCAN_ERROR_EXCEPTION              : return "EthCAN_ERROR_EXCEPTION";
-        case EthCAN_ERROR_INVALID_BUFFER         : return "EthCAN_ERROR_INVALID_BUFFER";
-        case EthCAN_ERROR_INVALID_CAN_RATE       : return "EthCAN_ERROR_INVALID_CAN_RATE";
-        case EthCAN_ERROR_INVALID_DATA_SIZE      : return "EthCAN_ERROR_INVALID_DATA_SIZE";
-        case EthCAN_ERROR_INVALID_FUNCTION       : return "EthCAN_ERROR_INVALID_FUNCTION";
-        case EthCAN_ERROR_INVALID_INPUT_BUFFER   : return "EthCAN_ERROR_INVALID_INPUT_BUFFER";
-        case EthCAN_ERROR_INVALID_IPv4_ADDRESS   : return "EthCAN_ERROR_INVALID_IPv4_ADDRESS";
-        case EthCAN_ERROR_INVALID_IPv4_MASK      : return "EthCAN_ERROR_INVALID_IPv4_MASK";
-        case EthCAN_ERROR_INVALID_OUTPUT_BUFFER  : return "EthCAN_ERROR_INVALID_OUTPUT_BUFFER";
-        case EthCAN_ERROR_INVALID_RESPONSE_SIZE  : return "EthCAN_ERROR_INVALID_RESPONSE_SIZE";
-        case EthCAN_ERROR_INVALID_SOCKET         : return "EthCAN_ERROR_INVALID_SOCKET";
+        case EthCAN_ERROR_FILE_NAME              : return "EthCAN_ERROR_FILE_NAME";
+        case EthCAN_ERROR_FUNCTION               : return "EthCAN_ERROR_FUNCTION";
+        case EthCAN_ERROR_INPUT_BUFFER           : return "EthCAN_ERROR_INPUT_BUFFER";
+        case EthCAN_ERROR_INPUT_FILE_CLOSE       : return "EthCAN_ERROR_INPUT_FILE_CLOSE";
+        case EthCAN_ERROR_INPUT_FILE_OPEN        : return "EthCAN_ERROR_INPUT_FILE_OPEN";
+        case EthCAN_ERROR_INPUT_STREAM           : return "EthCAN_ERROR_INPUT_STREAM";
+        case EthCAN_ERROR_INPUT_STREAM_READ      : return "EthCAN_ERROR_INPUT_STREAM_READ";
+        case EthCAN_ERROR_IPv4_ADDRESS           : return "EthCAN_ERROR_IPv4_ADDRESS";
+        case EthCAN_ERROR_IPv4_MASK              : return "EthCAN_ERROR_IPv4_MASK";
         case EthCAN_ERROR_NETWORK                : return "EthCAN_ERROR_NETWORL";
         case EthCAN_ERROR_NOT_CONNECTED          : return "EthCAN_ERROR_NOT_CONNECTED";
         case EthCAN_ERROR_NOT_CONNECTED_ETH      : return "EthCAN_ERROR_NOT_CONNECTED_ETH";
         case EthCAN_ERROR_NOT_RUNNING            : return "EthCAN_ERROR_NOT_RUNNING";
+        case EthCAN_ERROR_OUTPUT_BUFFER          : return "EthCAN_ERROR_OUTPUT_BUFFER";
         case EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL: return "EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL";
+        case EthCAN_ERROR_OUTPUT_FILE_CLOSE      : return "EthCAN_ERROR_OUTPUT_FILE_CLOSE";
+        case EthCAN_ERROR_OUTPUT_FILE_OPEN       : return "EthCAN_ERROR_OUTPUT_FILE_OPEN";
+        case EthCAN_ERROR_OUTPUT_STREAM          : return "EthCAN_ERROR_OUTPUT_STREAM";
+        case EthCAN_ERROR_OUTPUT_STREAM_WRITE    : return "EthCAN_ERROR_OUTPUT_STREAM_WRITE";
         case EthCAN_ERROR_PENDING                : return "EthCAN_ERROR_PENDING";
+        case EthCAN_ERROR_REFERENCE              : return "EthCAN_ERROR_REFERENCE";
+        case EthCAN_ERROR_RESPONSE_SIZE          : return "EthCAN_ERROR_RESPONSE_SIZE";
         case EthCAN_ERROR_RUNNING                : return "EthCAN_ERROR_RUNNING";
         case EthCAN_ERROR_SEMAPHORE              : return "EthCAN_ERROR_SEMAPHORE";
         case EthCAN_ERROR_SERIAL                 : return "EthCAN_ERROR_SERIAL";
@@ -287,7 +303,6 @@ namespace EthCAN
         case EthCAN_ERROR_SOCKET_SEND            : return "EthCAN_ERROR_SOCKET_SEND";
         case EthCAN_ERROR_THREAD                 : return "EthCAN_ERROR_THREAD";
         case EthCAN_ERROR_TIMEOUT                : return "EthCAN_ERROR_TIMEOUT";
-        case EthCAN_ERROR_UNEXPECTED_DATA        : return "EthCAN_ERROR_UNEXPECTED_DATA";
 
         case EthCAN_RESULT_INVALID : return "EthCAN_RESULT_INVALID";
         case EthCAN_RESULT_NO_ERROR: return "EthCAN_RESULT_NO_ERROR";
@@ -299,9 +314,9 @@ namespace EthCAN
 
     EthCAN_Result GetName_EthAddress(char* aOut, unsigned int aOutSize_byte, const uint8_t aIn[6])
     {
-        if (NULL == aOut      ) { return EthCAN_ERROR_INVALID_OUTPUT_BUFFER  ; }
+        if (NULL == aOut      ) { return EthCAN_ERROR_OUTPUT_BUFFER  ; }
         if (18 > aOutSize_byte) { return EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL; }
-        if (NULL == aIn       ) { return EthCAN_ERROR_INVALID_INPUT_BUFFER   ; }
+        if (NULL == aIn       ) { return EthCAN_ERROR_INPUT_BUFFER   ; }
 
         sprintf_s(aOut SIZE_INFO(aOutSize_byte), "%02x:%02x:%02x:%02x:%02x:%02x", aIn[0], aIn[1], aIn[2], aIn[3], aIn[4], aIn[5]);
 
@@ -310,9 +325,9 @@ namespace EthCAN
 
     EthCAN_Result GetName_IPv4Address(char* aOut, unsigned int aOutSize_byte, const uint8_t aIn[4])
     {
-        if (NULL == aOut      ) { return EthCAN_ERROR_INVALID_OUTPUT_BUFFER  ; }
+        if (NULL == aOut      ) { return EthCAN_ERROR_OUTPUT_BUFFER  ; }
         if (16 > aOutSize_byte) { return EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL; }
-        if (NULL == aIn       ) { return EthCAN_ERROR_INVALID_INPUT_BUFFER   ; }
+        if (NULL == aIn       ) { return EthCAN_ERROR_INPUT_BUFFER   ; }
 
         sprintf_s(aOut SIZE_INFO(aOutSize_byte), "%3u.%3u.%3u.%3u", aIn[0], aIn[1], aIn[2], aIn[3]);
 

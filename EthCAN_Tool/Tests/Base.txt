@@ -176,4 +176,6 @@ Setup WiFi
 
 Echo == Exit
 
+Echo PASSED!
+
 Exit 0

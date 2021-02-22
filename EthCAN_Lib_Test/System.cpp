@@ -33,7 +33,7 @@ KMS_TEST_BEGIN(System_Base)
     KMS_TEST_ASSERT(NULL != lS0);
 
     // GetVersion
-    KMS_TEST_COMPARE(EthCAN_ERROR_INVALID_OUTPUT_BUFFER, EthCAN::System::GetVersion(NULL));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, EthCAN::System::GetVersion(NULL));
     KMS_TEST_COMPARE(EthCAN_OK, EthCAN::System::GetVersion(lV));
     KMS_TEST_COMPARE(VERSION_MAJOR        , lV[0]);
     KMS_TEST_COMPARE(VERSION_MINOR        , lV[1]);

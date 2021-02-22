@@ -3,8 +3,11 @@
 
 /// \author    KMS - Martin Dubois, P.Eng.
 /// \copyright Copyright &copy; 2021 KMS
-/// \file      Includes/EthCAN/Device.h
-/// \brief     Device
+/// \file      Includes/EthCAN/Display.h
+/// \brief     EthCAN::Display EthCAN::Display_EthAddress EthCAN::Display_Id
+///            EthCNA::Display_IPv4Address EthCAN::Display_Version
+///            EthCAN::GetName EthCAN::GetName_EthAddress
+///            EthCAN::GetName_IPv4Address
 
 #pragma once
 

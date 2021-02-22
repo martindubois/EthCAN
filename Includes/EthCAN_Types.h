@@ -13,6 +13,8 @@
 
 #define EthCAN_ID_EXTENDED (0x80000000)
 
+#define EthCAN_FLAG_CAN_ADVANCED (0x01)
+
 #define EthCAN_FLAG_STORE_CAN    (0x01)
 #define EthCAN_FLAG_STORE_IPv4   (0x02)
 #define EthCAN_FLAG_STORE_SERVER (0x04)
@@ -38,9 +40,10 @@ typedef struct
 
     uint32_t mCAN_Filters[6]; ///< The CAN filters
     uint32_t mCAN_Masks[2];   ///< The CAN mask
+    uint8_t  mCAN_Flags;      ///< See EthCAN_FLAG_CAN_ADVANCED
     uint8_t  mCAN_Rate;       ///< See EthCAN_Rate
 
-    uint8_t mReserved0[3];
+    uint8_t mReserved0[2];
 
     uint32_t mIPv4_Address; ///< The static IPv4 address - If 0, the device use DHCP
     uint32_t mIPv4_Gateway; ///< The gateway address
@@ -50,13 +53,13 @@ typedef struct
     uint16_t mServer_Port;  ///< The server port - If 0, the server is disabled
     uint8_t  mServer_Flags; ///< Is the USB server enabled?
 
-    // 16 + 24 + 8 + 1 + 3 + 4 + 4 + 4 + 4 + 2 + 1
-    // = 48    + 9     + 7     + 8     + 6     + 1
-    // = 57            + 15            + 7
-    // = 72                            + 7
-    // = 79
+    // 16 + 6 * 4 + 2 * 4 + 2 * 1 + 2 + 3 * 4 + 4 + 2 + 1
+    // = 16 + 24  + 8     + 2     + 2 + 12    + 6     + 1
+    // = 48       + 10            + 14        + 7
+    // = 58                       + 21
+    // = 77
 
-    uint8_t mReserved1[192 - 79 - 65];
+    uint8_t mReserved1[192 - 77 - 65];
 
     // = 65 bytes
 
