@@ -9,7 +9,7 @@
 // ===== Includes ===========================================================
 #include <EthCAN/Device.h>
 
-#include <EthCan/System.h>
+#include <EthCAN/System.h>
 
 // ===== Common =============================================================
 #include "../Common/Version.h"

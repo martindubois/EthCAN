@@ -52,7 +52,6 @@ KMS_TEST_BEGIN(System_Base)
     KMS_TEST_ASSERT(NULL == lS0->Device_Find_Eth(ETH_NOT_FOUND));
 
     // Device_Find_IPv4
-    KMS_TEST_ASSERT(NULL == lS0->Device_Find_IPv4(NULL));
     KMS_TEST_ASSERT(NULL == lS0->Device_Find_IPv4(IPv4_NOT_FOUND));
 
     // Device_Find_Name

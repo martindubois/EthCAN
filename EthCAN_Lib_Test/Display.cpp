@@ -9,6 +9,17 @@
 // ===== Includes ===========================================================
 #include <EthCAN/Display.h>
 
+// Constants
+/////////////////////////////////////////////////////////////////////////////
+
+#ifdef _KMS_LINUX_
+    #define NUL_DEV "/dev/null"
+#endif
+
+#ifdef _KMS_WINDOWS_
+    #define NUL_DEV "NUL:"
+#endif
+
 // Tests
 /////////////////////////////////////////////////////////////////////////////
 
@@ -23,12 +34,14 @@ KMS_TEST_BEGIN(Display_Base)
     uint8_t lData[6];
     char    lStr[32];
 
-    KMS_TEST_COMPARE(0, fopen_s(&lNull, "NUL:", "wb"))
+    KMS_TEST_COMPARE(0, fopen_s(&lNull, NUL_DEV, "wb"))
 
-    // NULL reference
-    EthCAN::Display(NULL, *reinterpret_cast<EthCAN_Config*>(NULL));
-    EthCAN::Display(NULL, *reinterpret_cast<EthCAN_Frame *>(NULL));
-    EthCAN::Display(NULL, *reinterpret_cast<EthCAN_Info  *>(NULL));
+    #ifdef _KMS_WINDOWS_
+        // NULL reference
+        EthCAN::Display(NULL, *reinterpret_cast<EthCAN_Config*>(NULL));
+        EthCAN::Display(NULL, *reinterpret_cast<EthCAN_Frame *>(NULL));
+        EthCAN::Display(NULL, *reinterpret_cast<EthCAN_Info  *>(NULL));
+    #endif
 
     // NULL pointer
     EthCAN::Display_EthAddress(NULL, NULL);
