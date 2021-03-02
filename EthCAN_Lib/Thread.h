@@ -6,6 +6,10 @@
 
 #pragma once
 
+#ifdef _KMS_LINUX_
+    #include <pthread.h>
+#endif
+
 // ===== EthCAN_Lib =========================================================
 #include "IMessageReceiver.h"
 
@@ -54,6 +58,18 @@ private:
     IMessageReceiver * mReceiver;
 
     State mState; // Zone 0
+
+    #ifdef _KMS_LINUX_
+
+        pthread_cond_t mCond;
+
+        unsigned int mCount;
+
+        pthread_t mThread;
+
+        pthread_mutex_t mZone0;
+
+    #endif
 
     #ifdef _KMS_WINDOWS_
 

@@ -1,21 +1,20 @@
 #!/bin/sh
 
 # Author    KMS - Martin Dubois, P.Eng.
-# Copyright (C) KMS 2021
+# Copyright (C) 2021 KMS
 # Product   EthCAN
-# File      RunDoxygen.sh
-# Usage     ./RunDoxygen.sh
+# File      EthCAN_Lib_Test/Clean.sh
+# Usage     ./Clean.sh
 
-echo Executing  RunDoxygen.sh  ...
+echo Executing  EthCAN_Lib_Test/Clean.sh  ...
 
 # ===== Execution ===========================================================
 
-doxygen DoxyFile_en.txt
-if [ 0 != $? ] ; then
-    echo ERROR  doxygen DoxyFile_en.txt  failed
-    exit 10
-fi
+rm -f ../Binaries/EthCAN_Lib_Test
+
+rm -f *.o
 
 # ===== End =================================================================
 
 echo OK
+exit 0

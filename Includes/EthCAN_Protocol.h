@@ -34,8 +34,9 @@ typedef struct
     uint8_t mDataSize_byte; ///< The data size (in byte)
     uint8_t mFlags; ///< See EthCAN_FLAG_...
     uint8_t mTotalSize_byte; ///< The total size (in byte)
+    uint8_t mResult; ///< See EthCAN_Result
 
-    uint16_t mResult; ///< See EthCAN_Result
+    uint8_t mReserved0;
 
     uint32_t mSalt; ///< Random value
     uint32_t mSign; ///< Hash

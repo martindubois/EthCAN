@@ -6,6 +6,22 @@
 
 #pragma once
 
+#ifdef _KMS_LINUX_
+
+    // Constants
+    /////////////////////////////////////////////////////////////////////////
+
+    #define INVALID_SOCKET (-1)
+
+    #define SOCKET_ERROR (-1)
+
+    // Data type
+    /////////////////////////////////////////////////////////////////////////
+
+    typedef int SOCKET;
+
+#endif
+
 class UDPSocket
 {
 

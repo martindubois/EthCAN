@@ -15,6 +15,17 @@ extern "C"
 // ===== EthCAN_Lib =========================================================
 #include "UDPSocket.h"
 
+// Macros
+/////////////////////////////////////////////////////////////////////////
+
+#ifdef _KMS_LINUX_
+    #define FIELD_ADDR_32 s_addr
+#endif
+
+#ifdef _KMS_WINDOWS_
+    #define FIELD_ADDR_32 S_un.S_addr
+#endif
+
 // Public
 /////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +79,7 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
     {
         sockaddr_in lFrom;
 
-        int lFromSize_byte = sizeof(lFrom);
+        socklen_t lFromSize_byte = sizeof(lFrom);
 
         int lRet = recvfrom(mSocket, reinterpret_cast<char*>(aData), aSize_byte, 0, reinterpret_cast<sockaddr*>(&lFrom), &lFromSize_byte);
         if (0 == lRet)
@@ -80,6 +91,7 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
         {
             if (!Timeout_Verify())
             {
+                fprintf(stderr, "ERROR  UDPSocket::Receive - EthCAN_ERROR_SOCKET (%d)\n", lRet);
                 throw EthCAN_ERROR_SOCKET;
             }
 
@@ -97,7 +109,7 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
         {
             if (NULL != aFrom)
             {
-                *aFrom = lFrom.sin_addr.S_un.S_addr;
+                *aFrom = lFrom.sin_addr.FIELD_ADDR_32;
             }
 
             break;
@@ -119,9 +131,9 @@ void UDPSocket::Send(const void* aData, unsigned int aSize_byte, uint32_t aTo)
 
     memset(&lTo, 0, sizeof(lTo));
 
-    lTo.sin_addr.S_un.S_addr = aTo;
-    lTo.sin_family           = AF_INET;
-    lTo.sin_port             = htons(EthCAN_UDP_PORT);
+    lTo.sin_addr.FIELD_ADDR_32 = aTo;
+    lTo.sin_family             = AF_INET;
+    lTo.sin_port               = htons(EthCAN_UDP_PORT);
 
     int lRet = sendto(mSocket, reinterpret_cast<const char*>(aData), aSize_byte, 0, reinterpret_cast<sockaddr*>(&lTo), sizeof(lTo));
     if (aSize_byte != lRet)
