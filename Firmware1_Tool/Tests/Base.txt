@@ -1,0 +1,111 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      Firmware1_Tool
+
+echo == Config Clear
+
+Config Clear
+Error Exit
+
+echo == Config Display
+
+Config Display
+Error Exit
+
+echo == Config Filter [0_hex] ... [5_hex]
+
+Config Filters Invalid
+Error Clear
+
+Config Filters
+Error Exit
+
+echo == Config Flags [Flags_hex]
+
+Config Flags fff
+Error Clear
+
+Config Flags
+Error Exit
+
+echo == Config Help
+
+Config Help
+Error Exit
+
+echo == Config Masks [0_hex] [1_hex]
+
+Config Masks ffffffff
+Error Clear
+
+Config Masks
+Error Exit
+
+echo == Config Rate [Rate]
+
+Config Rate 48
+Error Clear
+
+Config Rate
+Error Exit
+
+echo == Config Reset
+
+Config Reset
+Error Clear
+
+echo == Config Set
+
+Config Set
+Error Clear
+
+echo == Connect {COMx:}
+
+Connect NUL:
+Error Clear
+
+Connect
+Error Clear
+
+echo == Disconnect
+
+Disconnect
+Error Clear
+
+echo == GetInfo
+
+GetInfo
+Error Clear
+
+echo == Help
+
+Help
+Error Exit
+
+echo == Production
+
+Production
+Error Clear
+
+echo == Receive
+
+Receive
+Error Clear
+
+echo == Reset
+
+Reset
+Error Clear
+
+echo == Send [Id_hex] [Size_byte_hex] [0_hex] ... [7_hex]
+
+Send 0 9
+Send 0 8
+Send 0 8 Invalid
+Send
+Error Clear
+
+echo PASSED!
+exit 0

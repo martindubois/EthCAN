@@ -11,6 +11,8 @@ rem ===== Initialization ====================================================
 
 set BASE_TXT="EthCAN_Tool\Tests\Base.txt"
 
+set FIRMWARE1_BASE_TXT="Firmware1_Tool\Tests\Base.txt"
+
 set DEBUG=x64\Debug
 
 set RELEASE=x64\Release
@@ -47,6 +49,13 @@ if  ERRORLEVEL 1 (
 	exit /B 40
 )
 
+%DEBUG%\Firmware1_Tool.exe "Execute=ExecuteScript %FIRMWARE1_BASE_TXT%"
+if  ERRORLEVEL 1 (
+	echo ERROR  %DEBUG%\Firmware1_Tool.exe "Execute=ExecuteScript %FIRMWARE1_BASE_TXT%"  failed - %ERRORLEVEL%
+	pause
+	exit /B 45
+)
+
 %RELEASE%\EthCAN_Lib_Test.exe
 if ERRORLEVEL 1 (
     echo ERROR  %RELEASE%\EthCAN_Lib_Test.exe  failed - %ERRORLEVEL%
@@ -59,6 +68,13 @@ if  ERRORLEVEL 1 (
 	echo ERROR  %RELEASE%\EthCAN_Tool.exe "Execute=ExecuteScript %BASE_TXT%"  failed - %ERRORLEVEL%
 	pause
 	exit /B 60
+)
+
+%RELEASE%\Firmware1_Tool.exe "Execute=ExecuteScript %FIRMWARE1_BASE_TXT%"
+if  ERRORLEVEL 1 (
+	echo ERROR  %RELEASE%\Firmware1_Tool.exe "Execute=ExecuteScript %FIRMWARE1_BASE_TXT%"  failed - %ERRORLEVEL%
+	pause
+	exit /B 70
 )
 
 rem ===== End ===============================================================
