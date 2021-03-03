@@ -1,0 +1,24 @@
+
+Author    KMS - Martin Dubois, P.Eng.
+Copyright (C) 2021 KMS
+Product   DevComputer.txt
+File      Firmware1/_DocDev/DevComputer.txt
+
+Name                _________________________________________________________
+
+Date and time       20 ______ - ______ - ______               ______ : ______
+
+[ ] Install Arduino from K:\TheKit\Arduino
+[ ] Tool "Arduino"
+    - Menu "File", select "Preference"
+        - Box "Additional Boards Manager URLS", enter
+          "https://raw.githubusercontent.com/Longan-Labs/Longan-Board/master/package_longan_boards_index.json"
+        - Click "OK"
+    - Menu "Tools", select "Board" and select "Board Manager..."
+        - Find "Logan AVR" and click "Install"
+    - Menu "Tools", select "Board", select "ESP32 Arduino" and select
+      "OLIMEX ESP32-PoE-ISO"
+
+Time and duration   ______ : ______            _____ hours and ______ minutes
+
+Signature           _________________________________________________________

@@ -13,7 +13,10 @@
 
 #define EthCAN_ID_EXTENDED (0x80000000)
 
-#define EthCAN_FLAG_CAN_ADVANCED (0x01)
+#define EthCAN_FLAG_CAN_RTR (0x40)
+
+#define EthCAN_FLAG_CAN_ADVANCED    (0x01)
+#define EthCAN_FLAG_CAN_FILTERS_OFF (0x02)
 
 #define EthCAN_FLAG_STORE_CAN    (0x01)
 #define EthCAN_FLAG_STORE_IPv4   (0x02)
@@ -74,11 +77,11 @@ typedef struct
 {
     uint32_t mId; ///< The id
 
-    uint8_t mDataSize_byte; ///< The data size (in byte)
-
-    uint8_t mReserved0[3];
+    uint8_t mDataSize_byte; ///< The data size (in byte) and possibly EthCAN_FLAG_CAN_RTR
 
     uint8_t mData[8]; ///< The data
+
+    uint8_t mReserved0[3];
 }
 EthCAN_Frame;
 
@@ -101,19 +104,20 @@ typedef struct
 
     uint32_t mMessageId    ; ///< The last message id
 
-    uint16_t mResult_CAN; ///< The result of the CAN configuration
+    uint8_t mResult_CAN; ///< The result of the CAN configuration
 
-    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 4 + 2
-    // = 22   + 2 + 12    + 12    + 6
-    // = 24       + 24            + 6
-    // = 48                       + 6
-    // = 54
+    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 4 + 1
+    // = 22   + 2 + 12    + 12    + 5
+    // = 24       + 24            + 5
+    // = 48                       + 5
+    // = 53
 
-    uint8_t mReserved2[192 - 54 - 52];
+    uint8_t mReserved2[192 - 53 - 52];
 
-    // 9 * 4 + 4 + 3 * 2 + 1 + 5
-    // = 36  + 4 + 6     + 6
-    // = 40      + 12
+    // 9 * 4 + 4 + 2 * 2 + 2 * 1 + 6
+    // = 36  + 4 + 4     + 2     + 6
+    // = 40      + 6             + 6
+    // = 46                      + 6
     // = 52
 
     uint32_t mCounter_Errors  ; ///< Errors
@@ -127,12 +131,12 @@ typedef struct
     uint32_t mCounter_Tx_frame; ///< Frame transmitted to the CAN bus
 
     uint32_t mLast_Rx_Id       ; ///< Last received CAN id
-    uint16_t mLast_Error_Code  ; ///< Last error
     uint16_t mLast_Error_Line  ; ///< Last error line
     uint16_t mLast_Request_Id  ; ///< Last request id
+    uint8_t  mLast_Error_Code  ; ///< Last error
     uint8_t  mLast_Request_Code; ///< Last request code
 
-    uint8_t mReserved3[5];
+    uint8_t mReserved3[6];
 
 }
 EthCAN_Info;
