@@ -143,8 +143,7 @@ static void Setup_Link       (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Setup_Sniffer    (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Setup_StaticIP   (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Setup_WiFi       (KmsLib::ToolBase* aToolBase, const char* aArg);
-
-// TODO EthCAN_Tool.Setup.Wireshark
+static void Setup_Wireshark  (KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo SETUP_COMMANDS[] =
 {
@@ -158,6 +157,8 @@ static const KmsLib::ToolBase::CommandInfo SETUP_COMMANDS[] =
     { "StaticIP"   , Setup_StaticIP   , "StaticIP {Address} {Gateway} {NetMask}\n"
                                         "                              Setup the sel. EthCAN with a static IP"  , NULL },
     { "WiFi"       , Setup_WiFi       , "WiFi [SSID] [Password]        Setup the WiFi for the selected EthCAN"  , NULL },
+    { "Wireshark"  , Setup_Wireshark  , "Wireshark                     Setup the selected EthCAN as a sniffer to\n"
+                                        "                              use with Wireshark"                      , NULL },
 
     { NULL, NULL, NULL, NULL }
 };
@@ -970,6 +971,30 @@ void Setup_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
 
         DisplayResult(aToolBase, lRet);
     }
+}
+
+void Setup_Wireshark(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    USE_SELECTED_DEVICE;
+
+    EthCAN_Config lConfig;
+    unsigned int lStep = 1;
+
+    printf("%u. Retrieving the configuration...\n", lStep); lStep++;
+    EthCAN_Result lRet = sDevice->Config_Get(&lConfig);
+    if (EthCAN_OK == lRet)
+    {
+        printf("%u. Modifying the configuration...\n", lStep); lStep++;
+        // TODO lConfig.mCAN_Flags, lConfig.mCAN_Filters and lConfig.mCAN_Masks
+        lConfig.mServer_Flags &= ~EthCAN_FLAG_WIFI_AP;
+        // TODO lConfig.mServer_IPv4
+        lConfig.mServer_Port = EthCAN_UDP_PORT;
+
+        printf("%u. Setting the configuration...\n", lStep); lStep++;
+        lRet = sDevice->Config_Set(&lConfig);
+    }
+
+    DisplayResult(aToolBase, lRet);
 }
 
 void Debug(KmsLib::ToolBase* aToolBase, const char* aArg)
