@@ -18,7 +18,7 @@
 // ===== EthCAN_REQUEST_CONFIG_SET ==========================================
 // Input  uint8_t                      EthCAN_SYNC
 //        uint8_t (EthCAN_RequestCode) EthCAN_REQUEST_CONFIG_SET
-//        IntPro_Config_Set
+//        IntPro_Config
 // Output uint8_t                      EthCAN_SYNC
 //        uint8_t (EthCAN_Result)      EthCAN_OK
 
@@ -39,24 +39,25 @@ typedef struct
     uint8_t  mFlags;
     uint8_t  mRate;
 }
-IntPro_Config_Set;
+IntPro_Config;
 
 // ===== EthCAN_REQUEST_INGO_GET ============================================
 // Input  uint8_t                      EthCAN_SYNC
 //        uint8_t (EthCAN_RequestCode) EthCAN_REQUEST_INFO_GET
 // Output uint8_t                      EthCAN_SYNC
 //        uint8_t (EthCAN_Result)      EthCAN_OK
-//        IntPro_Info_Get
+//        IntPro_Info
 
 typedef struct
 {
     uint8_t mFirmware[4];
 
-    uint8_t mResult_CAN;
-
-    uint8_t mReserved0[3];
+    uint8_t mErrors;
+    uint8_t mResult;
+    uint8_t mRxErrors;
+    uint8_t mTxErrors;
 }
-IntPro_Info_Get;
+IntPro_Info;
 
 // ===== EthCAN_REQUEST_RESET ===============================================
 // Input  uint8_t                      EthCAN_SYNC

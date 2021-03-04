@@ -44,8 +44,7 @@ MCP_Id;
 #define MCP_TXB_QTY (3)
 
 // ===== Status register ====================================================
-#define MCP_STATUS_RX0IF      (0x01)
-#define MCP_STATUS_RX1IF      (0x02)
+#define MCP_STATUS_RX0IF(I)   (0x01 << (I))
 #define MCP_STATUS_RXxIF_MASK (0x03)
 
 // ===== Register offsets ===================================================
@@ -67,8 +66,8 @@ static const uint8_t MCP_RXFxID[MCP_RXF_QTY] = { 0x00, 0x04, 0x08, 0x10, 0x14, 0
 
 #define MCP_CAN_CTRL (0x0f)
 
-#define MCP_TX_ERROR_COUNTER (0x1c) // TODO
-#define MCP_RX_ERROR_COUNTER (0x1d) // TODO
+#define MCP_TX_ERROR_COUNTER (0x1c)
+#define MCP_RX_ERROR_COUNTER (0x1d)
 
 static const uint8_t MCP_RXMxID[MCP_RXM_QTY] = { 0x20, 0x24 };
 
@@ -76,7 +75,7 @@ static const uint8_t MCP_CNF[MCP_CNF_QTY] = { 0x2A, 0x29, 0x28 };
 
 #define MCP_CAN_INTE   (0x2B)
 #define MCP_CAN_INTF   (0x2C)
-#define MCP_ERROR_FLAG (0x2d) // TODO
+#define MCP_ERROR_FLAG (0x2d)
 
 static const uint8_t MCP_TXB[MCP_TXB_QTY] = { 0x30, 0x40, 0x50 };
 // See MCP_B_...

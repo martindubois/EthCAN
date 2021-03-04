@@ -9,7 +9,6 @@
 // ===== Firmware1 ==========================================================
 extern "C"
 {
-    #include "Includes/EthCAN_Result.h"
     #include "Includes/EthCAN_Types.h"
 }
 
@@ -17,6 +16,5 @@ extern "C"
 /////////////////////////////////////////////////////////////////////////////
 
 extern void Cmd_Loop();
-extern void Cmd_Result_CAN_Set(EthCAN_Result aResult);
 extern void Cmd_Send(const EthCAN_Frame & aFrame);
 extern void Cmd_Setup();

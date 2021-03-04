@@ -507,7 +507,7 @@ void Device_Send(KmsLib::ToolBase* aToolBase, const char* aArg)
 
         bool lParsed = true;
 
-        for (unsigned int i = 0; lParsed && (i < lCount); i++)
+        for (unsigned int i = 0; lParsed && (i < EthCAN_FRAME_DATA_SIZE(lFrame)); i++)
         {
             unsigned int lData;
 

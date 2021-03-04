@@ -85,6 +85,11 @@ typedef struct
 }
 EthCAN_Frame;
 
+#define EthCAN_FRAME_DATA_SIZE(F) ((F).mDataSize_byte & ~ EthCAN_FLAG_CAN_RTR)
+#define EthCAN_FRAME_EXTENDED(F)  (EthCAN_ID_EXTENDED == ((F).mId & EthCAN_ID_EXTENDED))
+#define EthCAN_FRAME_ID(F)        ((F).mId & ~ EthCAN_ID_EXTENDED)
+#define EthCAN_FRAME_RTR(F)       (EthCAN_FLAG_CAN_RTR == ((F).mDataSize_byte & EthCAN_FLAG_CAN_RTR))
+
 /// \brief EthCAN_Info
 typedef struct
 {

@@ -21,6 +21,8 @@
     #define COM_SPEED_bps (1000000)
 #endif
 
+#define LED_POWER (3)
+
 // Entry points
 /////////////////////////////////////////////////////////////////////////////
 
@@ -30,27 +32,25 @@ void setup()
 
     MSG_INFO("EthCAN - Firmware1 - ", VERSION_STR);
 
-    pinMode(3, OUTPUT);
+    pinMode(LED_POWER, OUTPUT);
 
     Cmd_Setup();
 
     CAN_Begin();
 
-    uint8_t lVal = 0x01;
-
     for (unsigned int lRetry = 0; lRetry < 4; lRetry ++)
     {
-        EthCAN_Result lRet = CAN_Config_Reset();
-        Cmd_Result_CAN_Set(lRet);
-        if (EthCAN_OK == lRet)
+        if (EthCAN_OK == CAN_Config_Reset())
         {
             break;
         }
 
+        MSG_WARNING("Retrying CAN initialisation... ");
+
         delay(100);
-        digitalWrite(3, lVal);
-        lVal ^= 0x01;
     }
+
+    digitalWrite(LED_POWER, HIGH);
 }
 
 void loop()
