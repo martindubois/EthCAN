@@ -57,10 +57,10 @@ static const KmsLib::ToolBase::CommandInfo CONFIG_COMMANDS[] =
 static void Connect   (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Disconnect(KmsLib::ToolBase* aToolBase, const char* aArg);
 static void GetInfo   (KmsLib::ToolBase* aToolBase, const char* aArg);
-static void Production(KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Receive   (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Reset     (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Send      (KmsLib::ToolBase* aToolBase, const char* aArg);
+static void Test      (KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo COMMANDS[] =
 {
@@ -68,11 +68,11 @@ static const KmsLib::ToolBase::CommandInfo COMMANDS[] =
     { "Connect"   , Connect   , "Connect {COMx:}               Connect to the device"     , NULL },
     { "Disconnect", Disconnect, "Disconnect                    Disconnect from the device", NULL },
     { "GetInfo"   , GetInfo   , "GetInfo                       Get device information"    , NULL },
-    { "Production", Production, "Production {COMx:}"                                      , NULL },
     { "Receive"   , Receive   , "Receive                       Receive frames"            , NULL },
     { "Reset"     , Reset     , "Reset                         Reset the device"          , NULL },
     { "Send"      , Send      , "Send [Id_hex] [Size_byte_hex] [0_hex] ... [7_hex]\n"
                                 "                              Send a frame"              , NULL },
+    { "Test"      , Test      , "Test                          Test"                      , NULL },
 
     KMS_LIB_TOOL_BASE_FUNCTIONS
 
@@ -101,8 +101,6 @@ State;
 
 static void Display(const IntPro_Info_Get& aIn);
 
-static bool GetInfo(KmsLib::ToolBase* aToolBase, IntPro_Info_Get* aInfo);
-
 static void Port_Close();
 static bool Port_OpenAndConfigure(KmsLib::ToolBase* aToolBase, const char* aPortName);
 
@@ -115,6 +113,13 @@ static bool Receive_Sync (uint8_t aByte, bool aDataExpected);
 static bool Request(KmsLib::ToolBase* aToolBase, EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte);
 
 static bool Write(KmsLib::ToolBase* aToolBase, const void* aIn, unsigned int aInSize_byte);
+
+// ===== Internal commands ==================================================
+static bool Config_Reset(KmsLib::ToolBase* aToolBase);
+static bool Config_Set  (KmsLib::ToolBase* aToolBase, const IntPro_Config_Set& aConfig);
+static bool GetInfo     (KmsLib::ToolBase* aToolBase, IntPro_Info_Get* aInfo);
+static bool Reset       (KmsLib::ToolBase* aToolBase);
+static bool Send        (KmsLib::ToolBase* aToolBase, const EthCAN_Frame& aFrame);
 
 // Static variables
 /////////////////////////////////////////////////////////////////////////////
@@ -257,7 +262,7 @@ void Config_Reset(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_DEVICE;
 
-    if (Request(aToolBase, EthCAN_REQUEST_CONFIG_RESET, NULL, 0, NULL, 0))
+    if (Config_Reset(aToolBase))
     {
         KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Reseted");
     }
@@ -267,9 +272,9 @@ void Config_Set(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_DEVICE;
 
-    if (Request(aToolBase, EthCAN_REQUEST_CONFIG_SET, &sConfig, sizeof(sConfig), NULL, 0))
+    if (Config_Set(aToolBase, sConfig))
     {
-        KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Reseted");
+        KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Configured");
     }
 }
 
@@ -304,46 +309,6 @@ void GetInfo(KmsLib::ToolBase* aToolBase, const char* aArg)
     }
 }
 
-void Production(KmsLib::ToolBase* aToolBase, const char* aArg)
-{
-    if (Port_OpenAndConfigure(aToolBase, aArg))
-    {
-        IntPro_Info_Get lInfo;
-        bool lPassed = false;
-
-        if (GetInfo(aToolBase, &lInfo))
-        {
-            lPassed = true;
-
-            Display(lInfo);
-
-            if (   (VERSION_MAJOR         != lInfo.mFirmware[0])
-                || (VERSION_MINOR         != lInfo.mFirmware[1])
-                || (VERSION_BUILD         != lInfo.mFirmware[2])
-                || (VERSION_COMPATIBILITY != lInfo.mFirmware[3]))
-            {
-                aToolBase->SetError(__LINE__, "Invalid firmware version\n");
-                lPassed = false;
-            }
-
-            if (EthCAN_OK != lInfo.mResult_CAN)
-            {
-                aToolBase->SetError(__LINE__, "CAN initialisation failed\n");
-                lPassed = false;
-            }
-
-            // TODO Firmware1_Tool.Production
-        }
-
-        Port_Close();
-
-        if (lPassed)
-        {
-            KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "PASSED");
-        }
-    }
-}
-
 void Receive(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_DEVICE;
@@ -359,7 +324,10 @@ void Reset(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_DEVICE;
 
-    Request(aToolBase, EthCAN_REQUEST_RESET, NULL, 0, NULL, 0);
+    if (Reset(aToolBase))
+    {
+        KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Reseted");
+    }
 }
 
 void Send(KmsLib::ToolBase* aToolBase, const char* aArg)
@@ -395,7 +363,78 @@ void Send(KmsLib::ToolBase* aToolBase, const char* aArg)
 
         USE_DEVICE;
 
-        Request(aToolBase, EthCAN_REQUEST_SEND, &lFrame, 5 + lCount, NULL, 0);
+        if (Send(aToolBase, lFrame))
+        {
+            KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Sent");
+        }
+    }
+}
+
+void Test(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    USE_DEVICE;
+
+    IntPro_Info_Get lInfo;
+
+    bool lPassed = GetInfo(aToolBase, &lInfo);
+    if (lPassed)
+    {
+        Display(lInfo);
+
+        if ((VERSION_MAJOR != lInfo.mFirmware[0])
+            || (VERSION_MINOR != lInfo.mFirmware[1])
+            || (VERSION_BUILD != lInfo.mFirmware[2])
+            || (VERSION_COMPATIBILITY != lInfo.mFirmware[3]))
+        {
+            aToolBase->SetError(__LINE__, "Invalid firmware version\n");
+            lPassed = false;
+        }
+
+        if (EthCAN_OK != lInfo.mResult_CAN)
+        {
+            aToolBase->SetError(__LINE__, "CAN initialisation failed\n");
+            lPassed = false;
+        }
+    }
+
+    if (lPassed)
+    {
+        EthCAN_Frame lFrame;
+
+        memset(&lFrame, 0, sizeof(lFrame));
+
+        lFrame.mId = 2;
+        lFrame.mDataSize_byte = 8;
+
+        lPassed = Send(aToolBase, lFrame);
+    }
+
+    if (lPassed)
+    {
+        lPassed = Config_Reset(aToolBase);
+    }
+
+    if (lPassed)
+    {
+        IntPro_Config_Set lConfig;
+
+        memset(&lConfig, 0, sizeof(lConfig));
+
+        lPassed = Config_Set(aToolBase, lConfig);
+    }
+
+    if (lPassed)
+    {
+        lPassed = Reset(aToolBase);
+    }
+
+    if (lPassed)
+    {
+        KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "PASSED");
+    }
+    else
+    {
+        aToolBase->SetError(__LINE__, "FAILED");
     }
 }
 
@@ -408,11 +447,6 @@ void Display(const IntPro_Info_Get& aIn)
 
     printf("Firmware   : "); EthCAN::Display_Version(stdout, aIn.mFirmware);
     printf("Result CAN : "); EthCAN::Display(stdout, static_cast<EthCAN_Result>(aIn.mResult_CAN));
-}
-
-bool GetInfo(KmsLib::ToolBase* aToolBase, IntPro_Info_Get* aInfo)
-{
-    return Request(aToolBase, EthCAN_REQUEST_INFO_GET, NULL, 0, aInfo, sizeof(*aInfo));
 }
 
 void Port_Close()
@@ -456,7 +490,7 @@ bool Port_OpenAndConfigure(KmsLib::ToolBase* aToolBase, const char* aPortName)
     lDCB.BaudRate = CBR_115200;
     lDCB.ByteSize = 8;
     lDCB.Parity   = NOPARITY;
-    lDCB.StopBits = 1;
+    lDCB.StopBits = ONESTOPBIT;
 
     lDCB.fAbortOnError   = FALSE;
     lDCB.fDsrSensitivity = FALSE;
@@ -472,6 +506,7 @@ bool Port_OpenAndConfigure(KmsLib::ToolBase* aToolBase, const char* aPortName)
 
     if (!SetCommState(sPort, &lDCB))
     {
+        printf("%u\n", GetLastError());
         aToolBase->SetError(__LINE__, "SetCommState( ,  ) failed");
         return false;
     }
@@ -602,7 +637,9 @@ void Receive_Init(uint8_t aByte)
     }
     else
     {
-        if ((32 <= aByte) && (126 >= aByte))
+        if (   ('\n' == aByte)
+            || ('\r' == aByte)
+            || (32 <= aByte) && (126 >= aByte))
         {
             printf("%c", aByte);
         }
@@ -636,6 +673,12 @@ bool Receive_Sync(uint8_t aByte, bool aDataExpected)
         }
         break;
 
+    case EthCAN_ERROR_TIMEOUT:
+        EthCAN::Display(stdout, static_cast<EthCAN_Result>(aByte));
+        sState = STATE_INIT;
+        lResult = false;
+        break;
+
     default:
         printf("Invalid byte after SYNC (0x%02x)\n", aByte);
         sState = STATE_INIT;
@@ -667,4 +710,31 @@ bool Write(KmsLib::ToolBase* aToolBase, const void* aIn, unsigned int aInSize_by
     }
 
     return true;
+}
+
+// ===== Internal commands ==================================================
+
+bool Config_Reset(KmsLib::ToolBase* aToolBase)
+{
+    return Request(aToolBase, EthCAN_REQUEST_CONFIG_RESET, NULL, 0, NULL, 0);
+}
+
+bool Config_Set(KmsLib::ToolBase* aToolBase, const IntPro_Config_Set& aConfig)
+{
+    return Request(aToolBase, EthCAN_REQUEST_CONFIG_SET, &aConfig, sizeof(aConfig), NULL, 0);
+}
+
+bool GetInfo(KmsLib::ToolBase* aToolBase, IntPro_Info_Get* aInfo)
+{
+    return Request(aToolBase, EthCAN_REQUEST_INFO_GET, NULL, 0, aInfo, sizeof(*aInfo));
+}
+
+bool Reset(KmsLib::ToolBase* aToolBase)
+{
+    return Request(aToolBase, EthCAN_REQUEST_RESET, NULL, 0, NULL, 0);
+}
+
+bool Send(KmsLib::ToolBase* aToolBase, const EthCAN_Frame& aFrame)
+{
+    return Request(aToolBase, EthCAN_REQUEST_SEND, &aFrame, 5 + (aFrame.mDataSize_byte & ~ EthCAN_FLAG_CAN_RTR), NULL, 0);
 }
