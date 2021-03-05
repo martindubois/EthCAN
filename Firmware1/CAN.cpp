@@ -131,7 +131,7 @@ EthCAN_Result CAN_Config_Reset()
     EthCAN_Result lResult = SetMode(MCP_CAN_CTRL_MODE_CONFIG);
     if (EthCAN_OK == lResult)
     {
-        SetRate(EthCAN_RATE_500_Kb);
+        SetRate(EthCAN_RATE_DEFAULT);
 
         ClearBuffers();
 

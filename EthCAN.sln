@@ -15,51 +15,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EthCAN_Tool", "EthCAN_Tool\
 		{E2A71320-EB4C-4591-8623-8C6516BC73BD} = {E2A71320-EB4C-4591-8623-8C6516BC73BD}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Includes", "Includes", "{61E93677-2B04-463E-BEE0-6A5919680033}"
-	ProjectSection(SolutionItems) = preProject
-		Includes\EthCAN_Protocol.h = Includes\EthCAN_Protocol.h
-		Includes\EthCAN_Result.h = Includes\EthCAN_Result.h
-		Includes\EthCAN_Types.h = Includes\EthCAN_Types.h
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EthCAN", "EthCAN", "{684313AD-E442-426B-B92F-F931C9D83B50}"
-	ProjectSection(SolutionItems) = preProject
-		Includes\EthCAN\Device.h = Includes\EthCAN\Device.h
-		Includes\EthCAN\Display.h = Includes\EthCAN\Display.h
-		Includes\EthCAN\File.h = Includes\EthCAN\File.h
-		Includes\EthCAN\Object.h = Includes\EthCAN\Object.h
-		Includes\EthCAN\System.h = Includes\EthCAN\System.h
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5976DBF3-E310-4686-B524-3CDCAE3D7F32}"
-	ProjectSection(SolutionItems) = preProject
-		.gitignore = .gitignore
-		Build.cmd = Build.cmd
-		Build.sh = Build.sh
-		Clean.sh = Clean.sh
-		CreateLinks.cmd = CreateLinks.cmd
-		CreatePackages.sh = CreatePackages.sh
-		DoxyFile_en.txt = DoxyFile_en.txt
-		Export.cmd = Export.cmd
-		Export.cmd.txt = Export.cmd.txt
-		Test.cmd = Test.cmd
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_DocDev", "_DocDev", "{B0B472B8-CE0B-4EE0-A396-F7E647A4BEE6}"
-	ProjectSection(SolutionItems) = preProject
-		_DocDev\Build.txt = _DocDev\Build.txt
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{67AA1949-97A5-4961-A246-DC92D70C0164}"
-	ProjectSection(SolutionItems) = preProject
-		Common\Version.h = Common\Version.h
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_DocUser", "_DocUser", "{3E0A8A1D-20FB-46D7-ADC2-2080449B4C39}"
-	ProjectSection(SolutionItems) = preProject
-		_DocUser\EthCAN.ReadMe.txt = _DocUser\EthCAN.ReadMe.txt
-	EndProjectSection
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Firmware1_Tool", "Firmware1_Tool\Firmware1_Tool.vcxproj", "{B9364D76-00FA-429B-8C1C-0AF462076739}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E2A71320-EB4C-4591-8623-8C6516BC73BD} = {E2A71320-EB4C-4591-8623-8C6516BC73BD}
@@ -108,9 +63,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{684313AD-E442-426B-B92F-F931C9D83B50} = {61E93677-2B04-463E-BEE0-6A5919680033}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {752912DE-71BA-48F2-AC05-153630E4E923}

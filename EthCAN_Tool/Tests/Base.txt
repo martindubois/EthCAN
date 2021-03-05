@@ -30,6 +30,11 @@ Error Clear
 Config CAN Rate
 Error Exit
 
+Echo == Config Clear
+
+Config Clear
+Error Exit
+
 Echo == Config Display
 
 Config Display

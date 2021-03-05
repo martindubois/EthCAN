@@ -157,11 +157,6 @@
     <ClInclude Include="Component.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Tests\Base.txt" />
-    <Text Include="Tests\SetupA.txt" />
-    <Text Include="_DocUser\EthCAN.EthCAN_Tool.ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="..\Common\Version.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

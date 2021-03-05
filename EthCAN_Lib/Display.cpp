@@ -109,14 +109,16 @@ namespace EthCAN
         fprintf(lOut, "        Last message id  : %u\n", aIn.mMessageId);
         fprintf(lOut, "        Name             : %s\n", aIn.mName);
         fprintf(lOut, "        Result CAN       : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mResult_CAN));
+        fprintf(lOut, "        CAN Errors       : 0x%02x\n", aIn.mCAN_Errors);
+        fprintf(lOut, "        CAN Result       : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mCAN_Result));
 
         fprintf(lOut, "        Counters\n");
         fprintf(lOut, "            Errors   : %u\n", aIn.mCounter_Errors);
         fprintf(lOut, "            Events   : %u\n", aIn.mCounter_Events);
         fprintf(lOut, "            Fx       : %u bytes, %u frames\n", aIn.mCounter_Fx_byte, aIn.mCounter_Fx_frame);
         fprintf(lOut, "            Requests : %u\n", aIn.mCounter_Requests);
-        fprintf(lOut, "            Rx       : %u bytes, %u frames\n", aIn.mCounter_Rx_byte, aIn.mCounter_Rx_frame);
-        fprintf(lOut, "            Tx       : %u bytes, %u frames\n", aIn.mCounter_Tx_byte, aIn.mCounter_Tx_frame);
+        fprintf(lOut, "            Rx       : %u bytes, %u frames, %u errors\n", aIn.mCounter_Rx_byte, aIn.mCounter_Rx_frame, aIn.mCounter_RxErrors);
+        fprintf(lOut, "            Tx       : %u bytes, %u frames, %u errors\n", aIn.mCounter_Tx_byte, aIn.mCounter_Tx_frame, aIn.mCounter_TxErrors);
 
         fprintf(lOut, "        Last\n");
         fprintf(lOut, "            Error Code   : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mLast_Error_Code));

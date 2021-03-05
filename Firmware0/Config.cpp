@@ -22,7 +22,6 @@
 
 #define DEFAULT_CAN_FILTER (0)
 #define DEFAULT_CAN_MASK   (0)
-#define DEFAULT_CAN_RATE   (EthCAN_RATE_1_Mb)
 
 #define STORE_WHAT          (  0) //  1 bytes
                                   // 15 bytes
@@ -165,9 +164,7 @@ uint8_t Config_Reset()
 {
     MSG_DEBUG("Config_Reset()");
 
-    Init();
-
-    sCAN = DEFAULT_CAN_RATE != gConfig.mCAN_Rate;
+    sCAN = (0 != gConfig.mCAN_Flags) || (EthCAN_RATE_DEFAULT != gConfig.mCAN_Rate);
     if (!sCAN)
     {
         unsigned int i = 0;
@@ -192,6 +189,8 @@ uint8_t Config_Reset()
             }
         }
     }
+
+    Init();
 
     return sCAN ? EthCAN_FLAG_BUSY : 0;
 }
@@ -305,35 +304,11 @@ EthCAN_Result Config_Store(const EthCAN_Header * aIn)
 
 void Init()
 {
-    // MSG_DEBUG("Init()");
+    memset(&gConfig, 0, sizeof(gConfig));
 
-    unsigned int i;
-
-    for (i = 0; i < 6; i ++)
-    {
-        gConfig.mCAN_Filters[i] = DEFAULT_CAN_FILTER;
-    }
-
-    for (i = 0; i < 2; i ++)
-    {
-        gConfig.mCAN_Masks[i] = DEFAULT_CAN_MASK;
-    }
-
-    gConfig.mCAN_Rate = DEFAULT_CAN_RATE;
+    gConfig.mCAN_Rate = EthCAN_RATE_DEFAULT;
 
     strcpy(gConfig.mName, "EthCAN");
-
-    gConfig.mIPv4_Address = 0;
-    gConfig.mIPv4_Gateway = 0;
-    gConfig.mIPv4_NetMask = 0;
-
-    gConfig.mServer_Flags = 0;
-    gConfig.mServer_IPv4  = 0;
-    gConfig.mServer_Port  = 0;
-
-    gConfig.mWiFi_Flags       = 0;
-    gConfig.mWiFi_Name    [0] = '\0';
-    gConfig.mWiFi_Password[0] = '\0';
 }
 
 void Load(void * aOut, uint8_t aOffset, unsigned int aSize_byte)

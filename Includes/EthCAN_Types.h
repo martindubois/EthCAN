@@ -15,8 +15,8 @@
 
 #define EthCAN_FLAG_CAN_RTR (0x40)
 
-#define EthCAN_FLAG_CAN_ADVANCED    (0x01)
-#define EthCAN_FLAG_CAN_FILTERS_OFF (0x02)
+#define EthCAN_FLAG_CAN_ADVANCED   (0x01)
+#define EthCAN_FLAG_CAN_FILTERS_ON (0x02)
 
 #define EthCAN_FLAG_STORE_CAN    (0x01)
 #define EthCAN_FLAG_STORE_IPv4   (0x02)
@@ -72,6 +72,8 @@ typedef struct
 }
 EthCAN_Config;
 
+#define EthCAN_NAME_DEFAULT ("EthCAN")
+
 /// \brief EthCAN_Frame
 typedef struct
 {
@@ -117,13 +119,13 @@ typedef struct
     // = 48                       + 5
     // = 53
 
-    uint8_t mReserved2[192 - 53 - 62];
+    uint8_t mReserved2[192 - 53 - 58];
 
-    // 2 * 2 + 9 * 4 + 2 * 2 + 2 + 4 + 2 * 2 + 2 * 1 + 6
-    // = 4   + 36    + 4     + 6     + 4     + 2     + 6
-    // = 40          + 10            + 6             + 6
-    // = 50                          + 12
-    // = 62
+    // 2 * 1 + 9 * 4 + 2 * 1 + 2 + 4 + 2 * 2 + 2 * 1 + 6
+    // = 2   + 36    + 2     + 6     + 4     + 2     + 6
+    // = 38          + 8             + 6             + 6
+    // = 46                          + 12
+    // = 58
 
     uint8_t mCAN_Errors; ///< CAN error flags
     uint8_t mCAN_Result; ///< CAN initialisation result
@@ -179,3 +181,5 @@ typedef enum
     EthCAN_RATE_QTY
 }
 EthCAN_Rate;
+
+#define EthCAN_RATE_DEFAULT (EthCAN_RATE_500_Kb)

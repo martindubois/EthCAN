@@ -51,6 +51,7 @@ static const KmsLib::ToolBase::CommandInfo CONFIG_FILE_COMMANDS[] =
     { NULL, NULL, NULL, NULL }
 };
 
+static void Config_Clear  (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Config_Display(KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Config_IPv4   (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Config_Name   (KmsLib::ToolBase* aToolBase, const char* aArg);
@@ -60,6 +61,7 @@ static void Config_WiFi   (KmsLib::ToolBase* aToolBase, const char* aArg);
 static const KmsLib::ToolBase::CommandInfo CONFIG_COMMANDS[] =
 {
     { "CAN"    , NULL          , "CAN ..."                                                , CONFIG_CAN_COMMANDS },
+    { "Clear"  , Config_Clear  , "Clear..."                                               , NULL },
     { "Display", Config_Display, "Display                       See Device::Display"      , NULL },
     { "File"   , NULL          , "File ..."                                               , CONFIG_FILE_COMMANDS },
     { "IP"     , Config_IPv4   , "IP {Address} {Gateway} {NetMask}\n"
@@ -329,6 +331,15 @@ void Config_File_Save(KmsLib::ToolBase* aToolBase, const char* aArg)
     DisplayResult(aToolBase, EthCAN::File_Save(aArg, sConfig));
 }
 
+void Config_Clear(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    memset(&sConfig, 0, sizeof(sConfig));
+
+    sConfig.mCAN_Rate = EthCAN_RATE_DEFAULT;
+
+    KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Cleared");
+}
+
 void Config_Display(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     EthCAN::Display(NULL, sConfig);
@@ -508,7 +519,7 @@ void Device_Send(KmsLib::ToolBase* aToolBase, const char* aArg)
 
         bool lParsed = true;
 
-        for (unsigned int i = 0; lParsed && (i < EthCAN_FRAME_DATA_SIZE(lFrame)); i++)
+        for (unsigned int i = 0; lParsed && (i < static_cast<unsigned int>(EthCAN_FRAME_DATA_SIZE(lFrame))); i++)
         {
             unsigned int lData;
 

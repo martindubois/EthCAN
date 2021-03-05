@@ -174,6 +174,8 @@ void Config_Clear(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     memset(&sConfig, 0, sizeof(sConfig));
 
+    sConfig.mRate = EthCAN_RATE_DEFAULT;
+
     Config_Display(aToolBase, "");
 }
 
@@ -419,6 +421,8 @@ void Test(KmsLib::ToolBase* aToolBase, const char* aArg)
         FW_Config lConfig;
 
         memset(&lConfig, 0, sizeof(lConfig));
+
+        lConfig.mRate = EthCAN_RATE_DEFAULT;
 
         lPassed = Config_Set(aToolBase, lConfig);
     }
