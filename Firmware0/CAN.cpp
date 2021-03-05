@@ -4,145 +4,120 @@
 // Product   EthCan
 // File      Firmware0/CAN.cpp
 
-// TODO Firmware1
-//      Use our own firmware on the Serial CAN bus module and use faster
-//      UART speed.
-
 #include <Arduino.h>
 
 #include "Component.h"
 
+// ===== Common =============================================================
+#include "Common/Firmware.h"
+
+// ===== Firmware0 ==========================================================
 #include "Config.h"
 #include "Info.h"
 
 #include "CAN.h"
 
+// Data types
+/////////////////////////////////////////////////////////////////////////////
+
+// --> INIT <==+=======+====+
+//      |      |       |    |
+//      +--> SYNC --> FRAME |
+//             |            |
+//             +--> DATA ---+
+typedef enum
+{
+    STATE_DATA,
+    STATE_FRAME,
+    STATE_INIT,
+    STATE_SYNC,
+}
+State;
+
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
-#define BAUD_RATE_DEFAULT_bps (  9600)
-#define BAUD_RATE_WORK_bps    (115200)
-
-static const char * ERROR_0 = "ERROR CMD\r\n";
-
-static const char * HEX_DIGITS = "0123456789ABCDEF";
+#define BAUD_RATE_bps (1000000)
 
 // Variables
 /////////////////////////////////////////////////////////////////////////////
 
-static uint8_t      sBuffer[12];
-static unsigned int sCount = 0;
+static EthCAN_Result sResult = EthCAN_RESULT_NO_ERROR;
+static State         sState  = STATE_INIT;
 
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-static EthCAN_Result ConfigId(char aCmd, unsigned int aIndex, uint32_t aId);
+static EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte);
 
-static void Connect(unsigned int aBaudRate_bps);
+static void          Receive_Frame(uint8_t aByte);
+static void          Receive_Init (uint8_t aByte);
+static EthCAN_Result Receive_Sync (uint8_t aByte, bool aDataExpected);
 
-static EthCAN_Result EnterSettingMode();
-static EthCAN_Result LeaveSettingMode();
-
-static EthCAN_Result WaitResponse(const char * aExpected, unsigned int aLength);
-
-static uint32_t IdFromBytes(const uint8_t * aIn);
-static void     IdToBytes(uint8_t * aOut, uint32_t aIn);
+static EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte);
 
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
 void CAN_Config()
 {
-    // MSG_DEBUG("CAN_Config()");
+    MSG_DEBUG("CAN_Config()");
 
-    bool lSet = false;
+    FW_Config lConfig;
+    unsigned int i;
 
-    EthCAN_Result lRet = EnterSettingMode();
-    if (EthCAN_OK == lRet)
+    for (i = 0; i < 6; i ++)
     {
-        Serial2.print("AT+C=");
-        Serial2.println(gConfig.mCAN_Rate);
-
-        lRet = WaitResponse("OK\r\n", 4);
-        if (EthCAN_OK == lRet)
-        {
-            unsigned int i;
-
-            for (i = 0; i < 6; i ++)
-            {
-                lRet = ConfigId('F', i, gConfig.mCAN_Filters[i]);
-                if (EthCAN_OK != lRet)
-                {
-                    break;
-                }
-            }
-
-            if (EthCAN_OK == lRet)
-            {
-                for (i = 0; i < 2; i ++)
-                {
-                    lRet = ConfigId('M', i, gConfig.mCAN_Masks[i]);
-                    if (EthCAN_OK != lRet)
-                    {
-                        break;
-                    }
-                }
-            }
-        }
-
-        if (EthCAN_OK != lRet)
-        {
-            Info_Set_Result_CAN(lRet);
-            lSet = true;
-        }
-
-        lRet = LeaveSettingMode();
+        lConfig.mFilters[i] = gConfig.mCAN_Filters[i];
     }
 
-    if (!lSet)
+    lConfig.mFlags = gConfig.mCAN_Flags;
+
+    for (i = 0; i < 2; i ++)
     {
-        Info_Set_Result_CAN(lRet);
+        lConfig.mMasks[i] = gConfig.mCAN_Masks[i];
     }
+
+    lConfig.mRate = gConfig.mCAN_Rate;
+
+    sResult = Request(EthCAN_REQUEST_CONFIG_SET, &lConfig, sizeof(lConfig), NULL, 0);
 }
 
 void CAN_Loop()
 {
-    while (Serial2.available())
-    {
-        sBuffer[sCount] = Serial2.read();
-        sCount++;
-        MSG_DEBUG(sBuffer[sCount]);
-
-        if (12 == sCount)
-        {
-            MSG_DEBUG("CAN_Loop - Frame received");
-
-            EthCAN_Frame lFrame;
-
-            lFrame.mId = IdFromBytes(sBuffer);
-
-            // TODO Firmware1
-            //      Indicate the true data size
-            lFrame.mDataSize_byte = 8;
-
-            memcpy(lFrame.mData, sBuffer + 4, 8);
-
-            Info_Count_Rx_Frame(lFrame.mDataSize_byte, lFrame.mId);
-
-            Config_OnFrame(lFrame);
-
-            sCount = 0;
-        }
-    }
+    Receive(NULL, 0);
 }
 
 void CAN_Setup()
 {
-    // MSG_DEBUG("CAN_Setup()");
+    MSG_DEBUG("CAN_Setup()");
 
-    Connect(BAUD_RATE_WORK_bps);
+    Serial2.begin(BAUD_RATE_bps, SERIAL_8N1, 36, 4, false);
 
     CAN_Config();
+}
+
+EthCAN_Result CAN_GetInfo(EthCAN_Info * aInfo)
+{
+    aInfo->mResult_CAN = sResult;
+
+    FW_Info lInfo;
+
+    EthCAN_Result lResult = Request(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
+    if (EthCAN_OK == lResult)
+    {
+        for (unsigned int i = 0; i < 4; i ++)
+        {
+            aInfo->mFirmware1_Version[i] = lInfo.mFirmware[i];
+        }
+
+        aInfo->mCAN_Errors       = lInfo.mErrors;
+        aInfo->mCAN_Result       = lInfo.mResult;
+        aInfo->mCounter_RxErrors = lInfo.mRxErrors;
+        aInfo->mCounter_TxErrors = lInfo.mTxErrors;
+    }
+
+    return lResult;
 }
 
 EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
@@ -151,177 +126,134 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 
     if (sizeof(EthCAN_Frame) > aIn->mDataSize_byte)
     {
-        return Info_Count_Error(__LINE__, EthCAN_ERROR_INVALID_DATA_SIZE);
+        return Info_Count_Error(__LINE__, EthCAN_ERROR_DATA_SIZE);
     }
 
     const EthCAN_Frame * lFrame = reinterpret_cast<const EthCAN_Frame *>(aIn + 1);
 
-    // TODO Firmware1
-    //      Do no send useless data.
+    unsigned int lDataSize_byte = EthCAN_FRAME_DATA_SIZE(*lFrame);
 
-    uint8_t lData[14];
+    EthCAN_Result lResult = Request(EthCAN_REQUEST_SEND, lFrame, 5 + lDataSize_byte, NULL, 0);
+    if (EthCAN_OK == lResult)
+    {
+        Info_Count_Tx_Frame(lDataSize_byte);
+    }
 
-    IdToBytes(lData, lFrame->mId & ~ EthCAN_ID_EXTENDED);
-    lData[4] = (0 == (lFrame->mId & EthCAN_ID_EXTENDED)) ? 0 : 1;
-    lData[5] = 0;
-
-    memcpy(lData + 6, lFrame->mData, 8);
-
-    Serial2.write(lData, sizeof(lData));
-
-    Info_Count_Tx_Frame(lFrame->mDataSize_byte);
-  
-    return EthCAN_OK;
+    return lResult;
 }
 
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
-EthCAN_Result ConfigId(char aCmd, unsigned int aIndex, uint32_t aId)
+EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte)
 {
-    // MSG_DEBUG("ConfigId( , ,  )");
+    unsigned int lOutSize_byte = 0;
+    EthCAN_Result lResult;
 
-    uint32_t lId = aId & ~ EthCAN_ID_EXTENDED;
-    char lStr[22];
-
-    lStr[ 0] = 'A';
-    lStr[ 1] = 'T';
-    lStr[ 2] = '+';
-    lStr[ 3] = aCmd;
-    lStr[ 4] = '=';
-    lStr[ 5] = '[';
-    lStr[ 6] = '0' + aIndex;
-    lStr[ 7] = ']';
-    lStr[ 8] = '[';
-    lStr[ 9] = (0 == (EthCAN_ID_EXTENDED & aId)) ? '0' : '1';
-    lStr[10] = ']';
-    lStr[11] = '[';
-    lStr[12] = HEX_DIGITS[(lId >> 28) & 0xf];
-    lStr[13] = HEX_DIGITS[(lId >> 24) & 0xf];
-    lStr[14] = HEX_DIGITS[(lId >> 20) & 0xf];
-    lStr[15] = HEX_DIGITS[(lId >> 16) & 0xf];
-    lStr[16] = HEX_DIGITS[(lId >> 12) & 0xf];
-    lStr[17] = HEX_DIGITS[(lId >>  8) & 0xf];
-    lStr[18] = HEX_DIGITS[(lId >>  4) & 0xf];
-    lStr[19] = HEX_DIGITS[(lId      ) & 0xf];
-    lStr[20] = ']';
-    lStr[21] = '\0';
-
-    Serial2.println(lStr);
-
-    return WaitResponse("OK\r\n", 4);
-}
-
-void Connect(unsigned int aBaudRate_bps)
-{
-    // MSG_DEBUG("Connect(  )");
-
-    Serial2.begin(aBaudRate_bps, SERIAL_8N1, 36, 4, false);
-}
-
-EthCAN_Result EnterSettingMode()
-{
-    // MSG_DEBUG("EnterSettingMode()");
-
-    Serial2.print("+++");
-    EthCAN_Result lResult = WaitResponse("ENTER INTO SETTING MODE\r\n", 25);
-    if (EthCAN_OK != lResult)
+    while (Serial2.available())
     {
-        Connect(BAUD_RATE_DEFAULT_bps);
-        Serial2.print("+++");
-        lResult = WaitResponse("ENTER INTO SETTING MODE\r\n", 25);
-        if (EthCAN_OK == lResult)
+        uint8_t lByte = Serial2.read();
+
+        switch (sState)
         {
-            Serial2.println("AT+S=4");
-            lResult = WaitResponse("OK\r\n", 4);
-            if (EthCAN_OK == lResult)
+        case STATE_FRAME   : Receive_Frame(lByte); break;
+        case STATE_INIT    : Receive_Init (lByte); break;
+
+        case STATE_DATA:
+            aOut[lOutSize_byte] = lByte;
+            lOutSize_byte ++;
+            if (aOutSize_byte <= lOutSize_byte)
             {
-                Connect(BAUD_RATE_WORK_bps);
+                sState = STATE_INIT;
+                return EthCAN_OK;
+            }
+            break;
+
+        case STATE_SYNC:
+            lResult = Receive_Sync(lByte, 0 < aOutSize_byte);
+            if (EthCAN_OK_PENDING != lResult)
+            {
+                return lResult;
             }
         }
+    }
+
+    return EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER;
+}
+
+void Receive_Frame(uint8_t aByte)
+{
+    static uint8_t       sBuffer[sizeof(EthCAN_Frame)];
+    static unsigned int  sCount = 0;
+
+    sBuffer[sCount] = aByte;
+    sCount ++;
+
+    const EthCAN_Frame * lFrame = reinterpret_cast<EthCAN_Frame *>(sBuffer);
+
+    if (   (sizeof(EthCAN_Frame) <= sCount)
+        || ((5 < sCount) && ((5 + EthCAN_FRAME_DATA_SIZE(*lFrame)) <= sCount)))
+    {
+        Info_Count_Rx_Frame(sCount - 5, lFrame->mId);
+
+        Config_OnFrame(*lFrame);
+        sCount = 0;
+        sState = STATE_INIT;
+    }
+}
+
+void Receive_Init(uint8_t aByte)
+{
+    if (EthCAN_SYNC == aByte)
+    {
+        sState = STATE_SYNC;
+    }
+    else
+    {
+        Serial.write(aByte);
+    }
+}
+
+EthCAN_Result Receive_Sync(uint8_t aByte, bool aDataExpected)
+{
+    EthCAN_Result lResult = EthCAN_OK_PENDING;
+
+    switch (aByte)
+    {
+    case EthCAN_RESULT_MESSAGE:
+        sState = STATE_FRAME;
+        break;
+
+    case EthCAN_OK:
+        if (aDataExpected)
+        {
+            sState = STATE_DATA;
+            break;
+        }
+        // no break;
+
+    case EthCAN_ERROR_TIMEOUT:
+        sState = STATE_INIT;
+        lResult = static_cast<EthCAN_Result>(aByte);
+        break;
+
+    default:
+        sState = STATE_INIT;
+        Serial.write(aByte);
     }
 
     return lResult;
 }
 
-EthCAN_Result LeaveSettingMode()
+EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte)
 {
-    // MSG_DEBUG("LeaveSettingMode()");
+    Serial2.write(EthCAN_SYNC);
+    Serial2.write(aCode);
 
-    Serial2.println("AT+Q");
-
-    return WaitResponse("OK\r\nENTER DATA MODE\r\n", 21);
-}
-
-EthCAN_Result WaitResponse(const char * aExpected, unsigned int aLength)
-{
-    // MSG_DEBUG("WaitResponse( ,  )");
-
-    const char * lExp = aExpected;
-    const char * lEr0 = ERROR_0;
-
-    for (unsigned int lRetry = 0; lRetry < 10; lRetry ++)
+    if (0 < aInSize_byte)
     {
-        while (Serial2.available())
-        {
-            char lC = Serial2.read();
-
-            if (*lExp == lC)
-            {
-                lExp ++;
-                if ('\0' == *lExp)
-                {
-                    // MSG_DEBUG("WaitResponse - EthCAN_OK");
-                    return EthCAN_OK;
-                }
-            }
-            else
-            {
-                lExp = aExpected;
-            }
-
-            if (*lEr0 == lC)
-            {
-                lEr0 ++;
-                if ('\0' == *lEr0)
-                {
-                    return Info_Count_Error(__LINE__, EthCAN_ERROR_CAN);
-                }
-            }
-            else
-            {
-                lEr0 = ERROR_0;
-            }
-        }
-
-        delay(100);
+        Serial2.write(reinterpret_cast<const uint8_t *>(aIn), aInSize_byte);
     }
 
-    MSG_ERROR("WaitResponse - EthCAN_ERROR_TIMEOUT", "");
-    return EthCAN_ERROR_TIMEOUT;
-}
-
-uint32_t IdFromBytes(const uint8_t * aIn)
-{
-    MSG_DEBUG("IdFromBytes(  )");
-
-    uint32_t lResult = 0;
-
-    for (unsigned int i = 0; i < 4; i ++)
-    {
-        lResult <<= 8;
-        lResult |= sBuffer[i];
-    }
-
-    return lResult;
-}
-
-void IdToBytes(uint8_t * aOut, uint32_t aIn)
-{
-    MSG_DEBUG("IdToBytes( ,  )");
-
-    aOut[0] = (aIn >> 24) & 0xff;
-    aOut[1] = (aIn >> 16) & 0xff;
-    aOut[2] = (aIn >>  8) & 0xff;
-    aOut[3] = (aIn      ) & 0xff;
+    return Receive(reinterpret_cast<uint8_t *>(aOut), aOutSize_byte);
 }

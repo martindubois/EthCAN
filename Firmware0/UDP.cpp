@@ -193,9 +193,13 @@ void OnInfoGet(const EthCAN_Header * aIn)
     {
         lHeader.mDataSize_byte  = sizeof(EthCAN_Info);
         lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(EthCAN_Info);
+
+        const uint8_t * lInfo;
+
+        lHeader.mResult = Info_Get(&lInfo);
     
         sUDP.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
-        sUDP.write(Info_Get(), sizeof(EthCAN_Info));
+        sUDP.write(lInfo, sizeof(EthCAN_Info));
     }
     END_UDP
 }

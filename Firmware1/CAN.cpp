@@ -96,7 +96,7 @@ void CAN_Begin()
     SPI.begin();
 }
 
-void CAN_GetInfo(IntPro_Info * aInfo)
+void CAN_GetInfo(FW_Info * aInfo)
 {
     aInfo->mErrors = Register_Read(MCP_ERROR_FLAG);
     aInfo->mResult = sResult;
@@ -135,7 +135,7 @@ EthCAN_Result CAN_Config_Reset()
 
         ClearBuffers();
 
-        Register_Set(MCP_CAN_INTE, MCP_RX0IF | MCP_RX1IF);
+        Register_Set(MCP_CAN_INTE, MCP_RXxIF_MASK);
 
         Register_Modify(MCP_RXB[0] + MCP_B_CTRL, MCP_RXB_CTRL_MF_OFF | MCP_RXB_CTRL_BUKT_MASK, MCP_RXB_CTRL_BUKT_MASK);
         Register_Modify(MCP_RXB[1] + MCP_B_CTRL, MCP_RXB_CTRL_MF_OFF                         , 0);
@@ -148,7 +148,7 @@ EthCAN_Result CAN_Config_Reset()
     return lResult;
 }
 
-EthCAN_Result CAN_Config_Set(const IntPro_Config & aConfig)
+EthCAN_Result CAN_Config_Set(const FW_Config & aConfig)
 {
     Reset();
 
@@ -159,7 +159,7 @@ EthCAN_Result CAN_Config_Set(const IntPro_Config & aConfig)
 
         ClearBuffers();
 
-        Register_Set(MCP_CAN_INTE, MCP_RX0IF | MCP_RX1IF);
+        Register_Set(MCP_CAN_INTE, MCP_RXxIF_MASK);
 
         if (EthCAN_FLAG_CAN_FILTERS_OFF == (aConfig.mFlags & EthCAN_FLAG_CAN_FILTERS_OFF))
         {

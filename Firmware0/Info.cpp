@@ -15,6 +15,8 @@ extern "C"
 
 #include "Common/Version.h"
 
+#include "CAN.h"
+
 #include "Info.h"
 
 // Static variables
@@ -67,9 +69,11 @@ void Info_Count_Request(uint8_t aCode, uint16_t aId)
     sInfo.mLast_Request_Id = aId;
 }
 
-const uint8_t * Info_Get()
+EthCAN_Result Info_Get(const uint8_t ** aInfo)
 {
-    return reinterpret_cast<uint8_t *>(&sInfo);
+    *aInfo = reinterpret_cast<uint8_t *>(&sInfo);
+
+    return CAN_GetInfo(&sInfo);
 }
 
 uint16_t Info_Get_MessageId()
@@ -82,9 +86,6 @@ uint16_t Info_Get_MessageId()
 void Info_Init(const char * aName)
 {
     // MSG_DEBUG("Info_Init(  )");
-
-    // TODO Firmware0.Info
-    //      Add the WiFi mac address
 
     sInfo.mFirmware0_Version[0] = VERSION_MAJOR;
     sInfo.mFirmware0_Version[1] = VERSION_MINOR;
@@ -121,13 +122,4 @@ void Info_Set_IPv4(uint32_t aAddress, uint32_t aGateway, uint32_t aNetMask)
 void Info_Set_Name(const char * aName)
 {
     strcpy(sInfo.mName, aName);
-}
-
-void Info_Set_Result_CAN(EthCAN_Result aResult)
-{
-    sInfo.mResult_CAN = aResult;
-    if (EthCAN_OK != aResult)
-    {
-        MSG_ERROR("CAN Error : ", aResult);
-    }
 }

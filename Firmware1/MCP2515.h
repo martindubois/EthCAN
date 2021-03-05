@@ -44,7 +44,7 @@ MCP_Id;
 #define MCP_TXB_QTY (3)
 
 // ===== Status register ====================================================
-#define MCP_STATUS_RX0IF(I)   (0x01 << (I))
+#define MCP_STATUS_RXxIF(I)   (0x01 << (I))
 #define MCP_STATUS_RXxIF_MASK (0x03)
 
 // ===== Register offsets ===================================================
@@ -89,8 +89,8 @@ static const uint8_t MCP_RXB[MCP_RXB_QTY] = { 0x60, 0x70 };
 #define MCP_CAN_CTRL_MODE_MASK   (0xe0)
 
 // MCP_CANINTE
-#define MCP_RX0IF (0x01)
-#define MCP_RX1IF (0x02)
+#define MCP_RXxIF(I)   (0x01 << (I))
+#define MCP_RXxIF_MASK (0x03)
 
 // MCP_TXB_CTRL
 #define MCP_TXB_CTRL_REQ_M (0x08)

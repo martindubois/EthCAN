@@ -25,7 +25,7 @@ extern "C"
 #include <EthCAN/Display.h>
 
 // ===== Common =============================================================
-#include "../Common/InternalProtocol.h"
+#include "../Common/Firmware.h"
 #include "../Common/Version.h"
 
 // Commands
@@ -99,9 +99,9 @@ State;
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-static void Display(const IntPro_Info_Get& aIn);
+static void Display(const FW_Info_Get& aIn);
 
-static bool GetInfo(KmsLib::ToolBase* aToolBase, IntPro_Info_Get* aInfo);
+static bool GetInfo(KmsLib::ToolBase* aToolBase, FW_Info_Get* aInfo);
 
 static void Port_Close();
 static bool Port_OpenAndConfigure(KmsLib::ToolBase* aToolBase, const char* aPortName);
@@ -119,7 +119,7 @@ static bool Write(KmsLib::ToolBase* aToolBase, const void* aIn, unsigned int aIn
 // Static variables
 /////////////////////////////////////////////////////////////////////////////
 
-static IntPro_Config_Set sConfig;
+static FW_Config_Set sConfig;
 
 static unsigned int sFrameCount;
 static uint8_t      sFrame[sizeof(EthCAN_Frame)];
@@ -294,7 +294,7 @@ void GetInfo(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_DEVICE;
 
-    IntPro_Info_Get lInfo;
+    FW_Info_Get lInfo;
 
     if (GetInfo(aToolBase, &lInfo))
     {
@@ -308,7 +308,7 @@ void Production(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     if (Port_OpenAndConfigure(aToolBase, aArg))
     {
-        IntPro_Info_Get lInfo;
+        FW_Info_Get lInfo;
         bool lPassed = false;
 
         if (GetInfo(aToolBase, &lInfo))
@@ -402,7 +402,7 @@ void Send(KmsLib::ToolBase* aToolBase, const char* aArg)
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-void Display(const IntPro_Info_Get& aIn)
+void Display(const FW_Info& aIn)
 {
     assert(NULL != &aIn);
 
@@ -410,7 +410,7 @@ void Display(const IntPro_Info_Get& aIn)
     printf("Result CAN : "); EthCAN::Display(stdout, static_cast<EthCAN_Result>(aIn.mResult_CAN));
 }
 
-bool GetInfo(KmsLib::ToolBase* aToolBase, IntPro_Info_Get* aInfo)
+bool GetInfo(KmsLib::ToolBase* aToolBase, FW_Info* aInfo)
 {
     return Request(aToolBase, EthCAN_REQUEST_INFO_GET, NULL, 0, aInfo, sizeof(*aInfo));
 }

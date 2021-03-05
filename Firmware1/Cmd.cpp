@@ -43,12 +43,12 @@ static const uint8_t SYNC = EthCAN_SYNC;
 // Static variable
 /////////////////////////////////////////////////////////////////////////////
 
-static uint8_t     sBuffer[sizeof(IntPro_Config)];
-static IntPro_Info sInfo;
-static uint8_t     sLevel;
-static uint8_t     sExpected;
-static uint8_t     sRequest;
-static State       sState = STATE_INIT;
+static uint8_t sBuffer[sizeof(FW_Config)];
+static FW_Info sInfo;
+static uint8_t sLevel;
+static uint8_t sExpected;
+static uint8_t sRequest;
+static State   sState = STATE_INIT;
 
 // Static function declarations
 ////////////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ void Cmd_Loop()
             case EthCAN_REQUEST_INFO_GET    : Info_Get    (); break;
             case EthCAN_REQUEST_RESET       : Reset       (); break;
 
-            case EthCAN_REQUEST_CONFIG_SET: sExpected = sizeof(IntPro_Config); break;
+            case EthCAN_REQUEST_CONFIG_SET: sExpected = sizeof(FW_Config); break;
             case EthCAN_REQUEST_SEND      : sExpected = 5; break;
 
             default: sState = STATE_INIT;
@@ -155,7 +155,7 @@ void Config_Reset()
 
 void Config_Set()
 {
-    Result(CAN_Config_Set(* reinterpret_cast<IntPro_Config *>(sBuffer)));
+    Result(CAN_Config_Set(* reinterpret_cast<FW_Config *>(sBuffer)));
 }
 
 void Info_Get()
