@@ -202,7 +202,7 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn, uint8_t * aFlags)
 
     if (sizeof(EthCAN_Config) > aIn->mDataSize_byte)
     {
-        return Info_Count_Error(__LINE__, EthCAN_ERROR_INVALID_DATA_SIZE);
+        return Info_Count_Error(__LINE__, EthCAN_ERROR_DATA_SIZE);
     }
 
     const EthCAN_Config * lConfig = reinterpret_cast<const EthCAN_Config *>(aIn + 1);

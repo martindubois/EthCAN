@@ -13,14 +13,15 @@ extern "C"
     #include "Includes/EthCAN_Types.h"
 }
 
-#include "Common/InternalProtocol.h"
+#include "Common/Firmware.h"
 
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
 extern void CAN_Begin();
+extern void CAN_GetInfo(FW_Info * aInfo);
 extern void CAN_Loop();
 
 extern EthCAN_Result CAN_Config_Reset();
-extern EthCAN_Result CAN_Config_Set(const IntPro_Config_Set & aConfig);
+extern EthCAN_Result CAN_Config_Set(const FW_Config & aConfig);
 extern EthCAN_Result CAN_Send(const EthCAN_Frame & aFrame);

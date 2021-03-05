@@ -85,6 +85,11 @@ typedef struct
 }
 EthCAN_Frame;
 
+#define EthCAN_FRAME_DATA_SIZE(F) ((F).mDataSize_byte & ~ EthCAN_FLAG_CAN_RTR)
+#define EthCAN_FRAME_EXTENDED(F)  (EthCAN_ID_EXTENDED == ((F).mId & EthCAN_ID_EXTENDED))
+#define EthCAN_FRAME_ID(F)        ((F).mId & ~ EthCAN_ID_EXTENDED)
+#define EthCAN_FRAME_RTR(F)       (EthCAN_FLAG_CAN_RTR == ((F).mDataSize_byte & EthCAN_FLAG_CAN_RTR))
+
 /// \brief EthCAN_Info
 typedef struct
 {
@@ -112,13 +117,16 @@ typedef struct
     // = 48                       + 5
     // = 53
 
-    uint8_t mReserved2[192 - 53 - 52];
+    uint8_t mReserved2[192 - 53 - 62];
 
-    // 9 * 4 + 4 + 2 * 2 + 2 * 1 + 6
-    // = 36  + 4 + 4     + 2     + 6
-    // = 40      + 6             + 6
-    // = 46                      + 6
-    // = 52
+    // 2 * 2 + 9 * 4 + 2 * 2 + 2 + 4 + 2 * 2 + 2 * 1 + 6
+    // = 4   + 36    + 4     + 6     + 4     + 2     + 6
+    // = 40          + 10            + 6             + 6
+    // = 50                          + 12
+    // = 62
+
+    uint8_t mCAN_Errors; ///< CAN error flags
+    uint8_t mCAN_Result; ///< CAN initialisation result
 
     uint32_t mCounter_Errors  ; ///< Errors
     uint32_t mCounter_Events  ; ///< Events
@@ -130,13 +138,18 @@ typedef struct
     uint32_t mCounter_Tx_byte ; ///< Byte transmitted to the CAN bus
     uint32_t mCounter_Tx_frame; ///< Frame transmitted to the CAN bus
 
+    uint8_t mCounter_RxErrors; ///< Errors as reported by the hardware
+    uint8_t mCounter_TxErrors; ///< Errors as reported by the hardware
+
+    uint8_t mReserver3[2];
+
     uint32_t mLast_Rx_Id       ; ///< Last received CAN id
     uint16_t mLast_Error_Line  ; ///< Last error line
     uint16_t mLast_Request_Id  ; ///< Last request id
     uint8_t  mLast_Error_Code  ; ///< Last error
     uint8_t  mLast_Request_Code; ///< Last request code
 
-    uint8_t mReserved3[6];
+    uint8_t mReserved4[6];
 
 }
 EthCAN_Info;

@@ -71,13 +71,19 @@ namespace EthCAN
             return;
         }
 
-        fprintf(lOut, "%u bytes sent to ", aIn.mDataSize_byte);
+        unsigned int lDataSize_byte = EthCAN_FRAME_DATA_SIZE(aIn);
+        fprintf(lOut, "%u bytes sent to ", lDataSize_byte);
 
         Display_Id(lOut, aIn.mId);
 
-        for (unsigned int i = 0; i < aIn.mDataSize_byte && i < sizeof(aIn.mData); i++)
+        for (unsigned int i = 0; i < lDataSize_byte && i < sizeof(aIn.mData); i++)
         {
             fprintf(lOut, " %02x", aIn.mData[i]);
+        }
+
+        if (EthCAN_FRAME_RTR(aIn))
+        {
+            fprintf(lOut, " (RTR)");
         }
 
         fprintf(lOut, "\n");

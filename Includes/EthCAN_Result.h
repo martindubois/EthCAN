@@ -15,6 +15,7 @@
 typedef enum
 {
     EthCAN_OK,
+    EthCAN_OK_PENDING,
 
     EthCAN_OK_QTY,
 

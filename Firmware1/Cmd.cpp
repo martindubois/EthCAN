@@ -43,12 +43,12 @@ static const uint8_t SYNC = EthCAN_SYNC;
 // Static variable
 /////////////////////////////////////////////////////////////////////////////
 
-static uint8_t         sBuffer[sizeof(IntPro_Config_Set)];
-static IntPro_Info_Get sInfo;
-static uint8_t         sLevel;
-static uint8_t         sExpected;
-static uint8_t         sRequest;
-static State           sState = STATE_INIT;
+static uint8_t sBuffer[sizeof(FW_Config)];
+static FW_Info sInfo;
+static uint8_t sLevel;
+static uint8_t sExpected;
+static uint8_t sRequest;
+static State   sState = STATE_INIT;
 
 // Static function declarations
 ////////////////////////////////////////////////////////////////////////////
@@ -72,8 +72,6 @@ void Cmd_Loop()
 {
     while(Serial.available())
     {
-        MSG_DEBUG("Cmd_Loop - Byte");
-
         uint8_t lByte = Serial.read();
 
         switch (sState)
@@ -92,7 +90,7 @@ void Cmd_Loop()
             case EthCAN_REQUEST_INFO_GET    : Info_Get    (); break;
             case EthCAN_REQUEST_RESET       : Reset       (); break;
 
-            case EthCAN_REQUEST_CONFIG_SET: sExpected = sizeof(IntPro_Config_Set); break;
+            case EthCAN_REQUEST_CONFIG_SET: sExpected = sizeof(FW_Config); break;
             case EthCAN_REQUEST_SEND      : sExpected = 5; break;
 
             default: sState = STATE_INIT;
@@ -114,18 +112,13 @@ void Cmd_Loop()
     }
 }
 
-void Cmd_Result_CAN_Set(EthCAN_Result aResult)
-{
-    sInfo.mResult_CAN = aResult;
-}
-
 void Cmd_Send(const EthCAN_Frame & aFrame)
 {
     MSG_DEBUG("Cmd_Send(  )");
     
     Sync();
 
-    Serial.write(reinterpret_cast<const uint8_t *>(&aFrame), 5 + aFrame.mDataSize_byte);
+    Serial.write(reinterpret_cast<const uint8_t *>(&aFrame), 5 + EthCAN_FRAME_DATA_SIZE(aFrame));
 }
 
 void Cmd_Setup()
@@ -134,7 +127,6 @@ void Cmd_Setup()
     sInfo.mFirmware[1] = VERSION_MINOR;
     sInfo.mFirmware[2] = VERSION_BUILD;
     sInfo.mFirmware[3] = VERSION_COMPATIBILITY;
-    sInfo.mResult_CAN  = EthCAN_RESULT_NO_ERROR;
 }
 
 // Static functions
@@ -158,20 +150,18 @@ void Sync()
 
 void Config_Reset()
 {
-    sInfo.mResult_CAN = CAN_Config_Reset();
-
-    Result(sInfo.mResult_CAN);
+    Result(CAN_Config_Reset());
 }
 
 void Config_Set()
 {
-    sInfo.mResult_CAN = CAN_Config_Set(* reinterpret_cast<IntPro_Config_Set *>(sBuffer));
-
-    Result(sInfo.mResult_CAN);
+    Result(CAN_Config_Set(* reinterpret_cast<FW_Config *>(sBuffer)));
 }
 
 void Info_Get()
 {
+    CAN_GetInfo(&sInfo);
+
     Result(EthCAN_OK);
 
     Serial.write(reinterpret_cast<uint8_t *>(&sInfo), sizeof(sInfo));
@@ -193,8 +183,6 @@ void Send()
 
     if (sExpected <= sLevel)
     {
-        EthCAN_Result lRet = CAN_Send(*reinterpret_cast<EthCAN_Frame *>(sBuffer));
-
-        Result(lRet);
+        Result(CAN_Send(*reinterpret_cast<EthCAN_Frame *>(sBuffer)));
     }
 }

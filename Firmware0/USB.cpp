@@ -212,8 +212,12 @@ void OnInfoGet(const EthCAN_Header * aIn)
         lHeader.mDataSize_byte  = sizeof(EthCAN_Info);
         lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(EthCAN_Info);
     
+        const uint8_t * lInfo;
+
+        lHeader.mResult = Info_Get(&lInfo);
+
         Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
-        Serial.write(Info_Get(), sizeof(EthCAN_Info));
+        Serial.write(lInfo, sizeof(EthCAN_Info));
     }
     END_USB
 }

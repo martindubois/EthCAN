@@ -25,7 +25,7 @@ extern "C"
 #include <EthCAN/Display.h>
 
 // ===== Common =============================================================
-#include "../Common/InternalProtocol.h"
+#include "../Common/Firmware.h"
 #include "../Common/Version.h"
 
 // Commands
@@ -99,7 +99,7 @@ State;
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-static void Display(const IntPro_Info_Get& aIn);
+static void Display(const FW_Info& aIn);
 
 static void Port_Close();
 static bool Port_OpenAndConfigure(KmsLib::ToolBase* aToolBase, const char* aPortName);
@@ -116,15 +116,15 @@ static bool Write(KmsLib::ToolBase* aToolBase, const void* aIn, unsigned int aIn
 
 // ===== Internal commands ==================================================
 static bool Config_Reset(KmsLib::ToolBase* aToolBase);
-static bool Config_Set  (KmsLib::ToolBase* aToolBase, const IntPro_Config_Set& aConfig);
-static bool GetInfo     (KmsLib::ToolBase* aToolBase, IntPro_Info_Get* aInfo);
+static bool Config_Set  (KmsLib::ToolBase* aToolBase, const FW_Config& aConfig);
+static bool GetInfo     (KmsLib::ToolBase* aToolBase, FW_Info* aInfo);
 static bool Reset       (KmsLib::ToolBase* aToolBase);
 static bool Send        (KmsLib::ToolBase* aToolBase, const EthCAN_Frame& aFrame);
 
 // Static variables
 /////////////////////////////////////////////////////////////////////////////
 
-static IntPro_Config_Set sConfig;
+static FW_Config sConfig;
 
 static unsigned int sFrameCount;
 static uint8_t      sFrame[sizeof(EthCAN_Frame)];
@@ -299,7 +299,7 @@ void GetInfo(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_DEVICE;
 
-    IntPro_Info_Get lInfo;
+    FW_Info lInfo;
 
     if (GetInfo(aToolBase, &lInfo))
     {
@@ -374,14 +374,14 @@ void Test(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_DEVICE;
 
-    IntPro_Info_Get lInfo;
+    FW_Info lInfo;
 
     bool lPassed = GetInfo(aToolBase, &lInfo);
     if (lPassed)
     {
         Display(lInfo);
 
-        if ((VERSION_MAJOR != lInfo.mFirmware[0])
+        if (   (VERSION_MAJOR != lInfo.mFirmware[0])
             || (VERSION_MINOR != lInfo.mFirmware[1])
             || (VERSION_BUILD != lInfo.mFirmware[2])
             || (VERSION_COMPATIBILITY != lInfo.mFirmware[3]))
@@ -390,7 +390,7 @@ void Test(KmsLib::ToolBase* aToolBase, const char* aArg)
             lPassed = false;
         }
 
-        if (EthCAN_OK != lInfo.mResult_CAN)
+        if (EthCAN_OK != lInfo.mResult)
         {
             aToolBase->SetError(__LINE__, "CAN initialisation failed\n");
             lPassed = false;
@@ -416,7 +416,7 @@ void Test(KmsLib::ToolBase* aToolBase, const char* aArg)
 
     if (lPassed)
     {
-        IntPro_Config_Set lConfig;
+        FW_Config lConfig;
 
         memset(&lConfig, 0, sizeof(lConfig));
 
@@ -441,12 +441,12 @@ void Test(KmsLib::ToolBase* aToolBase, const char* aArg)
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-void Display(const IntPro_Info_Get& aIn)
+void Display(const FW_Info& aIn)
 {
     assert(NULL != &aIn);
 
     printf("Firmware   : "); EthCAN::Display_Version(stdout, aIn.mFirmware);
-    printf("Result CAN : "); EthCAN::Display(stdout, static_cast<EthCAN_Result>(aIn.mResult_CAN));
+    printf("Result CAN : "); EthCAN::Display(stdout, static_cast<EthCAN_Result>(aIn.mResult));
 }
 
 void Port_Close()
@@ -719,12 +719,12 @@ bool Config_Reset(KmsLib::ToolBase* aToolBase)
     return Request(aToolBase, EthCAN_REQUEST_CONFIG_RESET, NULL, 0, NULL, 0);
 }
 
-bool Config_Set(KmsLib::ToolBase* aToolBase, const IntPro_Config_Set& aConfig)
+bool Config_Set(KmsLib::ToolBase* aToolBase, const FW_Config& aConfig)
 {
     return Request(aToolBase, EthCAN_REQUEST_CONFIG_SET, &aConfig, sizeof(aConfig), NULL, 0);
 }
 
-bool GetInfo(KmsLib::ToolBase* aToolBase, IntPro_Info_Get* aInfo)
+bool GetInfo(KmsLib::ToolBase* aToolBase, FW_Info* aInfo)
 {
     return Request(aToolBase, EthCAN_REQUEST_INFO_GET, NULL, 0, aInfo, sizeof(*aInfo));
 }
