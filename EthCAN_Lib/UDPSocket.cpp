@@ -23,7 +23,11 @@ extern "C"
 #endif
 
 #ifdef _KMS_WINDOWS_
+
+    typedef int socklen_t;
+
     #define FIELD_ADDR_32 S_un.S_addr
+
 #endif
 
 // Public

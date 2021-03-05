@@ -34,7 +34,7 @@ void Serial::Connect()
     lDCB.BaudRate = CBR_115200;
     lDCB.ByteSize = 8;
     lDCB.Parity   = NOPARITY;
-    lDCB.StopBits = 1;
+    lDCB.StopBits = ONESTOPBIT;
 
     lDCB.fAbortOnError   = FALSE;
     lDCB.fDsrSensitivity = FALSE;

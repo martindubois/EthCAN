@@ -216,7 +216,7 @@ static EthCAN::System* sSystem = NULL;
 
 int main(int aCount, const char** aVector)
 {
-    KMS_TOOL_BANNER("DrvDMA", "DrvDMA_Tool", VERSION_STR, VERSION_TYPE);
+    KMS_TOOL_BANNER("EthCAN", "EthCAN_Tool", VERSION_STR, VERSION_TYPE);
 
     int lResult = 0;
 
