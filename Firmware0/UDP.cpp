@@ -83,8 +83,6 @@ void UDP_Setup()
 
 void OnPacket(const void * aPacket, unsigned int aSize_byte)
 {
-    MSG_DEBUG("OnPacket( ,  )");
-
     if (sizeof(EthCAN_Header) <= aSize_byte)
     {
         const EthCAN_Header * lHeader = reinterpret_cast<const EthCAN_Header *>(aPacket);
@@ -194,12 +192,8 @@ void OnInfoGet(const EthCAN_Header * aIn)
         lHeader.mDataSize_byte  = sizeof(EthCAN_Info);
         lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(EthCAN_Info);
 
-        const uint8_t * lInfo;
-
-        lHeader.mResult = Info_Get(&lInfo);
-    
         sUDP.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
-        sUDP.write(lInfo, sizeof(EthCAN_Info));
+        sUDP.write(Info_Get(), sizeof(EthCAN_Info));
     }
     END_UDP
 }
@@ -230,8 +224,6 @@ void OnSend(const EthCAN_Header * aIn)
 
 void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn)
 {
-    MSG_DEBUG("Header_Init( ,  )");
-
     aOut->mCode           = aIn->mCode;
     aOut->mDataSize_byte  = 0;
     aOut->mFlags          = 0;

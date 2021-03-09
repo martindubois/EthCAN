@@ -69,11 +69,11 @@ void Info_Count_Request(uint8_t aCode, uint16_t aId)
     sInfo.mLast_Request_Id = aId;
 }
 
-EthCAN_Result Info_Get(const uint8_t ** aInfo)
+const uint8_t * Info_Get()
 {
-    *aInfo = reinterpret_cast<uint8_t *>(&sInfo);
+    CAN_GetInfo(&sInfo);
 
-    return CAN_GetInfo(&sInfo);
+    return reinterpret_cast<uint8_t *>(&sInfo);
 }
 
 uint16_t Info_Get_MessageId()

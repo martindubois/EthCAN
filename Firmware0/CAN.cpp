@@ -97,14 +97,12 @@ void CAN_Setup()
     CAN_Config();
 }
 
-EthCAN_Result CAN_GetInfo(EthCAN_Info * aInfo)
+void CAN_GetInfo(EthCAN_Info * aInfo)
 {
-    aInfo->mResult_CAN = sResult;
-
     FW_Info lInfo;
 
-    EthCAN_Result lResult = Request(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
-    if (EthCAN_OK == lResult)
+    aInfo->mResult_CAN = Request(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
+    if (EthCAN_OK == aInfo->mResult_CAN)
     {
         for (unsigned int i = 0; i < 4; i ++)
         {
@@ -116,8 +114,6 @@ EthCAN_Result CAN_GetInfo(EthCAN_Info * aInfo)
         aInfo->mCounter_RxErrors = lInfo.mRxErrors;
         aInfo->mCounter_TxErrors = lInfo.mTxErrors;
     }
-
-    return lResult;
 }
 
 EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
@@ -149,9 +145,24 @@ EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte)
 {
     unsigned int lOutSize_byte = 0;
     EthCAN_Result lResult;
+    bool lRetry = true;
 
-    while (Serial2.available())
+    for (;;)
     {
+        if (!Serial2.available())
+        {
+            if (lRetry && (lOutSize_byte < aOutSize_byte))
+            {
+                lRetry = false;
+                delay(100);
+                continue;
+            }
+
+            break;
+        }
+
+        lRetry = true;
+
         uint8_t lByte = Serial2.read();
 
         switch (sState)
