@@ -111,8 +111,6 @@ void USB_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame)
 
 void OnPacket(const EthCAN_Header * aIn)
 {
-    MSG_DEBUG("OnPacket(  )");
-
     if (sizeof(EthCAN_Header) + aIn->mDataSize_byte <= aIn->mTotalSize_byte)
     {
         Info_Count_Request(aIn->mCode, aIn->mId);
@@ -207,15 +205,13 @@ void OnConfigStore(const EthCAN_Header * aIn)
 
 void OnInfoGet(const EthCAN_Header * aIn)
 {
+    const uint8_t * lInfo = Info_Get();
+
     BEGIN_USB
     {
         lHeader.mDataSize_byte  = sizeof(EthCAN_Info);
         lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(EthCAN_Info);
     
-        const uint8_t * lInfo;
-
-        lHeader.mResult = Info_Get(&lInfo);
-
         Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
         Serial.write(lInfo, sizeof(EthCAN_Info));
     }
@@ -248,8 +244,6 @@ void OnSend(const EthCAN_Header * aIn)
 
 void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn)
 {
-    MSG_DEBUG("Header_Init()");
-
     aOut->mCode           = aIn->mCode;
     aOut->mDataSize_byte  = 0;
     aOut->mFlags          = 0;

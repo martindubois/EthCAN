@@ -155,13 +155,13 @@ EthCAN_Result CAN_Config_Set(const FW_Config & aConfig)
     EthCAN_Result lResult = SetMode(MCP_CAN_CTRL_MODE_CONFIG);
     if (EthCAN_OK == lResult)
     {
-        SetRate(aConfig.mRate);
+        SetRate(static_cast<EthCAN_Rate>(aConfig.mRate));
 
         ClearBuffers();
 
         Register_Set(MCP_CAN_INTE, MCP_RXxIF_MASK);
 
-        if (EthCAN_FLAG_CAN_FILTERS_OFF == (aConfig.mFlags & EthCAN_FLAG_CAN_FILTERS_OFF))
+        if (0 == (aConfig.mFlags & EthCAN_FLAG_CAN_FILTERS_ON))
         {
             Register_Modify(MCP_RXB[0] + MCP_B_CTRL, MCP_RXB_CTRL_MF_OFF | MCP_RXB_CTRL_BUKT_MASK, MCP_RXB_CTRL_BUKT_MASK);
             Register_Modify(MCP_RXB[1] + MCP_B_CTRL, MCP_RXB_CTRL_MF_OFF                         , 0);

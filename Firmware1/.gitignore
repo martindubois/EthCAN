@@ -4,5 +4,7 @@
 # Product   EthCAN
 # File      Firmware0/.gitignore
 
+/Build/
+
 /Common
 /Includes

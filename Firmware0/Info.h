@@ -25,7 +25,7 @@ extern void Info_Count_Tx_Frame(unsigned int aSize_byte);
 
 extern void Info_Count_Request(uint8_t aCode, uint16_t aId);
 
-extern EthCAN_Result Info_Get(const uint8_t ** aInfo);
+extern const uint8_t * Info_Get();
 
 extern uint16_t Info_Get_MessageId();
 

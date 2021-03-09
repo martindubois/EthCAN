@@ -20,5 +20,6 @@ extern void CAN_Config();
 extern void CAN_Loop();
 extern void CAN_Setup();
 
-extern EthCAN_Result CAN_GetInfo(EthCAN_Info * aInfo);
+extern void CAN_GetInfo(EthCAN_Info * aInfo);
+
 extern EthCAN_Result CAN_Send(const EthCAN_Header * aIn);
