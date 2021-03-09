@@ -11,19 +11,19 @@
 
 // Setup-A An EthCAN is connected to the network
 // Setup-B An EthCAN is connected to the test computer using a USB cable
-// Setup-C Two EthCAN are connected to the network
-// Setup-D Two EthCAN are connected to the network and are connected to the
-//         sam CAN bus
+// Setup-C An EthCAN is connected to the test computer using a USB cable, An
+//         EthCAN is connected to the network and both EthCAN are connected
+//         to the same CAN bus
 KMS_TEST_GROUP_LIST_BEGIN
     KMS_TEST_GROUP_LIST_ENTRY("Base")
     KMS_TEST_GROUP_LIST_ENTRY("Setup-A")
     KMS_TEST_GROUP_LIST_ENTRY("Setup-B")
     KMS_TEST_GROUP_LIST_ENTRY("Setup-C")
-    KMS_TEST_GROUP_LIST_ENTRY("Setup-D")
 KMS_TEST_GROUP_LIST_END
 
 extern int Device_SetupA();
 extern int Device_SetupB();
+extern int Device_SetupC();
 extern int Display_Base();
 extern int System_Base();
 extern int System_SetupA();
@@ -31,6 +31,7 @@ extern int System_SetupA();
 KMS_TEST_LIST_BEGIN
     KMS_TEST_LIST_ENTRY(Device_SetupA, "Device - Setup A", 1, KMS_TEST_FLAG_INTERACTION_NEEDED)
     KMS_TEST_LIST_ENTRY(Device_SetupB, "Device - Setup B", 2, KMS_TEST_FLAG_INTERACTION_NEEDED)
+    KMS_TEST_LIST_ENTRY(Device_SetupC, "Device - Setup C", 3, KMS_TEST_FLAG_INTERACTION_NEEDED)
     KMS_TEST_LIST_ENTRY(Display_Base , "Display - Base"  , 0, 0)
     KMS_TEST_LIST_ENTRY(System_Base  , "System - Base"   , 0, 0)
     KMS_TEST_LIST_ENTRY(System_SetupA, "System - Setup A", 1, KMS_TEST_FLAG_INTERACTION_NEEDED)
