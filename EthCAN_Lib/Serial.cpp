@@ -112,7 +112,6 @@ bool Serial::OnLoopIteration()
     bool lResult = true;
 
     unsigned int lSize_byte = Raw_Receive(mBuffer + mBufferLevel, sizeof(mBuffer) - mBufferLevel);
-    printf("Serial::OnLoopIteration - %u bytes\n", lSize_byte);
     while (0 < lSize_byte)
     {
         switch (mState)
@@ -150,7 +149,7 @@ bool Serial::OnLoopIteration()
         {
             const EthCAN_Header* lHeader = reinterpret_cast<EthCAN_Header *>(mBuffer);
 
-            if (mBufferLevel <= lHeader->mTotalSize_byte)
+            if (mBufferLevel >= lHeader->mTotalSize_byte)
             {
                 mThread->Zone0_Enter();
                 {
