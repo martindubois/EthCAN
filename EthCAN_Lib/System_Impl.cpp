@@ -43,6 +43,7 @@ EthCAN_Result System_Impl::Detect()
     }
     catch (EthCAN_Result eResult)
     {
+        fprintf(stderr, "ERROR  System_Impl::Detect - %u\n", eResult);
         lResult = eResult;
     }
 
@@ -388,6 +389,8 @@ void System_Impl::OnSerialLink(const char* aLink)
     }
     catch (...)
     {
+        fprintf(stderr, "WARNING  System_Impl::OnSerialLink - Excpetion\n");
+
         if (NULL != lSerial)
         {
             delete lSerial;
@@ -413,6 +416,7 @@ void System_Impl::OnSerialPort(Serial* aSerial)
     }
     catch (...)
     {
+        fprintf(stderr, "WARNING  System_Impl::OnSerialPort - Exception\n");
         delete aSerial;
     }
 }
@@ -431,4 +435,3 @@ void System_Impl::Request_Init(EthCAN_Header* aOut)
     aOut->mId = mRequestId;
     aOut->mTotalSize_byte = sizeof(*aOut);
 }
-

@@ -88,6 +88,7 @@ void Thread::Wait()
 
     if (WAIT_OBJECT_0 != lRet)
     {
+        fprintf(stderr, "ERROR  Thread::Wait - EthCAN_ERROR_THREAD\n");
         throw EthCAN_ERROR_THREAD;
     }
 }
