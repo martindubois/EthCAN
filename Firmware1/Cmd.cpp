@@ -53,7 +53,7 @@ static State   sState = STATE_INIT;
 // Static function declarations
 ////////////////////////////////////////////////////////////////////////////
 
-static void Result();
+static void Result(EthCAN_Result aResult);
 
 static void Sync();
 
