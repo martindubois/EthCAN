@@ -1050,14 +1050,11 @@ void List(KmsLib::ToolBase* aToolBase, const char* aArg)
     {
         EthCAN::Device* lDev = sSystem->Device_Get(i);
 
-        EthCAN_Info lInfo;
-
-        EthCAN_Result lRet = lDev->GetInfo(&lInfo);
-        assert(EthCAN_OK == lRet);
-
         char lLine[128];
 
-        lRet = lDev->GetInfoLine(lLine, sizeof(lLine));
+        EthCAN_Result lRet = lDev->GetInfoLine(lLine, sizeof(lLine));
+        assert(EthCAN_OK == lRet);
+        (void)lRet;
 
         printf("%2u %s\n", i, lLine);
 

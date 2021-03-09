@@ -243,9 +243,22 @@ EthCAN_Result Device_Impl::GetInfo(EthCAN_Info* aInfo)
 {
     if (NULL == aInfo) { return EthCAN_ERROR_OUTPUT_BUFFER; }
 
-    *aInfo = mInfo;
+    BEGIN
+    {
+        if (sizeof(mInfo) != Request(EthCAN_REQUEST_INFO_GET, 0, NULL, 0, aInfo, sizeof(*aInfo)))
+        {
+            fprintf(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_DATA_SIZE\n");
+            lResult = EthCAN_ERROR_DATA_SIZE;
+        }
+        else
+        {
+            // TODO Security
+            //      Validate the received information match the already known information.
 
-    return EthCAN_OK;
+            lResult = EthCAN_OK;
+        }
+    }
+    END
 }
 
 bool Device_Impl::IsConnectedEth() const
