@@ -27,6 +27,9 @@ class UDPSocket
 
 public:
 
+    static void Thread_Init();
+    static void Thread_Uninit();
+
     UDPSocket();
 
     ~UDPSocket();

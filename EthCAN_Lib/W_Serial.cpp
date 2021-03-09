@@ -53,9 +53,9 @@ void Serial::Connect()
         throw EthCAN_ERROR_SERIAL_CONFIG;
     }
 
-    lTimeouts.ReadIntervalTimeout = 100;
-    lTimeouts.ReadTotalTimeoutConstant = 500;
-    lTimeouts.ReadTotalTimeoutMultiplier = 20;
+    lTimeouts.ReadIntervalTimeout = 10;
+    lTimeouts.ReadTotalTimeoutConstant = 10;
+    lTimeouts.ReadTotalTimeoutMultiplier = 10;
 
     if (!SetCommTimeouts(mHandle, &lTimeouts))
     {

@@ -37,6 +37,7 @@
   <ItemGroup>
     <ClInclude Include="Component.h" />
     <ClInclude Include="Device_Impl.h" />
+    <ClInclude Include="OS.h" />
     <ClInclude Include="IMessageReceiver.h" />
     <ClInclude Include="Serial.h" />
     <ClInclude Include="System_Impl.h" />

@@ -12,19 +12,23 @@
 // ===== EthCAN_Lib =========================================================
 #include "UDPSocket.h"
 
-// Static variables
-/////////////////////////////////////////////////////////////////////////////
-
-static unsigned int sInstanceCount = 0;
-
-// Static function declarations
-/////////////////////////////////////////////////////////////////////////////
-
-static void Thread_Init();
-static void Thread_Uninit();
-
 // Public
 /////////////////////////////////////////////////////////////////////////////
+
+void UDPSocket::Thread_Init()
+{
+    WORD    lVersion = MAKEWORD(2, 2);
+    WSADATA lData;
+
+    int lRet = WSAStartup(lVersion, &lData);
+    assert(0 == lRet);
+}
+
+void UDPSocket::Thread_Uninit()
+{
+    int lRet = WSACleanup();
+    assert(0 == lRet);
+}
 
 uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask) const
 {
@@ -76,11 +80,7 @@ void UDPSocket::Init()
 {
     assert(INVALID_SOCKET == mSocket);
 
-    sInstanceCount++;
-    if (1 == sInstanceCount)
-    {
-        Thread_Init();
-    }
+    Thread_Init();
 
     mSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     if (INVALID_SOCKET == mSocket)
@@ -113,7 +113,7 @@ void UDPSocket::Init()
 
     assert(0 != lAddr.sin_port);
 
-    mPort = lAddr.sin_port;
+    mPort = ntohs(lAddr.sin_port);
 }
 
 void UDPSocket::Timeout_Set(unsigned int aTimeout_ms)
@@ -144,27 +144,5 @@ void UDPSocket::Uninit()
 {
     Close();
 
-    sInstanceCount--;
-    if (0 == sInstanceCount)
-    {
-        Thread_Uninit();
-    }
-}
-
-// Static functions
-/////////////////////////////////////////////////////////////////////////////
-
-void Thread_Init()
-{
-    WORD    lVersion = MAKEWORD(2, 2);
-    WSADATA lData;
-
-    int lRet = WSAStartup(lVersion, &lData);
-    assert(0 == lRet);
-}
-
-void Thread_Uninit()
-{
-    int lRet = WSACleanup();
-    assert(0 == lRet);
+    Thread_Uninit();
 }

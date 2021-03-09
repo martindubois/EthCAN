@@ -412,7 +412,7 @@ void System_Impl::OnSerialPort(Serial* aSerial)
 
     try
     {
-        aSerial->GetThread()->Sem_Wait(1000);
+        aSerial->GetThread()->Sem_Wait(5000);
     }
     catch (...)
     {

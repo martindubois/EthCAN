@@ -80,5 +80,8 @@
     <ClInclude Include="Device_Impl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
