@@ -61,14 +61,13 @@ int Thread::Run()
             {
             case STATE_STARTING:
                 mState = STATE_RUNNING;
-                while (STATE_RUNNING == mState)
+                bool lContinue;
+                lContinue = true;
+                while (lContinue == (STATE_RUNNING == mState))
                 {
                     Zone0_Leave();
                     {
-                        if (!mReceiver->OnMessage(this, mMessage, NULL, 0))
-                        {
-                            break;
-                        }
+                        lContinue = mReceiver->OnMessage(this, mMessage, NULL, 0);
                     }
                     Zone0_Enter();
                 }
@@ -85,6 +84,7 @@ int Thread::Run()
     }
     catch (...)
     {
+        fprintf(stderr, "ERROR  Thread::Run - Exception\n");
         return __LINE__;
     }
 
