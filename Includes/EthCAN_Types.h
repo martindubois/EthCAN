@@ -58,12 +58,13 @@ typedef struct
 
     // 16 + 6 * 4 + 2 * 4 + 2 * 1 + 2 + 3 * 4 + 4 + 2 + 1
     // = 16 + 24  + 8     + 2     + 2 + 12    + 6     + 1
-    // = 48       + 10            + 14        + 7
-    // = 58                       + 21
-    // = 77
+    // = 40       + 10            + 14        + 7
+    // = 50                       + 21
+    // = 71
 
-    uint8_t mReserved1[192 - 77 - 65];
+    uint8_t mReserved1[192 - 71 - 65];
 
+    // 1 + 32 + 32
     // = 65 bytes
 
     char mWiFi_Flags;        ///< Is the WiFi access poing enabled?
