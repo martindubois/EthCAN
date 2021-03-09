@@ -14,6 +14,9 @@
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
+// TODO USB.Windows
+//      Do not try to communicate with device that are not present.
+
 void System_Impl::Detect_USB()
 {
     HKEY lKey0;
