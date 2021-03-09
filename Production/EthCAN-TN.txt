@@ -1,0 +1,55 @@
+
+// Auteur    KMS - Martin Dubois, ing.
+// Copyright (C) 2021 KMS
+// Produit   EthCAN
+// Fichier   Production/EthCAN-TN.txt
+
+Nom                 _________________________________________________________
+
+Date et heure       20 ______ - ______ - ______               ______ : ______
+
+Production          ______ unites
+
+====== Consumables ==========================================================
+[ ] 1 EC000 Boite - Dessous
+[ ] 1 EC001 Boite - Dessus
+[ ] 1 EC002 ESP32-PoE-ISO - Prog.
+[ ] 1 EC003 Serial CAN bus module - Terminated - Prog.
+[ ] 1 EC004 Cable interne
+[ ] 1 EC005 Etiquette transparente
+[ ] 4 EC006 M3 hex. nut
+[ ] 4 EC007 M3 cap screw 20 mm
+
+====== Tools ================================================================
+- Cable USB A a micro-B
+- Cle hexagonal
+- Imprimante couleur
+
+====== Files ================================================================
+EthCAN_Label.docx
+
+====== Software =============================================================
+EthCAN
+
+====== Procedure ============================================================
+[ ] Connecter le cable (EC004) au ESP32-PoE-ISO (EC002)
+[ ] Connecter le cable (EC004) au Serial CAN bus module (EC003)
+[ ] Placer le ESP32-PoE-ISO (EC002) et le Serial CAN bus module (EC003) dans
+    la boite (EC001)
+[ ] Assembler les deux parties de la boite (EC000 et EC001)
+[ ] Placer les 4 hex. nuts (EC006) et les 4 cap screw (EC007)
+[ ] Connecter le EthCAN-TN au reseau
+[ ] Connecter le EthCAN-TN a l'ordinateur en utilisant le cable USB
+[ ] Outil "EthCAN_Tool"
+        Production
+[ ] Copier le fichier EthCAN_Label.docx vers K:\Product\EthCAN\Labels en le
+    renommant en utilisant la date (yyyy-mm-dd.docx)
+[ ] Copier les deux adresses Ethernet sur l'etiquette dans le nouveau fichier
+[ ] Imprimer l'etiquette
+[ ] Coler l'etiquette sur le EthCAN-TN
+
+[ ] Ajuster l'inventaire
+
+Heure et duree      ______ : ______           ______ heures et ______ minutes
+
+Signature           _________________________________________________________
