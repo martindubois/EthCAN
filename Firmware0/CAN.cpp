@@ -61,8 +61,6 @@ static EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigne
 
 void CAN_Config()
 {
-    MSG_DEBUG("CAN_Config()");
-
     FW_Config lConfig;
     unsigned int i;
 
@@ -90,8 +88,6 @@ void CAN_Loop()
 
 void CAN_Setup()
 {
-    MSG_DEBUG("CAN_Setup()");
-
     Serial2.begin(BAUD_RATE_bps, SERIAL_8N1, 36, 4, false);
 
     CAN_Config();
@@ -118,8 +114,6 @@ void CAN_GetInfo(EthCAN_Info * aInfo)
 
 EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 {
-    MSG_DEBUG("CAN_Send(  )");
-
     if (sizeof(EthCAN_Frame) > aIn->mDataSize_byte)
     {
         return Info_Count_Error(__LINE__, EthCAN_ERROR_DATA_SIZE);
