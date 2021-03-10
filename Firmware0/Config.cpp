@@ -132,8 +132,6 @@ void Config_Loop()
 
 void Config_OnFrame(const EthCAN_Frame & aFrame)
 {
-    MSG_DEBUG("Config_OnFrame(  )");
-
     EthCAN_Header lHeader;
 
     lHeader.mId             = Info_Get_MessageId();
@@ -142,10 +140,8 @@ void Config_OnFrame(const EthCAN_Frame & aFrame)
     lHeader.mFlags          = EthCAN_FLAG_NO_RESPONSE;
     lHeader.mTotalSize_byte = sizeof(lHeader) + sizeof(aFrame);
     lHeader.mResult         = EthCAN_RESULT_REQUEST;
-    lHeader.mSalt           = 0;
-    lHeader.mSign           = 0;
 
-    if (0 == (gConfig.mServer_Flags & EthCAN_FLAG_SERVER_USB))
+    if (EthCAN_FLAG_SERVER_USB == (gConfig.mServer_Flags & EthCAN_FLAG_SERVER_USB))
     {
         USB_OnFrame(lHeader, aFrame);
         Info_Count_Fx_Frame(aFrame.mDataSize_byte);
@@ -197,8 +193,6 @@ uint8_t Config_Reset()
 
 EthCAN_Result Config_Set(const EthCAN_Header * aIn, uint8_t * aFlags)
 {
-    MSG_DEBUG("Config_Set( ,  )");
-
     if (sizeof(EthCAN_Config) > aIn->mDataSize_byte)
     {
         return Info_Count_Error(__LINE__, EthCAN_ERROR_DATA_SIZE);
@@ -208,7 +202,7 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn, uint8_t * aFlags)
 
     // TODO Firmware.Config.Validate
 
-    sCAN = gConfig.mCAN_Rate != lConfig->mCAN_Rate;
+    sCAN = (gConfig.mCAN_Flags != lConfig->mCAN_Flags) || (gConfig.mCAN_Rate != lConfig->mCAN_Rate);
     if (!sCAN)
     {
         unsigned int i;
