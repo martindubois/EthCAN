@@ -281,7 +281,7 @@ void Id_ToMCP(MCP_Id * aOut, uint32_t aIn)
 {
     aOut->mValue = 0;
 
-    if (EthCAN_ID_EXTENDED != (aIn & EthCAN_ID_EXTENDED))
+    if (EthCAN_ID_EXTENDED == (aIn & EthCAN_ID_EXTENDED))
     {
         aOut->mExtended = true;
 

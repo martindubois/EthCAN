@@ -61,8 +61,6 @@ void UDP_Loop()
 
 void UDP_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame, uint32_t aIPv4, uint16_t aPort)
 {
-    MSG_DEBUG("UDP_OnFrame( , , ,  )");
-
     sUDP.beginPacket(aIPv4, aPort);
     {
         sUDP.write(reinterpret_cast<const uint8_t *>(&aHeader), sizeof(aHeader));
@@ -202,6 +200,8 @@ void OnReset(const EthCAN_Header * aIn)
 {
     BEGIN_UDP
     {
+        lHeader.mFlags |= EthCAN_FLAG_BUSY;
+
         sUDP.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
     }
     END_UDP
@@ -229,7 +229,5 @@ void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn)
     aOut->mFlags          = 0;
     aOut->mId             = aIn->mId;
     aOut->mResult         = EthCAN_OK;
-    aOut->mSalt           = 0;
-    aOut->mSign           = 0;
     aOut->mTotalSize_byte = sizeof(EthCAN_Header);
 }

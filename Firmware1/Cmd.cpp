@@ -116,7 +116,7 @@ void Cmd_Send(const EthCAN_Frame & aFrame)
 {
     MSG_DEBUG("Cmd_Send(  )");
     
-    Sync();
+    Result(EthCAN_RESULT_MESSAGE);
 
     Serial.write(reinterpret_cast<const uint8_t *>(&aFrame), 5 + EthCAN_FRAME_DATA_SIZE(aFrame));
 }
