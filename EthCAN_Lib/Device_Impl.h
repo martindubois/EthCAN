@@ -65,6 +65,9 @@ protected:
 
 private:
 
+    void Busy_Mark();
+    void Busy_Wait();
+
     void Config_Verify(const EthCAN_Config& aIn);
 
     void Eth_Receive();

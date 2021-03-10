@@ -26,8 +26,6 @@ extern "C"
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
-#define BUSY_DELAY_ms (3000)
-
 #define MSG_LOOP_ITERATION (1)
 #define MSG_SERIAL_DATA    (2)
 
@@ -484,6 +482,44 @@ Device_Impl::~Device_Impl()
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
+void Device_Impl::Busy_Mark()
+{
+    uint64_t lNow_ms = OS_GetTickCount();
+
+    switch (mReq_Code)
+    {
+    case EthCAN_REQUEST_CONFIG_RESET:
+    case EthCAN_REQUEST_CONFIG_SET:
+    case EthCAN_REQUEST_CONFIG_STORE:
+        mBusyUntil_ms = lNow_ms + 1000;
+        break;
+
+    case EthCAN_REQUEST_RESET:
+        mBusyUntil_ms = lNow_ms + (IsConnectedEth() ? 7000 : 3000);
+        break;
+
+    default: assert(false);
+    }
+}
+
+void Device_Impl::Busy_Wait()
+{
+    if (0 < mBusyUntil_ms)
+    {
+        uint64_t lNow_ms = OS_GetTickCount();
+
+        if (mBusyUntil_ms > lNow_ms)
+        {
+            uint64_t lDiff_ms = mBusyUntil_ms - lNow_ms;
+            assert(7000 >= lDiff_ms);
+
+            OS_Sleep(static_cast<DWORD>(lDiff_ms));
+        }
+
+        mBusyUntil_ms = 0;
+    }
+}
+
 void Device_Impl::Config_Verify(const EthCAN_Config& aIn)
 {
     assert(NULL != &aIn);
@@ -521,7 +557,7 @@ void Device_Impl::Eth_Receive()
 
     for (;;)
     {
-        unsigned int lReceived_byte = mSocket_Client->Receive(lBuffer, sizeof(lBuffer), 500);
+        unsigned int lReceived_byte = mSocket_Client->Receive(lBuffer, sizeof(lBuffer), 2000);
         if (sizeof(EthCAN_Header) > lReceived_byte)
         {
             throw EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER;
@@ -641,7 +677,7 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
 
                         if (EthCAN_FLAG_BUSY == (aHeader->mFlags & EthCAN_FLAG_BUSY))
                         {
-                            mBusyUntil_ms = OS_GetTickCount() + BUSY_DELAY_ms;
+                            Busy_Mark();
                         }
                     }
                 }
@@ -682,20 +718,7 @@ unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn
     mReq_Out = aOut;
     mReq_OutSize_byte = aOutSize_byte;
 
-    if (0 < mBusyUntil_ms)
-    {
-        uint64_t lNow_ms = OS_GetTickCount();
-
-        if (mBusyUntil_ms > lNow_ms)
-        {
-            uint64_t lDiff_ms = mBusyUntil_ms - lNow_ms;
-            assert(BUSY_DELAY_ms >= lDiff_ms);
-
-            OS_Sleep(static_cast<DWORD>(lDiff_ms));
-        }
-
-        mBusyUntil_ms = 0;
-    }
+    Busy_Wait();
 
     Request_Send(aCode, aFlags, aIn, aInSize_byte);
 
