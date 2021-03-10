@@ -408,17 +408,22 @@ void System_Impl::OnSerialPort(Serial* aSerial)
 
     Request_Init(&lHeader);
 
-    aSerial->Send(&lHeader, sizeof(lHeader));
+    for (unsigned int i = 0; i < 3; i++)
+    {
+        aSerial->Send(&lHeader, sizeof(lHeader));
 
-    try
-    {
-        aSerial->GetThread()->Sem_Wait(5000);
+        try
+        {
+            aSerial->GetThread()->Sem_Wait(2000);
+            return;
+        }
+        catch (...)
+        {
+            fprintf(stderr, "WARNING  System_Impl::OnSerialPort - Exception\n");
+        }
     }
-    catch (...)
-    {
-        fprintf(stderr, "WARNING  System_Impl::OnSerialPort - Exception\n");
-        delete aSerial;
-    }
+
+    delete aSerial;
 }
 
 void System_Impl::Request_Init(EthCAN_Header* aOut)

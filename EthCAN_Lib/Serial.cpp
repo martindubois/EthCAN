@@ -24,6 +24,13 @@ extern "C"
 
 static const uint8_t SYNC = EthCAN_SYNC;
 
+// Static function declaration
+/////////////////////////////////////////////////////////////////////////////
+
+static void DisplayChar(uint8_t aC);
+
+static bool Header_IsValid(const EthCAN_Header& aHeader);
+
 // Public
 /////////////////////////////////////////////////////////////////////////////
 
@@ -136,7 +143,7 @@ bool Serial::OnLoopIteration()
                     break;
                 }
 
-                printf("%c", mBuffer[i]);
+                DisplayChar(mBuffer[i]);
             }
             break;
 
@@ -145,33 +152,88 @@ bool Serial::OnLoopIteration()
 
         lSize_byte = 0;
 
-        if ((mState == STATE_DATA) && (sizeof(EthCAN_Header) <= mBufferLevel))
+        while ((mState == STATE_DATA) && (sizeof(EthCAN_Header) <= mBufferLevel))
         {
             const EthCAN_Header* lHeader = reinterpret_cast<EthCAN_Header *>(mBuffer);
 
-            if (mBufferLevel >= lHeader->mTotalSize_byte)
+            if (Header_IsValid(*lHeader))
             {
-                mThread->Zone0_Enter();
+                if (mBufferLevel >= lHeader->mTotalSize_byte)
                 {
-                    if (NULL != mReceiver)
+                    mThread->Zone0_Enter();
                     {
-                        lResult = mReceiver->OnMessage(this, mMessage, mBuffer, lHeader->mTotalSize_byte);
+                        if (NULL != mReceiver)
+                        {
+                            lResult = mReceiver->OnMessage(this, mMessage, mBuffer, lHeader->mTotalSize_byte);
+                        }
+                    }
+                    mThread->Zone0_Leave();
+
+                    lSize_byte = mBufferLevel - lHeader->mTotalSize_byte;
+
+                    mBufferLevel = 0;
+                    mState = STATE_TRACE;
+
+                    if (0 < lSize_byte)
+                    {
+                        memmove(mBuffer, mBuffer + lHeader->mTotalSize_byte, lSize_byte);
                     }
                 }
-                mThread->Zone0_Leave();
 
-                lSize_byte = mBufferLevel - lHeader->mTotalSize_byte;
+                break;
+            }
 
+            unsigned int i;
+            for (i = 0; i < mBufferLevel; i++)
+            {
+                if (EthCAN_SYNC == mBuffer[i])
+                {
+                    mBufferLevel -= i;
+                    mBufferLevel--;
+
+                    if (0 < mBufferLevel)
+                    {
+                        memmove(mBuffer, mBuffer + i, mBufferLevel);
+                    }
+
+                    break;
+                }
+
+                DisplayChar(mBuffer[i]);
+            }
+
+            if (mBufferLevel = i)
+            {
                 mBufferLevel = 0;
                 mState = STATE_TRACE;
-
-                if (0 < lSize_byte)
-                {
-                    memmove(mBuffer, mBuffer + lHeader->mTotalSize_byte, lSize_byte);
-                }
             }
         }
     }
 
     return lResult;
+}
+
+// Static function declaration
+/////////////////////////////////////////////////////////////////////////////
+
+void DisplayChar(uint8_t aC)
+{
+    switch (aC)
+    {
+    case '\n':
+    case '\r':
+        printf("%c", aC);
+        break;
+
+    default:
+        if ((32 <= aC) && (126 >= aC))
+        {
+            printf("%c", aC);
+        }
+    }
+}
+
+bool Header_IsValid(const EthCAN_Header& aHeader)
+{
+    return ((aHeader.mDataSize_byte + sizeof(EthCAN_Header)) <= aHeader.mTotalSize_byte);
 }

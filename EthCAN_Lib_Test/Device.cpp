@@ -217,7 +217,7 @@ KMS_TEST_BEGIN(Device_SetupC)
     }
 
     printf(" 4. Sending to 0x555 STD...\n");
-    KMS_TEST_ASSERT(SendAndReceive(lDevs, 0xfff, 2));
+    KMS_TEST_ASSERT(SendAndReceive(lDevs, 0x555, 2));
 
     printf(" 5. Sending to 0x444 STD...\n");
     KMS_TEST_ASSERT(SendAndIgnore(lDevs, 0x444, 3));
@@ -282,9 +282,11 @@ bool Receiver(EthCAN::Device* aDevice, void* aContext, const EthCAN_Frame& aFram
     assert(NULL != aDevice);
     assert(NULL != &aFrame);
 
-    EthCAN::Display(stdout, aFrame);
-
     uint64_t lIndex = reinterpret_cast<uint64_t>(aContext);
+    assert(2 > lIndex);
+
+    printf("===== Device %u =====\n", static_cast<unsigned int>(lIndex));
+    EthCAN::Display(stdout, aFrame);
 
     sCounters_byte[lIndex] += EthCAN_FRAME_DATA_SIZE(aFrame);
 
@@ -355,6 +357,8 @@ bool SendAndReceive(EthCAN::Device* aDevs[2], uint32_t aId, unsigned int aSize_b
 
 bool VerifyCounters(unsigned int aExpected_byte, unsigned int aExpected_frame)
 {
+    Sleep(2000);
+
     bool lResult = true;
 
     for (unsigned int i = 0; i < 2; i++)
