@@ -125,7 +125,7 @@ namespace EthCAN
         fprintf(lOut, "            Error Line   : %u\n", aIn.mLast_Error_Line);
         fprintf(lOut, "            Request Code : "); Display(lOut, static_cast<EthCAN_RequestCode>(aIn.mLast_Request_Code));
         fprintf(lOut, "            Request Id   : %u\n", aIn.mLast_Request_Id);
-        fprintf(lOut, "            Rx Id        : %u\n", aIn.mLast_Rx_Id);
+        fprintf(lOut, "            Rx Id        : 0x%x\n", aIn.mLast_Rx_Id);
     }
 
     void Display(FILE* aOut, EthCAN_Rate aIn)
@@ -156,6 +156,7 @@ namespace EthCAN
         case EthCAN_REQUEST_CONFIG_RESET: lIn = "EthCAN_REQUEST_CONFIG_RESET"; break;
         case EthCAN_REQUEST_CONFIG_SET  : lIn = "EthCAN_REQUEST_CONFIG_SET"  ; break;
         case EthCAN_REQUEST_CONFIG_STORE: lIn = "EthCAN_REQUEST_CONFIG_STORE"; break;
+        case EthCAN_REQUEST_DO_NOTHING  : lIn = "EthCAN_REQUEST_DO_NOTHING"  ; break;
         case EthCAN_REQUEST_INFO_GET    : lIn = "EthCAN_REQUEST_INFO_GET"    ; break;
         case EthCAN_REQUEST_RESET       : lIn = "EthCAN_REQUEST_RESET"       ; break;
         case EthCAN_REQUEST_SEND        : lIn = "EthCAN_REQUEST_SEND"        ; break;

@@ -26,6 +26,7 @@ void System_Impl::Detect_USB()
         unsigned int lCount = 0;
         char lId[32];
         DWORD lSize_byte = sizeof(lId);
+        LSTATUS lStatus;
 
         while (ERROR_SUCCESS == RegEnumKeyEx(lKey0, lCount, lId, &lSize_byte, NULL, NULL, NULL, NULL))
         {
@@ -35,35 +36,35 @@ void System_Impl::Detect_USB()
 
             if (ERROR_SUCCESS == RegOpenKeyEx(lKey0, lId, 0, KEY_READ, &lKey1))
             {
-                char lName[64];
-                DWORD lType;
+                HKEY lKey2;
 
-                lSize_byte = sizeof(lName);
-
-                if (   (ERROR_SUCCESS == RegQueryValueEx(lKey1, "FriendlyName", NULL, &lType, reinterpret_cast<LPBYTE>(lName), &lSize_byte))
-                    && (REG_SZ == lType))
+                if (ERROR_SUCCESS == RegOpenKeyEx(lKey1, "Device Parameters", 0, KEY_READ, &lKey2))
                 {
-                    assert(sizeof(lName) >= lSize_byte);
+                    char lName[16];
+                    DWORD lType;
 
-                    char* lPtr = strchr(lName, '(');
-                    if (NULL != lPtr)
+                    lSize_byte = sizeof(lName);
+
+                    if (   (ERROR_SUCCESS == RegQueryValueEx(lKey2, "PortName", NULL, &lType, reinterpret_cast<LPBYTE>(lName), &lSize_byte))
+                        && (REG_SZ == lType))
                     {
-                        char lLink[16];
+                        assert(sizeof(lName) >= lSize_byte);
 
-                        strcpy_s(lLink, lPtr + 1);
-
-                        lPtr = strchr(lLink, ')');
-                        if (NULL != lPtr)
-                        {
-                            strcpy_s(lPtr SIZE_INFO(sizeof(lLink) - 6), ":");
-
-                            OnSerialLink(lLink);
-                        }
+                        OnSerialLink(lName);
                     }
+
+                    lStatus = RegCloseKey(lKey2);
+                    assert(ERROR_SUCCESS == lStatus);
                 }
+
+                lStatus = RegCloseKey(lKey1);
+                assert(ERROR_SUCCESS == lStatus);
             }
 
             lCount++;
         }
+
+        lStatus = RegCloseKey(lKey0);
+        assert(ERROR_SUCCESS == lStatus);
     }
 }

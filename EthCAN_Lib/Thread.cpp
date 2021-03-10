@@ -7,6 +7,8 @@
 #include "Component.h"
 
 // ===== EthCAN_Lib =========================================================
+#include "UDPSocket.h"
+
 #include "Thread.h"
 
 // Public
@@ -53,6 +55,8 @@ int Thread::Run()
 {
     assert(NULL != mReceiver);
 
+    UDPSocket::Thread_Init();
+
     try
     {
         Zone0_Enter();
@@ -63,7 +67,7 @@ int Thread::Run()
                 mState = STATE_RUNNING;
                 bool lContinue;
                 lContinue = true;
-                while (lContinue == (STATE_RUNNING == mState))
+                while (lContinue && (STATE_RUNNING == mState))
                 {
                     Zone0_Leave();
                     {
@@ -87,6 +91,8 @@ int Thread::Run()
         fprintf(stderr, "ERROR  Thread::Run - Exception\n");
         return __LINE__;
     }
+
+    UDPSocket::Thread_Uninit();
 
     return 0;
 }

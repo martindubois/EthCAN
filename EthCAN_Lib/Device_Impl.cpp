@@ -16,23 +16,17 @@ extern "C"
 #include <EthCAN/System.h>
 
 // ===== EthCAN_Lib =========================================================
+#include "OS.h"
 #include "Serial.h"
 #include "Thread.h"
 #include "UDPSocket.h"
 
 #include "Device_Impl.h"
 
-#ifdef _KMS_LINUX_
-
-    // Macros
-    /////////////////////////////////////////////////////////////////////////
-
-    #define Sleep(T) usleep(1000 * (T))
-
-#endif
-
 // Constants
 /////////////////////////////////////////////////////////////////////////////
+
+#define BUSY_DELAY_ms (3000)
 
 #define MSG_LOOP_ITERATION (1)
 #define MSG_SERIAL_DATA    (2)
@@ -41,7 +35,8 @@ extern "C"
 /////////////////////////////////////////////////////////////////////////////
 
 Device_Impl::Device_Impl()
-    : mContext(NULL)
+    : mBusyUntil_ms(0)
+    , mContext(NULL)
     , mId_Client(0)
     , mId_Server(0)
     , mReceiver(NULL)
@@ -291,11 +286,25 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
         {
             if (IsConnectedEth())
             {
+                assert(0 != mInfo.mIPv4_Address);
+                assert(0 != mInfo.mIPv4_NetMask);
+
                 mSocket_Server = new UDPSocket();
+                assert(NULL != mSocket_Server);
 
                 lConfig.mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
                 lConfig.mServer_IPv4 = mSocket_Server->GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
                 lConfig.mServer_Port = mSocket_Server->GetPort();
+                assert(0 != lConfig.mServer_IPv4);
+                assert(0 != lConfig.mServer_Port);
+
+                // We send a dummy request to the device in order to indicate
+                // to firewall this UDP communication is OK.
+                EthCAN_Header lHeader;
+
+                Request_Init(&lHeader, EthCAN_REQUEST_DO_NOTHING, EthCAN_FLAG_NO_RESPONSE, 0);
+
+                mSocket_Server->Send(&lHeader, sizeof(lHeader), mInfo.mIPv4_Address);
             }
             else
             {
@@ -316,6 +325,7 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
             if (IsConnectedEth())
             {
                 mThread = new Thread(this, MSG_LOOP_ITERATION);
+                assert(NULL != mThread);
             }
         }
         catch (EthCAN_Result eResult)
@@ -588,6 +598,8 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
     assert(NULL != aHeader);
     assert(sizeof(EthCAN_Header) <= aSize_byte);
 
+    assert(EthCAN_REQUEST_QTY > mReq_Code);
+
     // TODO Device.Security
 
     bool lResult = (aHeader->mCode == mReq_Code) && (aHeader->mId == mId_Client);
@@ -623,13 +635,13 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
                             assert(NULL != mReq_Out);
 
                             memcpy(mReq_Out, aHeader + 1, lSize_byte);
+                        }
 
-                            mReq_OutSize_byte = lSize_byte;
+                        mReq_OutSize_byte = lSize_byte;
 
-                            if (0 != (aHeader->mFlags & EthCAN_FLAG_BUSY))
-                            {
-                                Sleep(2000);
-                            }
+                        if (EthCAN_FLAG_BUSY == (aHeader->mFlags & EthCAN_FLAG_BUSY))
+                        {
+                            mBusyUntil_ms = OS_GetTickCount() + BUSY_DELAY_ms;
                         }
                     }
                 }
@@ -670,6 +682,21 @@ unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn
     mReq_Out = aOut;
     mReq_OutSize_byte = aOutSize_byte;
 
+    if (0 < mBusyUntil_ms)
+    {
+        uint64_t lNow_ms = OS_GetTickCount();
+
+        if (mBusyUntil_ms > lNow_ms)
+        {
+            uint64_t lDiff_ms = mBusyUntil_ms - lNow_ms;
+            assert(BUSY_DELAY_ms >= lDiff_ms);
+
+            OS_Sleep(static_cast<DWORD>(lDiff_ms));
+        }
+
+        mBusyUntil_ms = 0;
+    }
+
     Request_Send(aCode, aFlags, aIn, aInSize_byte);
 
     if (0 == (aFlags & EthCAN_FLAG_NO_RESPONSE))
@@ -682,11 +709,30 @@ unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn
         {
             assert(NULL != mSerial);
 
-            mSerial->GetThread()->Sem_Wait(1000);
+            mSerial->GetThread()->Sem_Wait(2000);
         }
     }
 
     return mReq_OutSize_byte;
+}
+
+void Device_Impl::Request_Init(EthCAN_Header* aHeader, uint8_t aCode, uint8_t aFlags, unsigned int aDataSize_byte)
+{
+    assert(NULL != aHeader);
+    assert(EthCAN_REQUEST_QTY > aCode);
+
+    unsigned int lTotalSize_byte = sizeof(EthCAN_Header) + aDataSize_byte;
+    assert(0xff >= lTotalSize_byte);
+
+    memset(aHeader, 0, sizeof(*aHeader));
+
+    // TODO Device.Security
+
+    aHeader->mCode           = aCode;
+    aHeader->mDataSize_byte  = aDataSize_byte;
+    aHeader->mFlags          = aFlags;
+    aHeader->mId             = mId_Client;
+    aHeader->mTotalSize_byte = lTotalSize_byte;
 }
 
 void Device_Impl::Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, unsigned int aInSize_byte)
@@ -702,15 +748,7 @@ void Device_Impl::Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, u
 
     EthCAN_Header* lHeader = reinterpret_cast<EthCAN_Header*>(lBuffer);
 
-    memset(lHeader, 0, sizeof(EthCAN_Header));
-
-    // TODO Device.Security
-
-    lHeader->mCode           = aCode;
-    lHeader->mDataSize_byte  = aInSize_byte;
-    lHeader->mFlags          = aFlags;
-    lHeader->mId             = mId_Client;
-    lHeader->mTotalSize_byte = lSize_byte;
+    Request_Init(lHeader, aCode, aFlags, aInSize_byte);
 
     if (0 < aInSize_byte)
     {

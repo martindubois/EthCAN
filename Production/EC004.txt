@@ -1,0 +1,44 @@
+
+// Ateur     KMS - Martin Dubois, ing.
+// Copyright (C) 2021 KMS
+// Produit   EthCAN
+// Fichier   Production/EC004.txt
+// Descript. Cable interne
+
+Nom                 _________________________________________________________
+
+Date et heure       20 ______ - ______ - ______               ______ : ______
+
+Production          ______ unites
+
+====== Consumables ==========================================================
+[ ] 0.5 EC011 Cable du Serial CAN bus module
+[ ]   1 EC012 Connecteur fem. .100 2x2 angle droit
+[ ]     EC013 Shrink tube - Petit
+[ ]     EC014 Etain
+
+====== Tools ================================================================
+- Ciseau
+- Fer a souder
+- Heat gun
+
+====== Procedure ============================================================
+[ ] Inserer les morceau shrink tube (EC013) sur les 4 fils du cable (EC011)
+[ ] Retirer l'isolation du bout (~ 5 mm) des 4 fils du cable (EC011)
+[ ] Mettre de l'etain (EC014) sur le bout des 4 fils du cable (EC011)
+[ ] Mettre de l'etain (EC014) sur les 4 pines du connecteur (EC012)
+[ ] Souder le cable (EC011) et le connecteur (EC012)
+        Side view   +--- Black
+                    | +- Red
+                    | |
+        
+        Top view    +--- Yellow
+                    +--- Black
+[ ] Placer les 4 shrink tube (EC013) en place
+[ ] Chaufer les 4 shrink tube (EC013)
+
+[ ] Ajuster l'inventaire
+
+Heure et duree      ______ : ______           ______ heures et ______ minutes
+
+Signature           _________________________________________________________
