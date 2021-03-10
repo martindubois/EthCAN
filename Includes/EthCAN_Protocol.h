@@ -37,9 +37,6 @@ typedef struct
     uint8_t mResult; ///< See EthCAN_Result
 
     uint8_t mReserved0;
-
-    uint32_t mSalt; ///< Random value
-    uint32_t mSign; ///< Hash
 }
 EthCAN_Header;
 
