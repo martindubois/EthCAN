@@ -72,6 +72,10 @@ namespace EthCAN
         /// \see Config_Set
         virtual EthCAN_Result Config_Store(uint8_t aFlags = 0) = 0;
 
+        /// \brief Retrieve the host address used to communicate with this device
+        /// \retval The host address
+        virtual uint32_t GetHostAddress() const = 0;
+
         /// \brief Get a line with main infomation
         /// \param aOut       The output buffer
         /// \param aSize_byte The output buffer size (in byte)

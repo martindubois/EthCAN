@@ -27,7 +27,6 @@ public:
     bool Is(const uint8_t aEth[6]) const;
     bool Is(uint32_t aIPv4) const;
     bool Is(const char* aName) const;
-    bool Is(Serial* aSerial) const;
 
     void SetInfo(const EthCAN_Info& aInfo, Serial* aSerial);
 
@@ -39,6 +38,7 @@ public:
     virtual EthCAN_Result Config_Set(EthCAN_Config* aInOut, uint8_t aFlags = 0);
     virtual EthCAN_Result Config_Store(uint8_t aFlags = 0);
 
+    virtual uint32_t      GetHostAddress() const;
     virtual EthCAN_Result GetInfo(EthCAN_Info* aOut);
     virtual EthCAN_Result GetInfoLine(char* aOut, unsigned int aSize_byte) const;
 

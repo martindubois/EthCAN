@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/W_Thread.cpp
 
+// CODE COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== EthCAN_Lib =========================================================
@@ -55,6 +57,7 @@ void Thread::Start()
     mSemaphore = CreateSemaphore(NULL, 0, 1, NULL);
     if (NULL == mSemaphore)
     {
+        TRACE_ERROR(stderr, "Thread::Start - EthCAN_ERROR_SEMAPHORE");
         throw EthCAN_ERROR_SEMAPHORE;
     }
 
@@ -66,6 +69,7 @@ void Thread::Start()
 
         mSemaphore = NULL;
 
+        TRACE_ERROR(stderr, "Thread::Start - EthCAN_ERROR_THREAD");
         throw EthCAN_ERROR_THREAD;
     }
 }
@@ -75,7 +79,7 @@ void Thread::Wait()
     assert(NULL != mHandle);
     assert(NULL != mSemaphore);
 
-    DWORD lRet = WaitForSingleObject(mHandle, 2000);
+    DWORD lRet = WaitForSingleObject(mHandle, 3000);
 
     BOOL lRetB = CloseHandle(mHandle);
     assert(lRetB);
@@ -88,7 +92,7 @@ void Thread::Wait()
 
     if (WAIT_OBJECT_0 != lRet)
     {
-        fprintf(stderr, "ERROR  Thread::Wait - EthCAN_ERROR_THREAD\n");
+        TRACE_ERROR(stderr, "Thread::Wait - EthCAN_ERROR_THREAD");
         throw EthCAN_ERROR_THREAD;
     }
 }

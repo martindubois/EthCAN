@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/Device_Impl.cpp
 
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== Includes ===========================================================
@@ -65,13 +67,6 @@ bool Device_Impl::Is(const char* aName) const
     return 0 == strcmp(mInfo.mName, aName);
 }
 
-bool Device_Impl::Is(Serial* aSerial) const
-{
-    assert(NULL != aSerial);
-
-    return (mSerial == aSerial);
-}
-
 void Device_Impl::SetInfo(const EthCAN_Info& aInfo, Serial* aSerial)
 {
     assert(NULL != &aInfo);
@@ -113,7 +108,7 @@ EthCAN_Result Device_Impl::Config_Erase(uint8_t aFlags)
     {
         if (0 != Request(EthCAN_REQUEST_CONFIG_ERASE, aFlags, NULL, 0, NULL, 0))
         {
-            fprintf(stderr, "Device_Impl::Config_Erase - EthCAN_ERROR_DATA_SIZE\n");
+            TRACE_ERROR(stderr, "Device_Impl::Config_Erase - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
@@ -132,7 +127,7 @@ EthCAN_Result Device_Impl::Config_Get(EthCAN_Config* aOut)
     {
         if (sizeof(EthCAN_Config) != Request(EthCAN_REQUEST_CONFIG_GET, 0, NULL, 0, aOut, sizeof(EthCAN_Config)))
         {
-            fprintf(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_DATA_SIZE\n");
+            TRACE_ERROR(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
@@ -149,7 +144,7 @@ EthCAN_Result Device_Impl::Config_Reset(uint8_t aFlags)
     {
         if (0 != Request(EthCAN_REQUEST_CONFIG_RESET, aFlags, NULL, 0, NULL, 0))
         {
-            fprintf(stderr, "Device_Impl::Config_Reset - EthCAN_ERROR_DATA_SIZE\n");
+            TRACE_ERROR(stderr, "Device_Impl::Config_Reset - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
@@ -170,7 +165,7 @@ EthCAN_Result Device_Impl::Config_Set(EthCAN_Config* aInOut, uint8_t aFlags)
 
         if (sizeof(EthCAN_Config) != Request(EthCAN_REQUEST_CONFIG_SET, aFlags, aInOut, sizeof(EthCAN_Config), aInOut, sizeof(EthCAN_Config)))
         {
-            fprintf(stderr, "Device_Impl::Config_Set - EthCAN_ERROR_DATA_SIZE\n");
+            TRACE_ERROR(stderr, "Device_Impl::Config_Set - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
@@ -187,7 +182,7 @@ EthCAN_Result Device_Impl::Config_Store(uint8_t aFlags)
     {
         if (0 != Request(EthCAN_REQUEST_CONFIG_STORE, aFlags, NULL, 0, NULL, 0))
         {
-            fprintf(stderr, "Device_Impl::Config_Store - EthCAN_ERROR_DATA_SIZE\n");
+            TRACE_ERROR(stderr, "Device_Impl::Config_Store - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
@@ -196,6 +191,11 @@ EthCAN_Result Device_Impl::Config_Store(uint8_t aFlags)
         }
     }
     END
+}
+
+uint32_t Device_Impl::GetHostAddress() const
+{
+    return UDPSocket::GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
 }
 
 EthCAN_Result Device_Impl::GetInfoLine(char* aOut, unsigned int aSize_byte) const
@@ -240,7 +240,7 @@ EthCAN_Result Device_Impl::GetInfo(EthCAN_Info* aInfo)
     {
         if (sizeof(mInfo) != Request(EthCAN_REQUEST_INFO_GET, 0, NULL, 0, aInfo, sizeof(*aInfo)))
         {
-            fprintf(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_DATA_SIZE\n");
+            TRACE_ERROR(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
         else
@@ -291,7 +291,7 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
                 assert(NULL != mSocket_Server);
 
                 lConfig.mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
-                lConfig.mServer_IPv4 = mSocket_Server->GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
+                lConfig.mServer_IPv4 = UDPSocket::GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
                 lConfig.mServer_Port = mSocket_Server->GetPort();
                 assert(0 != lConfig.mServer_IPv4);
                 assert(0 != lConfig.mServer_Port);
@@ -328,14 +328,14 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
         }
         catch (EthCAN_Result eResult)
         {
-            fprintf(stderr, "Device_Impl::Receiver_Start - %s\n", EthCAN::GetName(eResult));
+            TRACE_ERROR(stderr, "Device_Impl::Receiver_Start - Exception");
             lResult = eResult;
         }
     }
 
     if (EthCAN_OK != lResult)
     {
-        fprintf(stderr, "Device_Impl::Receiver_Start - %s\n", EthCAN::GetName(lResult));
+        TRACE_ERROR(stderr, "Device_Impl::Receiver_Start");
 
         if (NULL != mSocket_Server)
         {
@@ -378,6 +378,7 @@ EthCAN_Result Device_Impl::Receiver_Stop()
     }
     catch (EthCAN_Result eResult)
     {
+        TRACE_ERROR(stderr, "Device_Impl::Receiver_Stop - Exception");
         lResult = eResult;
     }
 
@@ -415,8 +416,6 @@ EthCAN_Result Device_Impl::Send(const EthCAN_Frame& aIn, uint8_t aFlags)
         lResult = EthCAN_OK;
     }
     END
-
-    return lResult;
 }
 
 // ===== EthCAN::Object =====================================================
@@ -464,6 +463,9 @@ bool Device_Impl::OnMessage(void * aSource, unsigned int aMessage, const void* a
 // Protected
 /////////////////////////////////////////////////////////////////////////////
 
+// NOT TESTED Device
+//            Releasing a device while the receiver is started
+
 Device_Impl::~Device_Impl()
 {
     if (NULL != mReceiver)
@@ -471,6 +473,11 @@ Device_Impl::~Device_Impl()
         Receiver_Stop();
 
         assert(NULL == mReceiver);
+    }
+
+    if (NULL != mSerial)
+    {
+        delete mSerial;
     }
 
     if (NULL != mSocket_Client)
@@ -482,6 +489,9 @@ Device_Impl::~Device_Impl()
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
+// TODO Device
+//      Optimize busy time.
+
 void Device_Impl::Busy_Mark()
 {
     uint64_t lNow_ms = OS_GetTickCount();
@@ -490,8 +500,7 @@ void Device_Impl::Busy_Mark()
     {
     case EthCAN_REQUEST_CONFIG_RESET:
     case EthCAN_REQUEST_CONFIG_SET:
-    case EthCAN_REQUEST_CONFIG_STORE:
-        mBusyUntil_ms = lNow_ms + 1000;
+        mBusyUntil_ms = lNow_ms + 3000;
         break;
 
     case EthCAN_REQUEST_RESET:
@@ -560,6 +569,7 @@ void Device_Impl::Eth_Receive()
         unsigned int lReceived_byte = mSocket_Client->Receive(lBuffer, sizeof(lBuffer), 2000);
         if (sizeof(EthCAN_Header) > lReceived_byte)
         {
+            TRACE_ERROR(stderr, "Device_Impl::Eth_Receive - EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER");
             throw EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER;
         }
 
@@ -570,7 +580,7 @@ void Device_Impl::Eth_Receive()
             break;
         }
 
-        fprintf(stderr, "Device_Impl::Eth_Receive - Not tested\n");
+        TRACE_DEBUG(stderr, "Device_Impl::Eth_Receive - Not tested");
     }
 }
 
@@ -614,6 +624,7 @@ bool Device_Impl::OnRequest(const EthCAN_Header* aHeader, unsigned int aSize_byt
             uint32_t lCount = aHeader->mId - mId_Server;
             if (1 < lCount)
             {
+                TRACE_WARNING(stderr, "Device_Impl::OnRequest - Lost request");
                 mLostCount += lCount - 1;
             }
         }
@@ -643,7 +654,7 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
     {
         if (aHeader->mTotalSize_byte != aSize_byte)
         {
-            fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_RESPONSE_SIZE\n");
+            TRACE_ERROR(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_RESPONSE_SIZE");
             mReq_Result = EthCAN_ERROR_RESPONSE_SIZE;
         }
         else
@@ -654,14 +665,14 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
                 unsigned int lSize_byte = aSize_byte - sizeof(EthCAN_Header);
                 if (aHeader->mDataSize_byte != lSize_byte)
                 {
-                    fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_SIZE\n");
+                    TRACE_ERROR(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_SIZE");
                     mReq_Result = EthCAN_ERROR_DATA_SIZE;
                 }
                 else
                 {
                     if (mReq_OutSize_byte < lSize_byte)
                     {
-                        fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_UNEXPECTED\n");
+                        TRACE_ERROR(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_UNEXPECTED");
                         mReq_Result = EthCAN_ERROR_DATA_UNEXPECTED;
                     }
                     else
@@ -794,7 +805,7 @@ void Device_Impl::Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, u
     }
     else
     {
-        fprintf(stderr, "Device_Impl::Request_Send - EthCAN_ERROR_NOT_CONNECTED\n");
+        TRACE_ERROR(stderr, "Device_Impl::Request_Send - EthCAN_ERROR_NOT_CONNECTED");
         throw EthCAN_ERROR_NOT_CONNECTED;
     }
 }

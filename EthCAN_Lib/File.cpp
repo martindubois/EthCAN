@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/File.cpp
 
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== Includes ===========================================================
@@ -33,6 +35,7 @@ namespace EthCAN
         lErr = fclose(lFile);
         if (0 != lErr)
         {
+            TRACE_ERROR(stderr, "File_Load - EthCAN_ERROR_INPUT_FILE_CLOSE");
             lResult = EthCAN_ERROR_INPUT_FILE_CLOSE;
         }
 
@@ -70,6 +73,7 @@ namespace EthCAN
         lErr = fclose(lFile);
         if (0 != lErr)
         {
+            TRACE_ERROR(stderr, "File_Save - EthCAN_ERROR_OUTPUT_FILE_CLOSE");
             lResult = EthCAN_ERROR_OUTPUT_FILE_CLOSE;
         }
 

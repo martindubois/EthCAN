@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/System.cpp
 
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== Includes ===========================================================
@@ -33,6 +35,7 @@ namespace EthCAN
         }
         catch (...)
         {
+            TRACE_ERROR(stderr, "System::Create - Exception");
             lResult = NULL;
         }
 
@@ -49,11 +52,6 @@ namespace EthCAN
         aOut[3] = VERSION_COMPATIBILITY;
 
         return EthCAN_OK;
-    }
-
-    bool System::IsResultOK(EthCAN_Result aIn)
-    {
-        return (EthCAN_OK_QTY > aIn);
     }
 
     // Protected

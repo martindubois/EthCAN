@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/Thread.cpp
 
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== EthCAN_Lib =========================================================
@@ -40,6 +42,8 @@ Thread::~Thread()
             break;
 
         case STATE_STOPPED:
+            // NOT TESTED  Thread
+            //             Thread is already stopped.
             break;
 
         default: assert(false);
@@ -77,7 +81,9 @@ int Thread::Run()
                 }
                 break;
 
-            case STATE_STOPPING: break;
+            case STATE_STOPPING:
+                TRACE_WARNING(stderr, "Thread::Run - Stopped before starting");
+                break;
 
             default: assert(false);
             }
@@ -88,7 +94,7 @@ int Thread::Run()
     }
     catch (...)
     {
-        fprintf(stderr, "ERROR  Thread::Run - Exception\n");
+        TRACE_ERROR(stderr, "Thread::Run - Exception");
         return __LINE__;
     }
 

@@ -27,6 +27,8 @@ class UDPSocket
 
 public:
 
+    static uint32_t GetIPv4(uint32_t aAddress, uint32_t aNetMask); // L and W_UDPSocket.cpp
+
     static void Thread_Init();
     static void Thread_Uninit();
 
@@ -35,8 +37,6 @@ public:
     ~UDPSocket();
 
     void Broadcast(const void* aData, unsigned int aSize_byte);
-
-    uint32_t GetIPv4(uint32_t aAddress, uint32_t aNetMask) const;
 
     uint16_t GetPort() const;
 

@@ -33,6 +33,8 @@ public:
     virtual EthCAN::Device* Device_Get(unsigned int aIndex);
     virtual unsigned int    Device_GetCount() const;
 
+    virtual void SetTraceStream(FILE* aTrace);
+
     // ===== EthCAN::Object =================================================
     virtual void Debug(FILE* aOut = NULL) const;
 
@@ -51,7 +53,6 @@ private:
     void Detect_USB();
 
     Device_Impl* Device_Add();
-    Device_Impl* Device_Find_Serial(Serial* aSerial);
 
     void Devices_Release();
 
@@ -68,5 +69,7 @@ private:
     Device_Impl** mDevices;
 
     unsigned int mRequestId;
+
+    FILE* mTrace;
 
 };

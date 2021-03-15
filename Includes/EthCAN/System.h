@@ -87,9 +87,9 @@ namespace EthCAN
         /// \return The detected device count
         virtual unsigned int Device_GetCount() const = 0;
 
-    // Internal
-
-        bool Receiver(Serial* aSerial, const void* aData, unsigned int aSize_byte);
+        /// \brief Set the trace stream
+        /// \param aTrace The trace stream
+        virtual void SetTraceStream(FILE* aTrace) = 0;
 
     protected:
 
