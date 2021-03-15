@@ -13,6 +13,14 @@ Error Clear
 Config CAN Filters 0 0 0 0 0 0
 Error Exit
 
+Echo == Config CAN Flags {Flags_hex}
+
+Config CAN Flags Invalid
+
+Error Clear
+Config CAN Flags
+Error Exit
+
 Echo == Config CAN Masks {0_hex} {1_Hex}
 
 Config CAN Masks
@@ -40,6 +48,14 @@ Echo == Config Display
 Config Display
 Error Exit
 
+Echo == Config File Load {FileName}
+
+Config File Load
+
+Echo == Config File Save {FileName}
+
+Config File Save
+
 Echo == Config IP {Address} {Gateway} {NetMask}
 
 Config IP
@@ -66,6 +82,10 @@ Echo == Config WiFi [Name] [Password]
 
 Config WiFi
 Error Exit
+
+Echo == Device Config Erase
+
+Device Config Erase
 
 Echo == Device Config Get
 

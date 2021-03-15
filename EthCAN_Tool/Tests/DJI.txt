@@ -1,0 +1,102 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      EthCAN_Tool/Tests/Base.txt
+
+Echo 1. Detecting...
+
+Verbose
+Error Exit
+
+Detect
+Error Exit
+
+Echo 2. Selecting...
+
+Select Index 0
+Error Exit
+
+Device Reset
+Error Exit
+
+Echo 3. Configuring...
+
+Device Config Get
+Error Exit
+
+Config CAN Flags 2
+Error Exit
+
+Config CAN Filters 222 223 0 0 0 0
+Error Exit
+
+Config CAN Masks 7ff 9fffffff
+Error Exit
+
+Config CAN Rate 1000
+Error Exit
+
+Device Config Set
+Error Exit
+
+Echo 4. Starting receiver...
+
+Device Receiver Start
+Error Exit
+
+Echo 5. Sending...
+
+Delay 3000
+Error Exit
+
+#                         + DJI frame length and version
+#                SOF --+  |     +-- Cmd type
+#    CAN frame len --+ |  |     |  +-- ENC
+#                    | |  |     |  |
+Device Send 80 0 223 8 aa 13 00 02 00 00 00 00
+# Device Send 80 0 223 8 aa 1a 00 03 00 00 00 00
+Error Exit
+
+#                                  +-- Cmd Set
+#                   CRC 16 --+     |  +-- Cmd Id
+#      Serial number --+     |     |  |  +-- Device Id
+#                      |     |     |  |  |
+Device Send 80 0 223 7 01 00 01 ee 0d 01 01
+# Device Send 80 0 223 8 22 11 a2 42 0e 00 20 00
+Error Exit
+
+#                      +-- CRC 32
+#                      |
+Device Send 80 0 223 4 e3 88 08 32
+# Device Send 80 0 223 8 30 00 40 00 01 14 7b 40
+Error Exit
+
+# Device Send 80 0 223 2 97 be
+Error Exit
+
+Echo 6. Waiting...
+
+Delay 3000
+Error Exit
+
+Device Config Get
+Error Exit
+
+Echo 7. Stopping receiver...
+
+Device Receiver Stop
+Error Exit
+
+Echo 8. Displaying configuration...
+
+Config Display
+Error Exit
+
+Echo 8. Displaying information...
+
+Device GetInfo
+Error Exit
+
+echo END!
+exit
