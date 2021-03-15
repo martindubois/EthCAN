@@ -73,3 +73,5 @@ typedef enum
     EthCAN_RESULT_REQUEST,
 }
 EthCAN_Result;
+
+#define EthCAN_RESULT_OK(R) ((R) < EthCAN_OK_QTY)

@@ -20,6 +20,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Firmware1_Tool", "Firmware1
 		{E2A71320-EB4C-4591-8623-8C6516BC73BD} = {E2A71320-EB4C-4591-8623-8C6516BC73BD}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_DocDev", "_DocDev", "{257FAB87-F8E6-4734-96DE-E91574145F5B}"
+	ProjectSection(SolutionItems) = preProject
+		_DocDev\Build.txt = _DocDev\Build.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

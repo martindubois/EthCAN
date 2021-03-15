@@ -66,12 +66,12 @@ namespace EthCAN
     /// \brief Display
     /// \param aOut The output stream
     /// \param aIn  The data to display
-    extern void Display_Id(FILE* aOut, uint32_t aIPv4);
+    extern void Display_Id(FILE* aOut, uint32_t aIn);
 
     /// \brief Display
     /// \param aOut The output stream
     /// \param aIn  The data to display
-    extern void Display_IPv4Address(FILE* aOut, uint32_t aIPv4);
+    extern void Display_IPv4Address(FILE* aOut, uint32_t aIn);
 
     /// \brief Display
     /// \param aOut The output stream

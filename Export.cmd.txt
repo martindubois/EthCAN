@@ -10,7 +10,7 @@
 
 Installer
 # KmsVersion "EthCAN_" ".exe" 3
-	EthCAN_0.0.1.exe
+	EthCAN_1.0.0.exe
 
 x64/Debug Binaries/Debug_64
     EthCAN_Lib_Test.exe
