@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/Display.cpp
 
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== Includes ===========================================================
@@ -49,16 +51,16 @@ namespace EthCAN
 
         // TODO Device.Display
         //      Display server and WiFi flags by name
-        fprintf(lOut, "    IPv4 Address   : "); Display_IPv4Address(lOut, aIn.mIPv4_Address);
-        fprintf(lOut, "    IPv4 Gateway   : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway);
-        fprintf(lOut, "    IPv4 Net. Mask : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask);
-        fprintf(lOut, "    Name           : %s\n", aIn.mName);
-        fprintf(lOut, "    Server Flags   : 0x%02x\n", aIn.mServer_Flags);
-        fprintf(lOut, "    Server IPv4    : "); Display_IPv4Address(lOut, aIn.mServer_IPv4);
-        fprintf(lOut, "    Server Port    : %u\n", aIn.mServer_Port);
-        fprintf(lOut, "    WiFi Flags     : 0x%02x\n", aIn.mWiFi_Flags);
-        fprintf(lOut, "    WiFI Name      : %s\n", aIn.mWiFi_Name);
-        fprintf(lOut, "    WiFi Password  : %s\n", aIn.mWiFi_Password);
+        if (0 != aIn.mIPv4_Address    ) { fprintf(lOut, "    IPv4 Address   : "); Display_IPv4Address(lOut, aIn.mIPv4_Address); }
+        if (0 != aIn.mIPv4_Gateway    ) { fprintf(lOut, "    IPv4 Gateway   : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway); }
+        if (0 != aIn.mIPv4_NetMask    ) { fprintf(lOut, "    IPv4 Net. Mask : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask); }
+        if (0 != aIn.mName[0]         ) { fprintf(lOut, "    Name           : %s\n", aIn.mName); }
+        if (0 != aIn.mServer_Flags    ) { fprintf(lOut, "    Server Flags   : 0x%02x\n", aIn.mServer_Flags); }
+        if (0 != aIn.mServer_IPv4     ) { fprintf(lOut, "    Server IPv4    : "); Display_IPv4Address(lOut, aIn.mServer_IPv4); }
+        if (0 != aIn.mServer_Port     ) { fprintf(lOut, "    Server Port    : %u\n", aIn.mServer_Port); }
+        if (0 != aIn.mWiFi_Flags      ) { fprintf(lOut, "    WiFi Flags     : 0x%02x\n", aIn.mWiFi_Flags); }
+        if (0 != aIn.mWiFi_Name[0]    ) { fprintf(lOut, "    WiFI Name      : %s\n", aIn.mWiFi_Name); }
+        if (0 != aIn.mWiFi_Password[0]) { fprintf(lOut, "    WiFi Password  : %s\n", aIn.mWiFi_Password); }
     }
 
     void Display(FILE* aOut, const EthCAN_Frame& aIn)
@@ -103,20 +105,32 @@ namespace EthCAN
         fprintf(lOut, "        Firmware 0       : "); Display_Version(lOut, aIn.mFirmware0_Version);
         fprintf(lOut, "        Firmware 1       : "); Display_Version(lOut, aIn.mFirmware1_Version);
         fprintf(lOut, "        Hardware         : "); Display_Version(lOut, aIn.mHardware_Version);
-        fprintf(lOut, "        IPv4 Address     : "); Display_IPv4Address(lOut, aIn.mIPv4_Address);
-        fprintf(lOut, "        IPv4 Gateway     : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway);
-        fprintf(lOut, "        IPv4 Net. Mask   : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask);
+        if (0 != aIn.mIPv4_Address) { fprintf(lOut, "        IPv4 Address     : "); Display_IPv4Address(lOut, aIn.mIPv4_Address); }
+        if (0 != aIn.mIPv4_Gateway) { fprintf(lOut, "        IPv4 Gateway     : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway); }
+        if (0 != aIn.mIPv4_NetMask) { fprintf(lOut, "        IPv4 Net. Mask   : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask); }
         fprintf(lOut, "        Last message id  : %u\n", aIn.mMessageId);
-        fprintf(lOut, "        Name             : %s\n", aIn.mName);
+        if (0 != aIn.mName[0]) { fprintf(lOut, "        Name             : %s\n", aIn.mName); }
         fprintf(lOut, "        Result CAN       : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mResult_CAN));
-        fprintf(lOut, "        CAN Errors       : 0x%02x\n", aIn.mCAN_Errors);
+
+        if (0 != aIn.mCAN_Errors)
+        {
+            fprintf(lOut, "        CAN Errors       :");
+            if (0 != (aIn.mCAN_Errors & 0x02)) { fprintf(lOut, " RxWarning" ); }
+            if (0 != (aIn.mCAN_Errors & 0x04)) { fprintf(lOut, " TxWarning" ); }
+            if (0 != (aIn.mCAN_Errors & 0x08)) { fprintf(lOut, " RxError"   ); }
+            if (0 != (aIn.mCAN_Errors & 0x10)) { fprintf(lOut, " TxError"   ); }
+            if (0 != (aIn.mCAN_Errors & 0x20)) { fprintf(lOut, " TxBusOff"  ); }
+            if (0 != (aIn.mCAN_Errors & 0xc0)) { fprintf(lOut, " RxOverflow"); }
+            fprintf(lOut, "\n");
+        }
+
         fprintf(lOut, "        CAN Result       : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mCAN_Result));
 
         fprintf(lOut, "        Counters\n");
-        fprintf(lOut, "            Errors   : %u\n", aIn.mCounter_Errors);
-        fprintf(lOut, "            Events   : %u\n", aIn.mCounter_Events);
+        if (0 != aIn.mCounter_Errors) { fprintf(lOut, "            Errors   : %u\n", aIn.mCounter_Errors); }
+        if (0 != aIn.mCounter_Events) { fprintf(lOut, "            Events   : %u\n", aIn.mCounter_Events); }
         fprintf(lOut, "            Fx       : %u bytes, %u frames\n", aIn.mCounter_Fx_byte, aIn.mCounter_Fx_frame);
-        fprintf(lOut, "            Requests : %u\n", aIn.mCounter_Requests);
+        if (0 != aIn.mCounter_Requests) { fprintf(lOut, "            Requests : %u\n", aIn.mCounter_Requests); }
         fprintf(lOut, "            Rx       : %u bytes, %u frames, %u errors\n", aIn.mCounter_Rx_byte, aIn.mCounter_Rx_frame, aIn.mCounter_RxErrors);
         fprintf(lOut, "            Tx       : %u bytes, %u frames, %u errors\n", aIn.mCounter_Tx_byte, aIn.mCounter_Tx_frame, aIn.mCounter_TxErrors);
 
