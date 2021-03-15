@@ -11,6 +11,9 @@
 #include <EthCAN/Display.h>
 #include <EthCAN/System.h>
 
+// ===== EthCAN_Lib_Test ====================================================
+#include "OS.h"
+
 // Static variable
 /////////////////////////////////////////////////////////////////////////////
 
@@ -372,7 +375,7 @@ bool SendAndReceive(EthCAN::Device* aDevs[2], uint32_t aId, unsigned int aSize_b
 
 bool VerifyCounters(unsigned int aExpected_byte, unsigned int aExpected_frame)
 {
-    Sleep(2000);
+    OS_Sleep(2000);
 
     bool lResult = true;
 

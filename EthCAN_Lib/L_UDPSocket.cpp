@@ -16,7 +16,7 @@
 // Public
 /////////////////////////////////////////////////////////////////////////////
 
-uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask) const
+uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
 {
     assert(0 != aAddress);
     assert(0 != aNetMask);
@@ -58,6 +58,14 @@ uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask) const
     freeifaddrs(lAddrs);
 
     return lResult;
+}
+
+void UDPSocket::Thread_Init()
+{
+}
+
+void UDPSocket::Thread_Uninit()
+{
 }
 
 // Private

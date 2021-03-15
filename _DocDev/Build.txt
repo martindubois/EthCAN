@@ -22,6 +22,7 @@ Version             ______ . ______ . ______ . ______ - _____________________
 
 ===== Linux only ============================================================
 [ ] File "Scripts/control"
+[ ] Disconnect all EthCAN from the computer or network
 [ ] Tool "Terminal" - In the product folder
         ./RunDoxygen.sh
         ./Build.sh

@@ -522,7 +522,7 @@ void Device_Impl::Busy_Wait()
             uint64_t lDiff_ms = mBusyUntil_ms - lNow_ms;
             assert(7000 >= lDiff_ms);
 
-            OS_Sleep(static_cast<DWORD>(lDiff_ms));
+            OS_Sleep(static_cast<unsigned int>(lDiff_ms));
         }
 
         mBusyUntil_ms = 0;

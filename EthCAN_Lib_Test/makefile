@@ -16,6 +16,7 @@ SOURCES =				\
 	Device.cpp			\
 	Display.cpp			\
 	EthCAN_Lib_Test.cpp \
+	File.cpp            \
 	System.cpp
 
 # ===== Rules / Regles =======================================================

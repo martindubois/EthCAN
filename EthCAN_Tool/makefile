@@ -12,8 +12,9 @@ LIBRARIES = ../Libraries/EthCAN_Lib.a $(KMS_LIB_A)
 
 OUTPUT = ../Binaries/EthCAN_Tool
 
-SOURCES =				\
-	EthCAN_Tool.cpp
+SOURCES =			\
+	EthCAN_Tool.cpp \
+	Setup.cpp
 
 # ===== Rules / Regles =======================================================
 

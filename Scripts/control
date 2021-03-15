@@ -1,8 +1,8 @@
 Package: kms-ethcan
-Version: 0.0-2
+Version: 1.0-1
 Section: base
 Priority: optional
 Architecture: amd64
 Maintainer: KMS <ethcan@kms-quebec.com>
 Description: EthCAN
- EthCAN 0.0.2
+ EthCAN 1.0.1

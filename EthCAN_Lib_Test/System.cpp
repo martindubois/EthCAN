@@ -13,6 +13,9 @@
 // ===== Common =============================================================
 #include "../Common/Version.h"
 
+// ===== EthCAN_Lib_Test ====================================================
+#include "OS.h"
+
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
@@ -81,7 +84,7 @@ KMS_TEST_BEGIN(System_SetupA)
     EthCAN_Info lInfo;
     EthCAN::System* lS0;
 
-    Sleep(7000);
+    OS_Sleep(7000);
 
     // Create
     lS0 = EthCAN::System::Create();
