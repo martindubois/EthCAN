@@ -329,16 +329,22 @@ bool IsFrameAvailable()
 
 void ReadFrame(EthCAN_Frame * aFrame)
 {
+    static unsigned int sIndex = 0;
+
     uint8_t lStatus = ReadStatus();
     for (unsigned int i = 0; i < MCP_RXB_QTY; i++)
     {
-        if (0 != (lStatus & MCP_STATUS_RXxIF(i)))
+        if (0 != (lStatus & MCP_STATUS_RXxIF(sIndex)))
         {
-            ReadFrame(aFrame, MCP_RXB[i]);
+            ReadFrame(aFrame, MCP_RXB[sIndex]);
 
-            Register_Modify(MCP_CAN_INTF, MCP_RXxIF(i), 0);
+            Register_Modify(MCP_CAN_INTF, MCP_RXxIF(sIndex), 0);
+
+            sIndex = ( sIndex + 1 ) % MCP_RXB_QTY;
             break;
         }
+
+        sIndex = ( sIndex + 1 ) % MCP_RXB_QTY;
     }
 }
 
