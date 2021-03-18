@@ -70,7 +70,7 @@ static void Send();
 
 void Cmd_Loop()
 {
-    while(Serial.available())
+    if(Serial.available())
     {
         uint8_t lByte = Serial.read();
 
