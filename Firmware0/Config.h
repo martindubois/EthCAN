@@ -21,6 +21,7 @@ extern EthCAN_Config gConfig;
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
+extern void Config_Erase();
 extern void Config_Load();
 extern void Config_Loop();
 extern void Config_OnFrame(const EthCAN_Frame & aFrame);

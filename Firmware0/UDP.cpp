@@ -21,10 +21,12 @@
 
 static void OnPacket(const void * aPacket, unsigned int aSize_byte);
 
+static void OnConfigErase(const EthCAN_Header * aIn);
 static void OnConfigGet  (const EthCAN_Header * aIn);
 static void OnConfigReset(const EthCAN_Header * aIn);
 static void OnConfigSet  (const EthCAN_Header * aIn);
 static void OnConfigStore(const EthCAN_Header * aIn);
+static void OnDoNothing  (const EthCAN_Header * aIn);
 static void OnInfoGet    (const EthCAN_Header * aIn);
 static void OnReset      (const EthCAN_Header * aIn);
 static void OnSend       (const EthCAN_Header * aIn);
@@ -91,10 +93,12 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
 
             switch (lHeader->mCode)
             {
+            case EthCAN_REQUEST_CONFIG_ERASE: OnConfigErase(lHeader); break;
             case EthCAN_REQUEST_CONFIG_GET  : OnConfigGet  (lHeader); break;
             case EthCAN_REQUEST_CONFIG_RESET: OnConfigReset(lHeader); break;
             case EthCAN_REQUEST_CONFIG_SET  : OnConfigSet  (lHeader); break;
             case EthCAN_REQUEST_CONFIG_STORE: OnConfigStore(lHeader); break;
+            case EthCAN_REQUEST_DO_NOTHING  : OnDoNothing  (lHeader); break;
             case EthCAN_REQUEST_INFO_GET    : OnInfoGet    (lHeader); break;
             case EthCAN_REQUEST_RESET       : OnReset      (lHeader); break;
             case EthCAN_REQUEST_SEND        : OnSend       (lHeader); break;
@@ -123,6 +127,17 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
 #define END_UDP           \
         sUDP.endPacket(); \
     }
+
+void OnConfigErase(const EthCAN_Header * aIn)
+{
+    Config_Erase();
+
+    BEGIN_UDP
+    {
+        sUDP.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
+    }
+    END_UDP
+}
 
 void OnConfigGet(const EthCAN_Header * aIn)
 {
@@ -178,6 +193,15 @@ void OnConfigStore(const EthCAN_Header * aIn)
     {
         lHeader.mResult = static_cast<uint16_t>(lResult);  
     
+        sUDP.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
+    }
+    END_UDP
+}
+
+void OnDoNothing(const EthCAN_Header * aIn)
+{
+    BEGIN_UDP
+    {
         sUDP.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
     }
     END_UDP

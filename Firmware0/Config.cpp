@@ -29,7 +29,8 @@
 #define STORE_CAN_FILTERS   ( 32) // 24 bytes
 #define STORE_CAN_MASKS     ( 56) //  8 bytes
 #define STORE_CAN_RATE      ( 64) //  1 bytes
-                                  //  3 bytes
+#define STORE_CAN_FLAGS     ( 65) //  1 bytes
+                                  //  2 bytes
 #define STORE_IPv4_ADDR     ( 68) //  4 bytes
 #define STORE_IPv4_GATEWAY  ( 72) //  4 bytes
 #define STORE_IPv4_MASK     ( 76) //  4 bytes
@@ -64,6 +65,23 @@ static void Store(uint8_t aOffset, const void * aIn, unsigned int aSize_byte);
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
+void Config_Erase()
+{
+    MSG_DEBUG("Config_Erase(  )");
+
+    uint8_t lWhat;
+
+    Load(&lWhat, STORE_WHAT, sizeof(lWhat));
+    if (0xff != lWhat)
+    {
+        lWhat = 0xff;
+
+        Store(STORE_WHAT, &lWhat, sizeof(lWhat));
+
+        EEPROM.commit();
+    }
+}
+
 void Config_Load()
 {
     // MSG_DEBUG("Config_Load()");
@@ -87,6 +105,7 @@ void Config_Load()
     if (0 != (lWhat & EthCAN_FLAG_STORE_CAN))
     {
         Load(&gConfig.mCAN_Filters, STORE_CAN_FILTERS, sizeof(gConfig.mCAN_Filters));
+        Load(&gConfig.mCAN_Flags  , STORE_CAN_FLAGS  , sizeof(gConfig.mCAN_Flags));
         Load(&gConfig.mCAN_Masks  , STORE_CAN_MASKS  , sizeof(gConfig.mCAN_Masks));
         Load(&gConfig.mCAN_Rate   , STORE_CAN_RATE   , sizeof(gConfig.mCAN_Rate));
         // TODO Firmware.Config.Load
@@ -257,6 +276,7 @@ EthCAN_Result Config_Store(const EthCAN_Header * aIn)
     if (0 != (lIn & EthCAN_FLAG_STORE_CAN))
     {
         Store(STORE_CAN_FILTERS, &gConfig.mCAN_Filters, sizeof(gConfig.mCAN_Filters));
+        Store(STORE_CAN_FLAGS  , &gConfig.mCAN_Flags  , sizeof(gConfig.mCAN_Flags));
         Store(STORE_CAN_MASKS  , &gConfig.mCAN_Masks  , sizeof(gConfig.mCAN_Masks));
         Store(STORE_CAN_RATE   , &gConfig.mCAN_Rate   , sizeof(gConfig.mCAN_Rate));
     }

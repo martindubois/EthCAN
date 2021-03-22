@@ -48,13 +48,15 @@ static State         sState  = STATE_INIT;
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-static EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte);
+static EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, bool aWait);
 
 static void          Receive_Frame(uint8_t aByte);
 static void          Receive_Init (uint8_t aByte);
 static EthCAN_Result Receive_Sync (uint8_t aByte, bool aDataExpected);
 
-static EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte);
+static void Send(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte);
+
+static EthCAN_Result SendAndReceive(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte);
 
 // Functions
 /////////////////////////////////////////////////////////////////////////////
@@ -78,12 +80,12 @@ void CAN_Config()
 
     lConfig.mRate = gConfig.mCAN_Rate;
 
-    sResult = Request(EthCAN_REQUEST_CONFIG_SET, &lConfig, sizeof(lConfig), NULL, 0);
+    sResult = SendAndReceive(EthCAN_REQUEST_CONFIG_SET, &lConfig, sizeof(lConfig), NULL, 0);
 }
 
 void CAN_Loop()
 {
-    Receive(NULL, 0);
+    Receive(NULL, 0, false);
 }
 
 void CAN_Setup()
@@ -97,7 +99,7 @@ void CAN_GetInfo(EthCAN_Info * aInfo)
 {
     FW_Info lInfo;
 
-    aInfo->mResult_CAN = Request(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
+    aInfo->mResult_CAN = SendAndReceive(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
     if (EthCAN_OK == aInfo->mResult_CAN)
     {
         for (unsigned int i = 0; i < 4; i ++)
@@ -114,6 +116,8 @@ void CAN_GetInfo(EthCAN_Info * aInfo)
 
 EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 {
+    MSG_DEBUG("CAN_Send()");
+
     if (sizeof(EthCAN_Frame) > aIn->mDataSize_byte)
     {
         return Info_Count_Error(__LINE__, EthCAN_ERROR_DATA_SIZE);
@@ -123,19 +127,17 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 
     unsigned int lDataSize_byte = EthCAN_FRAME_DATA_SIZE(*lFrame);
 
-    EthCAN_Result lResult = Request(EthCAN_REQUEST_SEND, lFrame, 5 + lDataSize_byte, NULL, 0);
-    if (EthCAN_OK == lResult)
-    {
-        Info_Count_Tx_Frame(lDataSize_byte);
-    }
+    Send(EthCAN_REQUEST_SEND, lFrame, 5 + lDataSize_byte);
 
-    return lResult;
+    Info_Count_Tx_Frame(lDataSize_byte);
+
+    return EthCAN_OK_PENDING;
 }
 
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
-EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte)
+EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, bool aWait)
 {
     unsigned int lOutSize_byte = 0;
     EthCAN_Result lResult;
@@ -145,7 +147,7 @@ EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte)
     {
         if (!Serial2.available())
         {
-            if (lRetry && (lOutSize_byte < aOutSize_byte))
+            if (aWait)
             {
                 lRetry = false;
                 delay(100);
@@ -161,8 +163,8 @@ EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte)
 
         switch (sState)
         {
-        case STATE_FRAME   : Receive_Frame(lByte); break;
-        case STATE_INIT    : Receive_Init (lByte); break;
+        case STATE_FRAME: Receive_Frame(lByte); break;
+        case STATE_INIT : Receive_Init (lByte); break;
 
         case STATE_DATA:
             aOut[lOutSize_byte] = lByte;
@@ -176,7 +178,7 @@ EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte)
 
         case STATE_SYNC:
             lResult = Receive_Sync(lByte, 0 < aOutSize_byte);
-            if (EthCAN_OK_PENDING != lResult)
+            if (EthCAN_RESULT_INVALID != lResult)
             {
                 return lResult;
             }
@@ -221,7 +223,7 @@ void Receive_Init(uint8_t aByte)
 
 EthCAN_Result Receive_Sync(uint8_t aByte, bool aDataExpected)
 {
-    EthCAN_Result lResult = EthCAN_OK_PENDING;
+    EthCAN_Result lResult = EthCAN_RESULT_INVALID;
 
     switch (aByte)
     {
@@ -230,6 +232,7 @@ EthCAN_Result Receive_Sync(uint8_t aByte, bool aDataExpected)
         break;
 
     case EthCAN_OK:
+    case EthCAN_OK_PENDING:
         if (aDataExpected)
         {
             sState = STATE_DATA;
@@ -250,7 +253,7 @@ EthCAN_Result Receive_Sync(uint8_t aByte, bool aDataExpected)
     return lResult;
 }
 
-EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte)
+void Send(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte)
 {
     Serial2.write(EthCAN_SYNC);
     Serial2.write(aCode);
@@ -259,6 +262,11 @@ EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigned int a
     {
         Serial2.write(reinterpret_cast<const uint8_t *>(aIn), aInSize_byte);
     }
+}
 
-    return Receive(reinterpret_cast<uint8_t *>(aOut), aOutSize_byte);
+EthCAN_Result SendAndReceive(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte)
+{
+    Send(aCode, aIn, aInSize_byte);
+
+    return Receive(reinterpret_cast<uint8_t *>(aOut), aOutSize_byte, true);
 }
