@@ -34,6 +34,8 @@ public:
 
 private:
 
+    void Destroy(); // L and W_Thread.cpp
+
     void Start(); // L and W_Thread.cpp
 
     void Wait(); // L and W_Thread.cpp

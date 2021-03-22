@@ -50,6 +50,8 @@ Thread::~Thread()
         }
     }
     Zone0_Leave();
+
+    Destroy();
 }
 
 // Internal

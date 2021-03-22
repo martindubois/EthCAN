@@ -62,6 +62,15 @@ void Thread::Zone0_Leave()
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
+void Thread::Destroy()
+{
+    int lRet = pthread_cond_destroy(&mCond);
+    assert(0 == lRet);
+
+    lRet = pthread_mutex_destroy(&mZone0);
+    assert(0 == lRet);
+}
+
 void Thread::Start()
 {
     mCount = 0;
@@ -79,12 +88,6 @@ void Thread::Start()
 void Thread::Wait()
 {
     int lRet = pthread_join(mThread, NULL);
-    assert(0 == lRet);
-
-    lRet = pthread_cond_destroy(&mCond);
-    assert(0 == lRet);
-
-    lRet = pthread_mutex_destroy(&mZone0);
     assert(0 == lRet);
 }
 
