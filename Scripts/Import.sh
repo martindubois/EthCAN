@@ -10,7 +10,7 @@ echo Executing  Import.sh $1  ...
 
 # ===== Initialisation =======================================================
 
-KMS_COPY=KmsCopy
+KMS_COPY=./KmsCopy
 
 # ===== Verification =========================================================
 
