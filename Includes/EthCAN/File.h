@@ -11,6 +11,7 @@
 // ===== Includes ===========================================================
 extern "C"
 {
+    #include <EthCAN_Result.h>
     #include <EthCAN_Types.h>
 }
 

@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/W_System_Impl.cpp
 
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== EthCAN_Lib =========================================================

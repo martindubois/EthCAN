@@ -75,6 +75,11 @@ EthCAN_Config;
 
 #define EthCAN_NAME_DEFAULT ("EthCAN")
 
+#define EthCAN_CONFIG_DEFAULT(C)               \
+    memset((C), 0, sizeof(EthCAN_Config));     \
+    strcpy_s((C)->mName, EthCAN_NAME_DEFAULT); \
+    (C)->mCAN_Rate = EthCAN_RATE_DEFAULT
+
 /// \brief EthCAN_Frame
 typedef struct
 {

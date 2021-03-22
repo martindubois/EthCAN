@@ -32,3 +32,24 @@ extern "C"
 {
     #include <EthCAN_Result.h>
 }
+
+// Macros
+/////////////////////////////////////////////////////////////////////////////
+
+#define TRACE_DEBUG(F,M)                \
+    if (NULL != (F))                    \
+    {                                   \
+        fprintf((F), "DEBUG  " M "\n"); \
+    }
+
+#define TRACE_ERROR(F,M)                \
+    if (NULL != (F))                    \
+    {                                   \
+        fprintf((F), "ERROR  " M "\n"); \
+    }
+
+#define TRACE_WARNING(F,M)                \
+    if (NULL != (F))                      \
+    {                                     \
+        fprintf((F), "WARNING  " M "\n"); \
+    }

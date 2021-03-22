@@ -14,13 +14,14 @@
 #include <KmsTool.h>
 
 // ===== Includes ===========================================================
-#include <EthCAN/Device.h>
 #include <EthCAN/File.h>
 #include <EthCAN/Display.h>
-#include <EthCAN/System.h>
 
 // ===== Common =============================================================
 #include "../Common/Version.h"
+
+// ===== EthCAN_Tool ========================================================
+#include "Setup.h"
 
 // Commands
 /////////////////////////////////////////////////////////////////////////////
@@ -82,10 +83,10 @@ static void Device_Config_Store(KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo DEVICE_CONFIG_COMMANDS[] =
 {
-    { "Erase", Device_Config_Erase, "Erase                         See Device::Config_Erase", NULL },
+    { "Erase", Device_Config_Erase, "Erase [Flags_hex]             See Device::Config_Erase", NULL },
     { "Get"  , Device_Config_Get  , "Get                           See Device::Config_Get"  , NULL },
-    { "Reset", Device_Config_Reset, "Reset                         See Device::Config_Reset", NULL },
-    { "Set"  , Device_Config_Set  , "Set                           See Device::Config_Set"  , NULL },
+    { "Reset", Device_Config_Reset, "Reset [Flags_hex]             See Device::Config_Reset", NULL },
+    { "Set"  , Device_Config_Set  , "Set [Flags_hex]               See Device::Config_Set"  , NULL },
     { "Store", Device_Config_Store, "Store [Flags_hex]             See Device::Config_Store", NULL },
 
     { NULL, NULL, NULL, NULL }
@@ -115,8 +116,9 @@ static const KmsLib::ToolBase::CommandInfo DEVICE_COMMANDS[] =
     { "GetInfo" , Device_GetInfo, "GetInfo                       See Device::GetInfo", NULL },
     { "Receiver", NULL          , "Receiver ..."                                     , DEVICE_RECEIVER_COMMANDS },
     { "Release" , Device_Release, "Release                       See Object::Release", NULL },
-    { "Reset"   , Device_Reset  , "Reset                         See Device::Reset"  , NULL },
-    { "Send"    , Device_Send   , "Send [Ext] [Id] [Count] ...   See Device::Send"   , NULL },
+    { "Reset"   , Device_Reset  , "Reset [Flags_hex]             See Device::Reset"  , NULL },
+    { "Send"    , Device_Send   , "Send [Flags_hex] [Ext] [Id] [Count] ..."
+                                  "                              See Device::Send"   , NULL },
 
     { NULL, NULL, NULL, NULL }
 };
@@ -133,7 +135,7 @@ static const KmsLib::ToolBase::CommandInfo SELECT_COMMANDS[] =
     { "Index"   , Select_Index   , "Index [Index]                 See System::Device_Get"      , NULL },
     { "IP"      , Select_IP      , "IP {Address}                  See System::Device_Find_IPv4", NULL },
     { "Name"    , Select_Name    , "Name [Name]                   See System::Device_Find_Name", NULL },
-    { "USB"     , Select_Index   , "USB [Index]                   See System::Device_Find_USB" , NULL },
+    { "USB"     , Select_USB     , "USB [Index]                   See System::Device_Find_USB" , NULL },
 
     { NULL, NULL, NULL, NULL }
 };
@@ -170,6 +172,7 @@ static void Detect    (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void GetVersion(KmsLib::ToolBase* aToolBase, const char* aArg);
 static void List      (KmsLib::ToolBase* aToolBase, const char* aArg);
 static void Production(KmsLib::ToolBase* aToolBase, const char* aArg);
+static void Verbose   (KmsLib::ToolBase* aToolBase, const char* aArg);
 
 static const KmsLib::ToolBase::CommandInfo COMMANDS[] =
 {
@@ -182,6 +185,7 @@ static const KmsLib::ToolBase::CommandInfo COMMANDS[] =
     { "Production", Production, "Production"                                          , NULL },
     { "Select"    , NULL      , "Select ..."                                          , SELECT_COMMANDS },
     { "Setup"     , NULL      , "Setup ..."                                           , SETUP_COMMANDS  },
+    { "Verbose"   , Verbose   , "Verbose"                                             , NULL },
 
     KMS_LIB_TOOL_BASE_FUNCTIONS
 
@@ -254,7 +258,7 @@ void Config_CAN_Filters(KmsLib::ToolBase* aToolBase, const char* aArg)
 
     for (unsigned int i = 0; i < 6; i ++)
     {
-        if (!aToolBase->Parse(&lArg, sConfig.mCAN_Filters + i, 0, 0x9fffffff))
+        if (!aToolBase->Parse(&lArg, sConfig.mCAN_Filters + i, 0, 0x9fffffff, true))
         {
             return;
         }
@@ -268,7 +272,7 @@ void Config_CAN_Flags(KmsLib::ToolBase* aToolBase, const char* aArg)
     const char* lArg = aArg;
     unsigned int lFlags;
 
-    if (aToolBase->Parse(&lArg, &lFlags, 0, EthCAN_FLAG_CAN_ADVANCED, true, 0))
+    if (aToolBase->Parse(&lArg, &lFlags, 0, EthCAN_FLAG_CAN_ADVANCED | EthCAN_FLAG_CAN_FILTERS_ON, true, 0))
     {
         sConfig.mCAN_Flags = lFlags;
     }
@@ -282,7 +286,7 @@ void Config_CAN_Masks(KmsLib::ToolBase* aToolBase, const char* aArg)
 
     for (unsigned int i = 0; i < 2; i++)
     {
-        if (!aToolBase->Parse(&lArg, sConfig.mCAN_Filters + i, 0, 0x9fffffff, 0))
+        if (!aToolBase->Parse(&lArg, sConfig.mCAN_Masks + i, 0, 0x9fffffff, true, 0))
         {
             return;
         }
@@ -333,9 +337,7 @@ void Config_File_Save(KmsLib::ToolBase* aToolBase, const char* aArg)
 
 void Config_Clear(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
-    memset(&sConfig, 0, sizeof(sConfig));
-
-    sConfig.mCAN_Rate = EthCAN_RATE_DEFAULT;
+    EthCAN_CONFIG_DEFAULT(&sConfig);
 
     KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Cleared");
 }
@@ -405,7 +407,13 @@ void Device_Config_Erase(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_SELECTED_DEVICE;
 
-    DisplayResult(aToolBase, sDevice->Config_Erase());
+    const char* lArg = aArg;
+    unsigned int lFlags;
+
+    if (aToolBase->Parse(&lArg, &lFlags, 0, 0x80, true, 0))
+    {
+        DisplayResult(aToolBase, sDevice->Config_Erase(lFlags));
+    }
 }
 
 void Device_Config_Get(KmsLib::ToolBase* aToolBase, const char* aArg)
@@ -419,14 +427,26 @@ void Device_Config_Reset(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_SELECTED_DEVICE;
 
-    DisplayResult(aToolBase, sDevice->Config_Reset());
+    const char* lArg = aArg;
+    unsigned int lFlags;
+
+    if (aToolBase->Parse(&lArg, &lFlags, 0, 0x80, true, 0))
+    {
+        DisplayResult(aToolBase, sDevice->Config_Reset(lFlags));
+    }
 }
 
 void Device_Config_Set(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_SELECTED_DEVICE;
 
-    DisplayResult(aToolBase, sDevice->Config_Set(&sConfig));
+    const char* lArg = aArg;
+    unsigned int lFlags;
+
+    if (aToolBase->Parse(&lArg, &lFlags, 0, 0x80, true, 0))
+    {
+        DisplayResult(aToolBase, sDevice->Config_Set(&sConfig, lFlags));
+    }
 }
 
 void Device_Config_Store(KmsLib::ToolBase* aToolBase, const char* aArg)
@@ -494,7 +514,13 @@ void Device_Reset(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_SELECTED_DEVICE;
 
-    DisplayResult(aToolBase, sDevice->Reset());
+    const char* lArg = aArg;
+    unsigned int lFlags;
+
+    if (aToolBase->Parse(&lArg, &lFlags, 0, 0x80, true, 0))
+    {
+        DisplayResult(aToolBase, sDevice->Reset(lFlags));
+    }
 }
 
 void Device_Send(KmsLib::ToolBase* aToolBase, const char* aArg)
@@ -504,9 +530,11 @@ void Device_Send(KmsLib::ToolBase* aToolBase, const char* aArg)
     const char* lArg = aArg;
     bool lExt;
     unsigned int lCount;
+    unsigned int lFlags;
     EthCAN_Frame lFrame;
 
-    if (   aToolBase->Parse(&lArg, &lExt, true)
+    if (   aToolBase->Parse(&lArg, &lFlags, 0, 0x80, true, 0)
+        && aToolBase->Parse(&lArg, &lExt, true)
         && aToolBase->Parse(&lArg, &lFrame.mId, 0, 0x1fffffff, true, 0)
         && aToolBase->Parse(&lArg, &lCount, 1, 8, false, 1))
     {
@@ -532,7 +560,7 @@ void Device_Send(KmsLib::ToolBase* aToolBase, const char* aArg)
 
         if (lParsed)
         {
-            DisplayResult(aToolBase, sDevice->Send(lFrame));
+            DisplayResult(aToolBase, sDevice->Send(lFrame, lFlags));
         }
     }
 }
@@ -667,41 +695,7 @@ void Setup_AccessPoint(KmsLib::ToolBase* aToolBase, const char* aArg)
     if (   Parse_Address_NetMask(aToolBase, &lArg, &lAddress, &lNetMask)
         && Parse_SSID_Password  (aToolBase, &lArg, lName, lPassword, "EthCAN", "EthCANPassword"))
     {
-        EthCAN_Config lConfig;
-        unsigned int lStep = 1;
-
-        printf("%u. Retrieving the configuration...\n", lStep); lStep++;
-        EthCAN_Result lRet = sDevice->Config_Get(&lConfig);
-        if (EthCAN_OK == lRet)
-        {
-            printf("%u. Modifying the configuration...\n", lStep); lStep++;
-            lConfig.mIPv4_Address = lAddress;
-            lConfig.mIPv4_Gateway = 0;
-            lConfig.mIPv4_NetMask = lNetMask;
-            lConfig.mWiFi_Flags |= EthCAN_FLAG_WIFI_AP;
-            strcpy_s(lConfig.mWiFi_Name    , lName);
-            strcpy_s(lConfig.mWiFi_Password, lPassword);
-
-            printf("%u. Setting the configuration...\n", lStep); lStep++;
-            lRet = sDevice->Config_Set(&lConfig);
-            if (EthCAN_OK == lRet)
-            {
-                printf("%u. Storing the configuration...\n", lStep); lStep++;
-                lRet = sDevice->Config_Store(EthCAN_FLAG_STORE_IPv4 | EthCAN_FLAG_STORE_WIFI);
-                if (EthCAN_OK == lRet)
-                {
-                    printf("%u. Reseting the EthCAN...\n", lStep); lStep++;
-                    lRet = sDevice->Reset();
-                    if (EthCAN_OK == lRet)
-                    {
-                        printf(
-                            "IMPORTANT: Because the configured EthCAN is now a WiFi access point, you need\n"
-                            "           to connect your computer to the configured WiFi network if you want\n"
-                            "           to communicate with it through the network.\n");
-                    }
-                }
-            }
-        }
+        EthCAN_Result lRet = Setup_AccessPoint(sDevice, lAddress, lNetMask, lName, lPassword);
 
         DisplayResult(aToolBase, lRet);
     }
@@ -728,65 +722,7 @@ void Setup_Bridge(KmsLib::ToolBase* aToolBase, const char* aArg)
             return;
         }
 
-        EthCAN_Config lConfigs[2];
-        EthCAN::Device* lDevices[2];
-        EthCAN_Info lInfos[2];
-        EthCAN_Result lRet = EthCAN_RESULT_INVALID;
-        unsigned int lStep = 1;
-        unsigned int i;
-
-        for (i = 0; i < 2; i++)
-        {
-            printf("%u. Retrieving the device...\n", lStep); lStep++;
-            lDevices[i] = sSystem->Device_Get(lIndex[0]);
-            assert(NULL != lDevices[i]);
-
-            // TODO EthCAN_Tool Verify the device is connected to a network
-
-            printf("%u. Retrieving the configuration...\n", lStep); lStep++;
-            lRet = lDevices[i]->Config_Get(lConfigs + i);
-            if (EthCAN_OK == lRet)
-            {
-                printf("%u. Modifying the configuration...\n", lStep); lStep++;
-                lConfigs[i].mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
-                lConfigs[i].mServer_Port = EthCAN_UDP_PORT;
-
-                // TODO EthCAN_Tool.Setup filters and masks
-
-                printf("%u. Retrieving the information...\n", lStep); lStep++;
-                lRet = lDevices[i]->GetInfo(lInfos + i);
-            }
-
-            if (EthCAN_OK != lRet)
-            {
-                break;
-            }
-        }
-
-        printf("%u. Modifying the configurations...\n", lStep); lStep++;
-        lConfigs[0].mServer_IPv4 = lInfos[1].mIPv4_Address;
-        lConfigs[1].mServer_IPv4 = lInfos[0].mIPv4_Address;
-
-        for (i = 0; i < 2; i++)
-        {
-            if (EthCAN_OK == lRet)
-            {
-                printf("%u. Setting the configuration...\n", lStep); lStep++;
-                lRet = lDevices[i]->Config_Set(lConfigs + i);
-                if (EthCAN_OK == lRet)
-                {
-                    printf("%u. Storing the configuration...\n", lStep); lStep++;
-                    lRet = lDevices[i]->Config_Store(EthCAN_FLAG_STORE_CAN | EthCAN_FLAG_STORE_SERVER);
-                    if (EthCAN_OK == lRet)
-                    {
-                        printf("%u. Reseting the EthCAN...\n", lStep); lStep++;
-                        lRet = lDevices[i]->Reset();
-                    }
-                }
-            }
-
-            lDevices[i]->Release();
-        }
+        EthCAN_Result lRet = Setup_Bridge(sSystem, lIndex);
 
         DisplayResult(aToolBase, lRet);
     }
@@ -827,77 +763,7 @@ void Setup_Link(KmsLib::ToolBase* aToolBase, const char* aArg)
             return;
         }
 
-        EthCAN_Config lConfigs[2];
-        EthCAN::Device* lDevices[2];
-        EthCAN_Result lRet = EthCAN_RESULT_INVALID;
-        unsigned int lStep = 1;
-        unsigned int i;
-
-        for (i = 0; i < 2; i++)
-        {
-            printf("%u. Retrieving the device...\n", lStep); lStep++;
-            lDevices[i] = sSystem->Device_Get(lIndex[0]);
-            assert(NULL != lDevices[i]);
-
-            printf("%u. Retrieving the configuration...\n", lStep); lStep++;
-            lRet = lDevices[i]->Config_Get(lConfigs + i);
-            if (EthCAN_OK != lRet)
-            {
-                break;
-            }
-
-            printf("%u. Modifying the configuration...\n", lStep); lStep++;
-            lConfigs[i].mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
-            lConfigs[i].mServer_Port = EthCAN_UDP_PORT;
-            lConfigs[i].mWiFi_Flags &= ~EthCAN_FLAG_WIFI_AP;
-            strcpy_s(lConfigs[i].mWiFi_Name    , lName);
-            strcpy_s(lConfigs[i].mWiFi_Password, lPassword);
-
-            // TODO EthCAN_Tool.Setup filters and masks
-        }
-
-        printf("%u. Modifying the configurations...\n", lStep); lStep++;
-        lConfigs[0].mIPv4_Address = lAddress;
-        lConfigs[0].mIPv4_Gateway = 0;
-        lConfigs[0].mIPv4_NetMask = lNetMask;
-        lConfigs[0].mServer_IPv4  = lAddress + 0x01000000;
-        lConfigs[1].mIPv4_Address = lAddress + 0x01000000;
-        lConfigs[1].mIPv4_Gateway = 0;
-        lConfigs[1].mIPv4_NetMask = lNetMask;
-        lConfigs[1].mServer_IPv4  = lAddress;
-
-        if ('\0' != lName[0])
-        {
-            lConfigs[0].mWiFi_Flags |= EthCAN_FLAG_WIFI_AP;
-        }
-
-        for (i = 0; i < 2; i++)
-        {
-            if (EthCAN_OK == lRet)
-            {
-                printf("%u. Setting the configuration...\n", lStep); lStep++;
-                lRet = lDevices[i]->Config_Set(lConfigs + i);
-                if (EthCAN_OK == lRet)
-                {
-                    printf("%u. Storing the configuration...\n", lStep); lStep++;
-                    lRet = lDevices[i]->Config_Store(EthCAN_FLAG_STORE_CAN | EthCAN_FLAG_STORE_IPv4 | EthCAN_FLAG_STORE_SERVER | EthCAN_FLAG_STORE_WIFI);
-                    if (EthCAN_OK == lRet)
-                    {
-                        printf("%u. Reseting the EthCAN...\n", lStep); lStep++;
-                        lRet = lDevices[i]->Reset();
-                        if (EthCAN_OK == lRet)
-                        {
-                            printf(
-                                "IMPORTANT: Because the configured EthCAN are now on a specific WiFi, you need\n"
-                                "           to connect your computer to this specific WiFi network if you want\n"
-                                "           to communicate with them through the network.\n");
-                        }
-                    }
-                }
-            }
-
-            lDevices[i]->Release();
-        }
+        EthCAN_Result lRet = Setup_Link(sSystem, lIndex, lAddress, lNetMask, lName, lPassword);
 
         DisplayResult(aToolBase, lRet);
     }
@@ -907,24 +773,7 @@ void Setup_Sniffer(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     USE_SELECTED_DEVICE;
 
-    EthCAN_Config lConfig;
-    unsigned int lStep = 1;
-
-    printf("%u. Retrieving the configuration...\n", lStep); lStep++;
-    EthCAN_Result lRet = sDevice->Config_Get(&lConfig);
-    if (EthCAN_OK == lRet)
-    {
-        printf("%u. Modifying the configuration...\n", lStep); lStep++;
-        // TODO Configure filters and masks.
-
-        printf("%u. Setting the configuration...\n", lStep); lStep++;
-        lRet = sDevice->Config_Set(&lConfig);
-        if (EthCAN_OK == lRet)
-        {
-            printf("%u. Starting the receiver...\n", lStep); lStep++;
-            lRet = sDevice->Receiver_Start(Receiver, NULL);
-        }
-    }
+    EthCAN_Result lRet = Setup_Sniffer(sDevice);
 
     DisplayResult(aToolBase, lRet);
 }
@@ -1095,6 +944,13 @@ void Production(KmsLib::ToolBase* aToolBase, const char* aArg)
     DisplayResult(aToolBase, lRet);
 }
 
+void Verbose(KmsLib::ToolBase* aToolBase, const char* aArg)
+{
+    sSystem->SetTraceStream(stdout);
+
+    KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Verbose");
+}
+
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
@@ -1102,7 +958,7 @@ void DisplayResult(KmsLib::ToolBase* aToolBase, EthCAN_Result aResult)
 {
     const char* lResultName = EthCAN::GetName(aResult);
 
-    if (EthCAN::System::IsResultOK(aResult))
+    if (EthCAN_RESULT_OK(aResult))
     {
         KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, lResultName);
     }
@@ -1218,40 +1074,7 @@ void ReleaseDevice()
 
 void Setup_IPv4(KmsLib::ToolBase* aToolBase, uint32_t aAddress, uint32_t aGateway, uint32_t aNetMask)
 {
-    EthCAN_Config lConfig;
-    unsigned int lStep = 1;
-
-    printf("%u. Retrieving the configuration...\n", lStep); lStep++;
-    EthCAN_Result lRet = sDevice->Config_Get(&lConfig);
-    if (EthCAN_OK == lRet)
-    {
-        printf("%u. Modifying the configuration...\n", lStep); lStep++;
-        lConfig.mIPv4_Address = aAddress;
-        lConfig.mIPv4_Gateway = aGateway;
-        lConfig.mIPv4_NetMask = aNetMask;
-
-        printf("%u. Setting the configuration...\n", lStep); lStep++;
-        lRet = sDevice->Config_Set(&lConfig);
-        if (EthCAN_OK == lRet)
-        {
-            printf("%u. Storing the configuration...\n", lStep); lStep++;
-            lRet = sDevice->Config_Store(EthCAN_FLAG_STORE_IPv4);
-            if (EthCAN_OK == lRet)
-            {
-                printf("%u. Reseting the EthCAN...\n", lStep); lStep++;
-                lRet = sDevice->Reset();
-                if (EthCAN_OK == lRet)
-                {
-                    // TODO EthCAN_Tool
-                    //      Copy message from the guide
-                    printf(
-                        "IMPORTANT: Because the IPv4 address of the EthCAN most probably changed, if you\n"
-                        "           want to communicate with it through the network, you need to restart\n"
-                        "           the device detection by executing the command \"Detect\".\n");
-                }
-            }
-        }
-    }
+    EthCAN_Result lRet = Setup_IPv4(sDevice, aAddress, aGateway, aNetMask);
 
     DisplayResult(aToolBase, lRet);
 }

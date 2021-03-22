@@ -18,6 +18,11 @@ void Serial::Connect()
     throw EthCAN_ERROR_SERIAL_OPEN;
 }
 
+void Serial::Disconnect()
+{
+    // TODO Linux.USB
+}
+
 unsigned int Serial::Raw_Receive(void* aOut, unsigned int aOutSize_byte)
 {
     assert(NULL != aOut);

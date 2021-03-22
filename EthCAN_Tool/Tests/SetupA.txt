@@ -14,6 +14,11 @@ Echo == Select - First because we need a device to work with
 Select Index
 Error Exit
 
+Echo == Device Config Erase
+
+# Device Config Erase
+# Error Exit
+
 Echo == Device Config Get
 
 Device Config Get

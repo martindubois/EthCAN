@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/System.cpp
 
+// TEST COVERAGE 2021-03-21 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== EthCAN_Lib =========================================================
@@ -43,7 +45,7 @@ EthCAN_Result System_Impl::Detect()
     }
     catch (EthCAN_Result eResult)
     {
-        fprintf(stderr, "ERROR  System_Impl::Detect - %u\n", eResult);
+        TRACE_ERROR(mTrace, "System_Impl::Detect - Exception");
         lResult = eResult;
     }
 
@@ -121,12 +123,15 @@ EthCAN::Device* System_Impl::Device_Find_USB(unsigned int aIndex)
 
         if (mDevices[i]->IsConnectedUSB())
         {
-            if (aIndex = lIndex)
+            if (aIndex == lIndex)
             {
                 mDevices[i]->IncRefCount();
 
                 return mDevices[i];
             }
+
+            // NOT TESTED System
+            //            Looking for none first USB device.
 
             lIndex++;
         }
@@ -176,6 +181,13 @@ void System_Impl::Debug(FILE* aOut) const
 
         mDevices[i]->Debug(lOut);
     }
+
+    Object::Debug();
+}
+
+void System_Impl::SetTraceStream(FILE* aTrace)
+{
+    mTrace = aTrace;
 }
 
 // ===== IMessageReceiver ===================================================
@@ -252,6 +264,9 @@ Device_Impl* System_Impl::Device_Add()
 
         if (0 < mDeviceCount)
         {
+            // NOT TESTED System
+            //            More than 16 devices
+
             assert(NULL != mDevices);
 
             for (unsigned int i = 0; i < mDeviceCount; i++)
@@ -274,26 +289,6 @@ Device_Impl* System_Impl::Device_Add()
     mDeviceCount++;
 
     return lResult;
-}
-
-Device_Impl* System_Impl::Device_Find_Serial(Serial* aSerial)
-{
-    assert(NULL != aSerial);
-
-    for (unsigned int i = 0; i < mDeviceCount; i++)
-    {
-        assert(NULL != mDevices);
-        assert(NULL != mDevices[i]);
-
-        if (mDevices[i]->Is(aSerial))
-        {
-            mDevices[i]->IncRefCount();
-
-            return mDevices[i];
-        }
-    }
-
-    return NULL;
 }
 
 void System_Impl::Devices_Release()
@@ -339,6 +334,7 @@ bool System_Impl::OnDetectData(const void* aData, unsigned int aSize_byte, uint3
         }
     }
 
+    TRACE_WARNING(mTrace, "System_Impl::OnDetectData - Invalid detection data");
     return false;
 }
 
@@ -382,17 +378,18 @@ void System_Impl::OnSerialLink(const char* aLink)
 
     try
     {
-        Serial* lSerial = new Serial(aLink);
+        Serial* lSerial = new Serial(aLink, mTrace);
         assert(NULL != lSerial);
 
         OnSerialPort(lSerial);
     }
     catch (...)
     {
-        fprintf(stderr, "WARNING  System_Impl::OnSerialLink - Excpetion\n");
+        TRACE_WARNING(mTrace, "System_Impl::OnSerialLink - Excpetion");
 
         if (NULL != lSerial)
         {
+            TRACE_ERROR(mTrace, "System_Impl::OnSerialLink - Error after connexion");
             delete lSerial;
         }
     }
@@ -408,17 +405,22 @@ void System_Impl::OnSerialPort(Serial* aSerial)
 
     Request_Init(&lHeader);
 
-    aSerial->Send(&lHeader, sizeof(lHeader));
+    for (unsigned int i = 0; i < 3; i++)
+    {
+        aSerial->Send(&lHeader, sizeof(lHeader));
 
-    try
-    {
-        aSerial->GetThread()->Sem_Wait(5000);
+        try
+        {
+            aSerial->GetThread()->Sem_Wait(2000);
+            return;
+        }
+        catch (...)
+        {
+            TRACE_WARNING(mTrace, "System_Impl::OnSerialPort - Retry");
+        }
     }
-    catch (...)
-    {
-        fprintf(stderr, "WARNING  System_Impl::OnSerialPort - Exception\n");
-        delete aSerial;
-    }
+
+    delete aSerial;
 }
 
 void System_Impl::Request_Init(EthCAN_Header* aOut)

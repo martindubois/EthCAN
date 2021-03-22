@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/UDPSocket.cpp
 
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== Includes ===========================================================
@@ -88,6 +90,7 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
         int lRet = recvfrom(mSocket, reinterpret_cast<char*>(aData), aSize_byte, 0, reinterpret_cast<sockaddr*>(&lFrom), &lFromSize_byte);
         if (0 == lRet)
         {
+            TRACE_ERROR(stderr, "UDPSocket::Receive - EthCAN_ERROR_SOCKET_RECEIVE");
             throw EthCAN_ERROR_SOCKET_RECEIVE;
         }
 
@@ -95,7 +98,7 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
         {
             if (!Timeout_Verify())
             {
-                fprintf(stderr, "ERROR  UDPSocket::Receive - EthCAN_ERROR_SOCKET (%d)\n", lRet);
+                TRACE_ERROR(stderr, "UDPSocket::Receive - EthCAN_ERROR_SOCKET");
                 throw EthCAN_ERROR_SOCKET;
             }
 
@@ -118,6 +121,10 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
 
             break;
         }
+
+        // QUESTION  UDP.Retry
+        //           Is the retry loop needed ?
+        TRACE_WARNING(stderr, "WARNING  UDPSocket::Receive - Retry");
     }
 
     return lResult_byte;
@@ -142,6 +149,7 @@ void UDPSocket::Send(const void* aData, unsigned int aSize_byte, uint32_t aTo)
     int lRet = sendto(mSocket, reinterpret_cast<const char*>(aData), aSize_byte, 0, reinterpret_cast<sockaddr*>(&lTo), sizeof(lTo));
     if (aSize_byte != lRet)
     {
+        TRACE_ERROR(stderr, "UDPSocket::Send - EthCAN_ERROR_SOCKET_SEND");
         throw EthCAN_ERROR_SOCKET_SEND;
     }
 }

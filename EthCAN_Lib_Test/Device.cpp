@@ -11,6 +11,9 @@
 #include <EthCAN/Display.h>
 #include <EthCAN/System.h>
 
+// ===== EthCAN_Lib_Test ====================================================
+#include "OS.h"
+
 // Static variable
 /////////////////////////////////////////////////////////////////////////////
 
@@ -37,11 +40,13 @@ KMS_TEST_BEGIN(Device_SetupA)
 {
     EthCAN_Config lCfg;
     EthCAN::Device* lD0;
+    EthCAN_Frame lFrame;
     EthCAN_Info lInfo;
     char lLine[128];
     EthCAN::System* lS0;
 
-    memset(&lCfg, 0, sizeof(lCfg));
+    memset(&lCfg  , 0, sizeof(lCfg));
+    memset(&lFrame, 0, sizeof(lFrame));
 
     lS0 = EthCAN::System::Create();
     KMS_TEST_ASSERT(NULL != lS0);
@@ -54,8 +59,12 @@ KMS_TEST_BEGIN(Device_SetupA)
     lD0 = lS0->Device_Get(0);
     KMS_TEST_ASSERT_RETURN(NULL != lD0);
 
+    // Config_Erase
+    // KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Erase());
+
     // Config_Get
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Get(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->Config_Get(NULL));
+    KMS_TEST_COMPARE(EthCAN_OK                 , lD0->Config_Get(&lCfg));
 
     // Config_Reset
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Reset());
@@ -69,77 +78,13 @@ KMS_TEST_BEGIN(Device_SetupA)
     // GetInfo
     KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfo(&lInfo));
 
+    // GetHostAddress
+
     // GetInfoLine
     KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfoLine(lLine, sizeof(lLine)));
 
-    // IsConnectedEth
-    KMS_TEST_ASSERT(lD0->IsConnectedEth());
-
-    // IsConnectedUSB
-    KMS_TEST_ASSERT(!lD0->IsConnectedUSB());
-
-    // Receiver_Start
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->Receiver_Start(Receiver, NULL));
-
-    lD0->Release();
-    lS0->Release();
-}
-KMS_TEST_END
-
-KMS_TEST_BEGIN(Device_SetupB)
-{
-    EthCAN_Config lCfg;
-    EthCAN::Device* lD0;
-    EthCAN_Frame lFrame;
-    EthCAN_Info lInfo;
-    EthCAN::System* lS0;
-
-    lS0 = EthCAN::System::Create();
-    KMS_TEST_ASSERT(NULL != lS0);
-
-    KMS_TEST_COMPARE(EthCAN_OK, lS0->Detect());
-    KMS_TEST_ASSERT(0 < lS0->Device_GetCount());
-
-    lS0->Debug(stdout);
-
-    lD0 = lS0->Device_Get(0);
-    KMS_TEST_ASSERT_RETURN(NULL != lD0);
-
-    // Config_Get
-    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->Config_Get(NULL));
-    KMS_TEST_COMPARE(EthCAN_OK                 , lD0->Config_Get(&lCfg));
-
-    // Config_Reset
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Reset());
-
-    // Config_Set
-    KMS_TEST_COMPARE(EthCAN_ERROR_BUFFER, lD0->Config_Set(NULL));
-    KMS_TEST_COMPARE(EthCAN_OK          , lD0->Config_Set(&lCfg));
-
-    lCfg.mIPv4_NetMask = 0x03040506;
-    KMS_TEST_COMPARE(EthCAN_ERROR_IPv4_MASK, lD0->Config_Set(&lCfg));
-
-    lCfg.mIPv4_Address = 0x03040506;
-    KMS_TEST_COMPARE(EthCAN_ERROR_IPv4_ADDRESS, lD0->Config_Set(&lCfg));
-
-    lCfg.mCAN_Rate = 0xff;
-    KMS_TEST_COMPARE(EthCAN_ERROR_CAN_RATE, lD0->Config_Set(&lCfg));
-
-    // Config_Store
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Store());
-
-    // GetInfo
-    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->GetInfo(NULL));
-    KMS_TEST_COMPARE(EthCAN_OK                 , lD0->GetInfo(&lInfo));
-
-    // GetInfoLine
-    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->GetInfoLine(NULL, 0));
-
-    // IsConnectedEth
-    KMS_TEST_ASSERT(lD0->IsConnectedEth());
-
-    // IsConnectedUSB
-    KMS_TEST_ASSERT(!lD0->IsConnectedUSB());
+    // IsConnectedEth, IsConnectedUSB
+    KMS_TEST_ASSERT(lD0->IsConnectedEth() || lD0->IsConnectedUSB());
 
     // Receiver_Start
     KMS_TEST_COMPARE(EthCAN_ERROR_FUNCTION, lD0->Receiver_Start(NULL, NULL));
@@ -147,14 +92,12 @@ KMS_TEST_BEGIN(Device_SetupB)
     KMS_TEST_COMPARE(EthCAN_ERROR_RUNNING , lD0->Receiver_Start(Receiver, NULL));
 
     // Receiver_Stop
-    KMS_TEST_COMPARE(EthCAN_OK               , lD0->Receiver_Stop());
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Receiver_Stop());
     KMS_TEST_COMPARE(EthCAN_ERROR_NOT_RUNNING, lD0->Receiver_Stop());
-
-    memset(&lFrame, 0, sizeof(lFrame));
 
     // Send
     KMS_TEST_COMPARE(EthCAN_ERROR_INPUT_BUFFER, lD0->Send(*reinterpret_cast<EthCAN_Frame*>(NULL)));
-    KMS_TEST_COMPARE(EthCAN_OK                , lD0->Send(lFrame));
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Send(lFrame));
 
     // Reset - After all other test
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Reset());
@@ -164,7 +107,57 @@ KMS_TEST_BEGIN(Device_SetupB)
 }
 KMS_TEST_END
 
+KMS_TEST_BEGIN(Device_SetupB)
+{
+    EthCAN::Device* lD0;
+    EthCAN::System* lS0;
+
+    lS0 = EthCAN::System::Create();
+    KMS_TEST_ASSERT(NULL != lS0);
+
+    KMS_TEST_COMPARE(EthCAN_OK, lS0->Detect());
+    KMS_TEST_ASSERT(0 < lS0->Device_GetCount());
+
+    lD0 = lS0->Device_Get(0);
+    KMS_TEST_ASSERT_RETURN(NULL != lD0);
+
+    // IsConnectedEth
+    KMS_TEST_ASSERT(lD0->IsConnectedEth());
+
+    // IsConnectedUSB
+    KMS_TEST_ASSERT(!lD0->IsConnectedUSB());
+
+    lD0->Release();
+    lS0->Release();
+}
+KMS_TEST_END
+
 KMS_TEST_BEGIN(Device_SetupC)
+{
+    EthCAN::Device* lD0;
+    EthCAN::System* lS0;
+
+    lS0 = EthCAN::System::Create();
+    KMS_TEST_ASSERT(NULL != lS0);
+
+    KMS_TEST_COMPARE(EthCAN_OK, lS0->Detect());
+    KMS_TEST_ASSERT(0 < lS0->Device_GetCount());
+
+    lD0 = lS0->Device_Find_USB(0);
+    KMS_TEST_ASSERT_RETURN(NULL != lD0);
+
+    // IsConnectedEth
+    KMS_TEST_ASSERT(!lD0->IsConnectedEth());
+
+    // IsConnectedUSB
+    KMS_TEST_ASSERT(lD0->IsConnectedUSB());
+
+    lD0->Release();
+    lS0->Release();
+}
+KMS_TEST_END
+
+KMS_TEST_BEGIN(Device_SetupD)
 {
     EthCAN_Config   lCfg;
     EthCAN::Device* lDevs[2];
@@ -217,7 +210,7 @@ KMS_TEST_BEGIN(Device_SetupC)
     }
 
     printf(" 4. Sending to 0x555 STD...\n");
-    KMS_TEST_ASSERT(SendAndReceive(lDevs, 0xfff, 2));
+    KMS_TEST_ASSERT(SendAndReceive(lDevs, 0x555, 2));
 
     printf(" 5. Sending to 0x444 STD...\n");
     KMS_TEST_ASSERT(SendAndIgnore(lDevs, 0x444, 3));
@@ -274,6 +267,31 @@ KMS_TEST_BEGIN(Device_SetupC)
 }
 KMS_TEST_END
 
+KMS_TEST_BEGIN(Device_SetupE)
+{
+    EthCAN::Device* lD0;
+    char lLine[64];
+    EthCAN::System* lS0;
+
+    lS0 = EthCAN::System::Create();
+    KMS_TEST_ASSERT(NULL != lS0);
+
+    KMS_TEST_COMPARE(EthCAN_OK, lS0->Detect());
+    KMS_TEST_ASSERT(0 < lS0->Device_GetCount());
+
+    lD0 = lS0->Device_Find_USB(0);
+    KMS_TEST_ASSERT_RETURN(NULL != lD0);
+
+    KMS_TEST_ASSERT(lD0->IsConnectedEth());
+    KMS_TEST_ASSERT(lD0->IsConnectedUSB());
+
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfoLine(lLine, sizeof(lLine)));
+
+    lD0->Release();
+    lS0->Release();
+}
+KMS_TEST_END
+
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
@@ -282,9 +300,11 @@ bool Receiver(EthCAN::Device* aDevice, void* aContext, const EthCAN_Frame& aFram
     assert(NULL != aDevice);
     assert(NULL != &aFrame);
 
-    EthCAN::Display(stdout, aFrame);
-
     uint64_t lIndex = reinterpret_cast<uint64_t>(aContext);
+    assert(2 > lIndex);
+
+    printf("===== Device %u =====\n", static_cast<unsigned int>(lIndex));
+    EthCAN::Display(stdout, aFrame);
 
     sCounters_byte[lIndex] += EthCAN_FRAME_DATA_SIZE(aFrame);
 
@@ -355,6 +375,8 @@ bool SendAndReceive(EthCAN::Device* aDevs[2], uint32_t aId, unsigned int aSize_b
 
 bool VerifyCounters(unsigned int aExpected_byte, unsigned int aExpected_frame)
 {
+    OS_Sleep(2000);
+
     bool lResult = true;
 
     for (unsigned int i = 0; i < 2; i++)

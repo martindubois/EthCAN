@@ -22,6 +22,7 @@ Version             ______ . ______ . ______ . ______ - _____________________
 
 ===== Linux only ============================================================
 [ ] File "Scripts/control"
+[ ] Disconnect all EthCAN from the computer or network
 [ ] Tool "Terminal" - In the product folder
         ./RunDoxygen.sh
         ./Build.sh
@@ -31,6 +32,7 @@ Version             ______ . ______ . ______ . ______ - _____________________
 [ ] Tool "PowerShell" - In the product folder
         .\RunDoxygen.cmd
 		.\UploadDocumentation.cmd
+[ ] Disconnect all EthCAN from the computer or network
 [ ] Connect the signing key to the computer
 [ ] Tool "PowerShell" - In the product folder
         .\Build.cmd

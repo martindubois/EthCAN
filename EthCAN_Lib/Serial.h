@@ -16,17 +16,13 @@ class Serial : public IMessageReceiver
 
 public:
 
-    Serial(const char* aLink);
+    Serial(const char* aLink, FILE* aTrace);
 
     ~Serial();
-
-    void Close(); // L and W_Serial.cpp
 
     Thread* GetThread();
 
     void Receiver_Start(IMessageReceiver* aReceiver, unsigned int aMessage);
-
-    void Receiver_Stop();;
 
     void Send(const void* aIn, unsigned int aSize_byte);
 
@@ -35,21 +31,30 @@ public:
 
 private:
 
-    void Connect(); // L and W_Serial.cpp
+    void Buffer_Flush(unsigned int aSize_byte);
+    void Buffer_Trace(unsigned int aSize_byte);
+
+    void Connect   (); // L and W_Serial.cpp
+    void Disconnect(); // L and W_Serial.cpp
 
     bool OnLoopIteration();
 
     unsigned int Raw_Receive(      void* aOut, unsigned int aOutSize_byte); // L and W_Serial.cpp
     void         Raw_Send   (const void* aIn , unsigned int aInSize_byte ); // L and W_Serial.cpp
 
-    // --> TRACE <--+
-    //       |      |
-    //       +--> DATA <--+
+    bool Receive_Data();
+    bool Receive_Header();
+    bool Receive_Trace();
+
+    // --> TRACE <==+=====+
+    //       |      |     |
+    //       +--> HEADER  |
     //              |     |
-    //              +-----+
+    //              +--> DATA
     typedef enum
     {
         STATE_DATA,
+        STATE_HEADER,
         STATE_TRACE,
     }
     State;
@@ -68,6 +73,8 @@ private:
     State mState;
 
     Thread* mThread;
+
+    FILE* mTrace = NULL;
 
     #ifdef _KMS_WINDOWS_
         HANDLE mHandle;

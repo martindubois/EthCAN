@@ -13,6 +13,9 @@
 // ===== Common =============================================================
 #include "../Common/Version.h"
 
+// ===== EthCAN_Lib_Test ====================================================
+#include "OS.h"
+
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
@@ -40,10 +43,6 @@ KMS_TEST_BEGIN(System_Base)
     KMS_TEST_COMPARE(VERSION_BUILD        , lV[2]);
     KMS_TEST_COMPARE(VERSION_COMPATIBILITY, lV[3]);
 
-    // IsResultOK
-    KMS_TEST_ASSERT( EthCAN::System::IsResultOK(EthCAN_OK));
-    KMS_TEST_ASSERT(!EthCAN::System::IsResultOK(EthCAN_ERROR));
-
     // Detect
     KMS_TEST_COMPARE(EthCAN_OK, lS0->Detect());
 
@@ -70,12 +69,53 @@ KMS_TEST_BEGIN(System_Base)
     // Object::Debug
     lS0->Debug(stdout);
 
+    // Object::IncRefCount
+    lS0->IncRefCount();
+
     // Object::Release
+    lS0->Release();
     lS0->Release();
 }
 KMS_TEST_END
 
 KMS_TEST_BEGIN(System_SetupA)
+{
+    EthCAN::Device* lD0;
+    EthCAN_Info lInfo;
+    EthCAN::System* lS0;
+
+    OS_Sleep(7000);
+
+    // Create
+    lS0 = EthCAN::System::Create();
+    KMS_TEST_ASSERT(NULL != lS0);
+
+    // Detect
+    KMS_TEST_COMPARE(EthCAN_OK, lS0->Detect());
+
+    // Device_GetCount
+    KMS_TEST_ASSERT(0 < lS0->Device_GetCount());
+
+    // Device_Get
+    lD0 = lS0->Device_Get(0);
+    KMS_TEST_ASSERT_RETURN(NULL != lD0);
+
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfo(&lInfo));
+
+    lD0->Release();
+
+    // Device_Find_Name
+    lD0 = lS0->Device_Find_Name(lInfo.mName);
+    KMS_TEST_ASSERT(NULL != lD0);
+
+    lD0->Release();
+
+    // Object::Release
+    lS0->Release();
+}
+KMS_TEST_END
+
+KMS_TEST_BEGIN(System_SetupB)
 {
     EthCAN::Device* lD0;
     EthCAN_Info lInfo;
@@ -100,29 +140,46 @@ KMS_TEST_BEGIN(System_SetupA)
     lD0->Release();
 
     // Device_Find_Eth
-    KMS_TEST_ASSERT(NULL == lS0->Device_Find_Eth(ETH_NOT_FOUND));
     lD0 = lS0->Device_Find_Eth(lInfo.mEth_Address);
     KMS_TEST_ASSERT(NULL != lD0);
 
     lD0->Release();
 
     // Device_Find_IPv4
-    KMS_TEST_ASSERT(NULL == lS0->Device_Find_IPv4(IPv4_NOT_FOUND));
     lD0 = lS0->Device_Find_IPv4(lInfo.mIPv4_Address);
     KMS_TEST_ASSERT(NULL != lD0);
 
     lD0->Release();
 
-    // Device_Find_Name
-    KMS_TEST_ASSERT(NULL == lS0->Device_Find_Name("DoesNotExist"));
-    lD0 = lS0->Device_Find_Name(lInfo.mName);
-    KMS_TEST_ASSERT(NULL != lD0);
+    // Object::Release
+    lS0->Release();
+}
+KMS_TEST_END
+
+KMS_TEST_BEGIN(System_SetupC)
+{
+    EthCAN::Device* lD0;
+    EthCAN::System* lS0;
+
+    // Create
+    lS0 = EthCAN::System::Create();
+    KMS_TEST_ASSERT(NULL != lS0);
+
+    lS0->SetTraceStream(stdout);
+
+    // Detect
+    KMS_TEST_COMPARE(EthCAN_OK, lS0->Detect());
+
+    // Device_GetCount
+    KMS_TEST_ASSERT(0 < lS0->Device_GetCount());
+
+    // Device_Find_USB
+    lD0 = lS0->Device_Find_USB(0);
+    KMS_TEST_ASSERT_CLEANUP(NULL != lD0, End);
 
     lD0->Release();
 
-    // Device_Find_USB
-    KMS_TEST_ASSERT(NULL == lS0->Device_Find_USB());
-
+End:
     // Object::Release
     lS0->Release();
 }

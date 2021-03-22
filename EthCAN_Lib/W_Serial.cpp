@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      EthCAN_Lib/W_Serial.cpp
 
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== EthCAN_Lib =========================================================
@@ -25,11 +27,15 @@ void Serial::Connect()
 
     if ((!GetCommState(mHandle, &lDCB)) || (!GetCommTimeouts(mHandle, &lTimeouts)))
     {
+        TRACE_ERROR(mTrace, "Serial::Connect - EthCAN_ERROR_SERIAL_CONFIG");
         throw EthCAN_ERROR_SERIAL_CONFIG;
     }
 
     assert(lDCB.DCBlength == sizeof(lDCB));
     assert(lDCB.fBinary);
+
+    // TODO USB
+    //      Test at 230400 bps
 
     lDCB.BaudRate = CBR_115200;
     lDCB.ByteSize = 8;
@@ -50,17 +56,27 @@ void Serial::Connect()
 
     if (!SetCommState(mHandle, &lDCB))
     {
+        TRACE_ERROR(mTrace, "Serial::Connect - EthCAN_ERROR_SERIAL_CONFIG");
         throw EthCAN_ERROR_SERIAL_CONFIG;
     }
 
-    lTimeouts.ReadIntervalTimeout = 10;
-    lTimeouts.ReadTotalTimeoutConstant = 10;
-    lTimeouts.ReadTotalTimeoutMultiplier = 10;
+    lTimeouts.ReadIntervalTimeout = 1;
+    lTimeouts.ReadTotalTimeoutConstant = 1;
+    lTimeouts.ReadTotalTimeoutMultiplier = 1;
 
     if (!SetCommTimeouts(mHandle, &lTimeouts))
     {
+        TRACE_ERROR(mTrace, "Serial::Connect - EthCAN_ERROR_SERIAL_CONFIG");
         throw EthCAN_ERROR_SERIAL_CONFIG;
     }
+}
+
+void Serial::Disconnect()
+{
+    assert(INVALID_HANDLE_VALUE != mHandle);
+
+    BOOL lRet = CloseHandle(mHandle);
+    assert(lRet);
 }
 
 unsigned int Serial::Raw_Receive(void* aOut, unsigned int aOutSize_byte)
@@ -72,6 +88,7 @@ unsigned int Serial::Raw_Receive(void* aOut, unsigned int aOutSize_byte)
 
     if (!ReadFile(mHandle, aOut, aOutSize_byte, &lResult_byte, NULL))
     {
+        TRACE_ERROR(mTrace, "Serial::Raw_Receive - EthCAN_ERROR_SERIAL_RECEIVE");
         throw EthCAN_ERROR_SERIAL_RECEIVE;
     }
 
@@ -87,6 +104,7 @@ void Serial::Raw_Send(const void* aIn, unsigned int aInSize_byte)
 
     if ((!WriteFile(mHandle, aIn, aInSize_byte, &lInfo_byte, NULL)) || (aInSize_byte != lInfo_byte))
     {
+        TRACE_ERROR(mTrace, "Serial::Raw_Receive - EthCAN_ERROR_SERIAL_SEND");
         throw EthCAN_ERROR_SERIAL_SEND;
     }
 }

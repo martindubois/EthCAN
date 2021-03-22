@@ -1,0 +1,11 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      Scripts/Import.sh.txt
+
+Binaries
+    EthCAN_Tool
+
+Libraries
+    EthCAN_Lib.a

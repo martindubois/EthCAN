@@ -1,0 +1,24 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      Scripts/Import.txt
+
+.
+    DoxyFile_en.txt
+    EthCAN.ReadMe.txt
+    EthCAN.EthCAN_Lib.ReadMe.txt
+    EthCAN.EthCAN_Tool.ReadMe.txt
+    KmsBase.KmsLib.ReadMe.txt
+
+Includes
+    EthCAN_Protocol.h
+    EthCAN_Result.h
+    EthCAN_Types.h
+
+Includes/EthCAN
+    Device.h
+    Display.h
+    File.h
+    Object.h
+    System.h
