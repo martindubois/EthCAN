@@ -9,6 +9,7 @@
 // ===== Firmware1 ==========================================================
 #include "Common/Version.h"
 
+#include "Buffer.h"
 #include "CAN.h"
 #include "Cmd.h"
 
@@ -33,6 +34,8 @@ void setup()
     MSG_INFO("EthCAN - Firmware1 - ", VERSION_STR);
 
     pinMode(LED_POWER, OUTPUT);
+
+    Buffer_Begin();
 
     Cmd_Setup();
 

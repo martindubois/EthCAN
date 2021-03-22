@@ -54,7 +54,9 @@ static void          Receive_Frame(uint8_t aByte);
 static void          Receive_Init (uint8_t aByte);
 static EthCAN_Result Receive_Sync (uint8_t aByte, bool aDataExpected);
 
-static EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte);
+static void Send(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte);
+
+static EthCAN_Result SendAndReceive(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte);
 
 // Functions
 /////////////////////////////////////////////////////////////////////////////
@@ -78,7 +80,7 @@ void CAN_Config()
 
     lConfig.mRate = gConfig.mCAN_Rate;
 
-    sResult = Request(EthCAN_REQUEST_CONFIG_SET, &lConfig, sizeof(lConfig), NULL, 0);
+    sResult = SendAndReceive(EthCAN_REQUEST_CONFIG_SET, &lConfig, sizeof(lConfig), NULL, 0);
 }
 
 void CAN_Loop()
@@ -97,7 +99,7 @@ void CAN_GetInfo(EthCAN_Info * aInfo)
 {
     FW_Info lInfo;
 
-    aInfo->mResult_CAN = Request(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
+    aInfo->mResult_CAN = SendAndReceive(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
     if (EthCAN_OK == aInfo->mResult_CAN)
     {
         for (unsigned int i = 0; i < 4; i ++)
@@ -125,13 +127,11 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 
     unsigned int lDataSize_byte = EthCAN_FRAME_DATA_SIZE(*lFrame);
 
-    EthCAN_Result lResult = Request(EthCAN_REQUEST_SEND, lFrame, 5 + lDataSize_byte, NULL, 0);
-    if (EthCAN_RESULT_OK(lResult))
-    {
-        Info_Count_Tx_Frame(lDataSize_byte);
-    }
+    Send(EthCAN_REQUEST_SEND, lFrame, 5 + lDataSize_byte);
 
-    return lResult;
+    Info_Count_Tx_Frame(lDataSize_byte);
+
+    return EthCAN_OK_PENDING;
 }
 
 // Static functions
@@ -253,7 +253,7 @@ EthCAN_Result Receive_Sync(uint8_t aByte, bool aDataExpected)
     return lResult;
 }
 
-EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte)
+void Send(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte)
 {
     Serial2.write(EthCAN_SYNC);
     Serial2.write(aCode);
@@ -262,6 +262,11 @@ EthCAN_Result Request(EthCAN_RequestCode aCode, const void * aIn, unsigned int a
     {
         Serial2.write(reinterpret_cast<const uint8_t *>(aIn), aInSize_byte);
     }
+}
+
+EthCAN_Result SendAndReceive(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte)
+{
+    Send(aCode, aIn, aInSize_byte);
 
     return Receive(reinterpret_cast<uint8_t *>(aOut), aOutSize_byte, true);
 }

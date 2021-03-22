@@ -17,6 +17,7 @@ extern "C"
 
 #include "Common/Version.h"
 
+#include "Buffer.h"
 #include "CAN.h"
 
 #include "Cmd.h"
@@ -45,17 +46,17 @@ static const uint8_t SYNC = EthCAN_SYNC;
 
 static uint8_t sBuffer[sizeof(FW_Config)];
 static FW_Info sInfo;
-static uint8_t sLevel;
-static uint8_t sExpected;
-static uint8_t sRequest;
+static uint8_t sLevel_byte;
+static uint8_t sExpected_byte;
 static State   sState = STATE_INIT;
 
 // Static function declarations
 ////////////////////////////////////////////////////////////////////////////
 
-static void Result(EthCAN_Result aResult);
+static void Loop_Rx();
+static void Loop_Tx();
 
-static void Sync();
+static void Result(EthCAN_Result aResult);
 
 // ===== Commands ===========================================================
 
@@ -65,60 +66,19 @@ static void Info_Get();
 static void Reset();
 static void Send();
 
+// Macro
+////////////////////////////////////////////////////////////////////////////
+
+#define Sync() Serial.write(&SYNC, sizeof(SYNC))
+
 // Function
 ////////////////////////////////////////////////////////////////////////////
 
+// Critical path
 void Cmd_Loop()
 {
-    if(Serial.available())
-    {
-        uint8_t lByte = Serial.read();
-
-        switch (sState)
-        {
-        case STATE_INIT:
-            if (EthCAN_SYNC == lByte) { sState = STATE_SYNC; }
-            break;
-
-        case STATE_SYNC:
-            sLevel = 0;
-            sRequest = lByte;
-            sState = STATE_REQUEST;
-            switch (sRequest)
-            {
-            case EthCAN_REQUEST_CONFIG_RESET: Config_Reset(); break;
-            case EthCAN_REQUEST_INFO_GET    : Info_Get    (); break;
-            case EthCAN_REQUEST_RESET       : Reset       (); break;
-
-            case EthCAN_REQUEST_CONFIG_SET: sExpected = sizeof(FW_Config); break;
-            case EthCAN_REQUEST_SEND      : sExpected = 5; break;
-
-            default: sState = STATE_INIT;
-            }
-            break;
-
-        case STATE_REQUEST:
-            sBuffer[sLevel] = lByte;
-            sLevel++;
-            if (sExpected <= sLevel)
-            {
-                switch (sRequest)
-                {
-                case EthCAN_REQUEST_CONFIG_SET: Config_Set(); break;
-                case EthCAN_REQUEST_SEND      : Send      (); break;
-                }
-            }
-        }
-    }
-}
-
-void Cmd_Send(const EthCAN_Frame & aFrame)
-{
-    MSG_DEBUG("Cmd_Send(  )");
-    
-    Result(EthCAN_RESULT_MESSAGE);
-
-    Serial.write(reinterpret_cast<const uint8_t *>(&aFrame), 5 + EthCAN_FRAME_DATA_SIZE(aFrame));
+    Loop_Rx();
+    Loop_Tx();
 }
 
 void Cmd_Setup()
@@ -132,6 +92,103 @@ void Cmd_Setup()
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
+void Loop_Rx()
+{
+    static uint8_t sRequest;
+
+    if(Serial.available())
+    {
+        uint8_t lByte = Serial.read();
+
+        switch (sState)
+        {
+        case STATE_INIT:
+            if (EthCAN_SYNC == lByte) { sState = STATE_SYNC; }
+            break;
+
+        case STATE_SYNC:
+            sLevel_byte = 0;
+            sRequest = lByte;
+            sState = STATE_REQUEST;
+            switch (sRequest)
+            {
+            case EthCAN_REQUEST_CONFIG_RESET: Config_Reset(); break;
+            case EthCAN_REQUEST_INFO_GET    : Info_Get    (); break;
+            case EthCAN_REQUEST_RESET       : Reset       (); break;
+
+            case EthCAN_REQUEST_CONFIG_SET: sExpected_byte = sizeof(FW_Config); break;
+            case EthCAN_REQUEST_SEND      : sExpected_byte = 5; break;
+
+            default: sState = STATE_INIT;
+            }
+            break;
+
+        case STATE_REQUEST:
+            sBuffer[sLevel_byte] = lByte;
+            sLevel_byte++;
+            if (sExpected_byte <= sLevel_byte)
+            {
+                switch (sRequest)
+                {
+                case EthCAN_REQUEST_CONFIG_SET: Config_Set(); break;
+                case EthCAN_REQUEST_SEND      : Send      (); break;
+                }
+            }
+        }
+    }
+}
+
+// Critical path
+void Loop_Tx()
+{
+    static EthCAN_Frame * sFrame = NULL;
+    static unsigned int   sSent_byte = 0;
+
+    if (NULL == sFrame)
+    {
+        sFrame = Buffer_Pop(BUFFER_TYPE_TX_SERIAL);
+    }
+
+    if (NULL != sFrame)
+    {
+        unsigned int lReady_byte = Serial.availableForWrite();
+
+        if ((0 == sSent_byte) && (0 < lReady_byte))
+        {
+            Sync();
+            sSent_byte ++;
+            lReady_byte --;
+        }
+
+        if ((1 == sSent_byte) && (0 < lReady_byte))
+        {
+            Serial.write(EthCAN_RESULT_MESSAGE);
+            sSent_byte ++;
+            lReady_byte --;
+        }
+
+        if ((2 <= sSent_byte) && (0 < lReady_byte))
+        {
+            unsigned int lTotal_byte = 2 + 5 + EthCAN_FRAME_DATA_SIZE(*sFrame);
+            unsigned int lSize_byte = lTotal_byte - sSent_byte;
+            if (lReady_byte < lSize_byte)
+            {
+                lSize_byte = lReady_byte;
+            }
+
+            Serial.write(reinterpret_cast<const uint8_t *>(sFrame) + sSent_byte - 2, lSize_byte);
+            sSent_byte += lSize_byte;
+
+            if (lTotal_byte == sSent_byte)
+            {
+                Buffer_Push(sFrame, BUFFER_TYPE_FREE);
+                sSent_byte = 0;
+                sFrame = NULL;
+            }
+        }
+    }
+}
+
 void Result(EthCAN_Result aResult)
 {
     Sync();
@@ -139,11 +196,6 @@ void Result(EthCAN_Result aResult)
     Serial.write(aResult);
 
     sState = STATE_INIT;
-}
-
-void Sync()
-{
-    Serial.write(&SYNC, sizeof(SYNC));
 }
 
 // ===== Commands ===========================================================
@@ -176,13 +228,21 @@ void Reset()
 
 void Send()
 {
-    if (5 == sExpected)
+    if (5 == sExpected_byte)
     {
-        sExpected += sBuffer[4] & ~ EthCAN_FLAG_CAN_RTR;
+        sExpected_byte += sBuffer[4] & ~ EthCAN_FLAG_CAN_RTR;
     }
 
-    if (sExpected <= sLevel)
+    if (sExpected_byte <= sLevel_byte)
     {
-        Result(CAN_Send(*reinterpret_cast<EthCAN_Frame *>(sBuffer)));
+        EthCAN_Frame * lFrame = Buffer_Pop(BUFFER_TYPE_FREE);
+        if (NULL != lFrame)
+        {
+            memcpy(lFrame, sBuffer, sExpected_byte);
+
+            Buffer_Push(lFrame, BUFFER_TYPE_TX_CAN);
+
+            sState = STATE_INIT;
+        }
     }
 }

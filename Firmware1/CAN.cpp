@@ -12,6 +12,7 @@
 #include <SPI.h>
 
 // ===== Firmware1 ==========================================================
+#include "Buffer.h"
 #include "Cmd.h"
 #include "MCP2515.h"
 
@@ -48,6 +49,10 @@ static const uint8_t CONFIG_BYTE[EthCAN_RATE_QTY][MCP_CNF_QTY]
 // Static variables
 ////////////////////////////////////////////////////////////////////////////
 
+static EthCAN_Frame * sFrame = NULL;
+
+static uint8_t sPrio;
+
 static EthCAN_Result sResult = EthCAN_RESULT_NO_ERROR;
 
 // Static function declarations
@@ -60,18 +65,15 @@ static void     Id_ToMCP  (MCP_Id * aOut, uint32_t aIn);
 static void     Id_Write  (uint8_t aReg, uint32_t aIn);
 static void     Id_Write  (uint8_t aReg, uint32_t aIn, bool aAdvanced);
 
-static bool IsFrameAvailable();
+static void Loop_Rx();
+static void Loop_Tx();
 
-static void ReadFrame(EthCAN_Frame * aFrame);
-static void ReadFrame(EthCAN_Frame * aFrame, uint8_t aAddr);
-
-static uint8_t ReadStatus();
+static void ReadFrame(uint8_t aIndex);
 
 static void   Register_Modify(uint8_t aReg, uint8_t aMask, uint8_t aVal);
 static int8_t Register_Read  (uint8_t aReg);
 static void   Register_Set   (uint8_t aReg, uint8_t aVal);
 
-static void Registers_Read(uint8_t * aOut, uint8_t aReg, unsigned int aSize_byte);
 static void Registers_Set (uint8_t aReg, const uint8_t * aIn, unsigned int aSize_byte);
 
 static void Reset();
@@ -80,11 +82,13 @@ static EthCAN_Result SetMode(uint8_t aMode);
 
 static void SetRate(EthCAN_Rate aRate);
 
-static void Select();
-static void Unselect();
+static void WriteFrame(uint8_t aIndex);
 
-static void SPI_Begin();
-static void SPI_End();
+// Macros
+////////////////////////////////////////////////////////////////////////////
+
+#define Select()   digitalWrite(SPI_CS, LOW )
+#define Unselect() digitalWrite(SPI_CS, HIGH)
 
 // Function
 ////////////////////////////////////////////////////////////////////////////
@@ -94,6 +98,10 @@ void CAN_Begin()
     pinMode(SPI_CS, OUTPUT);
     Unselect();
     SPI.begin();
+
+    #ifdef SPI_HAS_TRANSACTION
+        SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+    #endif
 }
 
 void CAN_GetInfo(FW_Info * aInfo)
@@ -110,18 +118,11 @@ void CAN_GetInfo(FW_Info * aInfo)
     if (0 < aInfo->mTxErrors) { MSG_ERROR("Tx Errors = ", aInfo->mTxErrors); }
 }
 
+// Critical path
 void CAN_Loop()
 {
-    if (IsFrameAvailable())
-    {
-        MSG_DEBUG("CAN_Loop - Frame");
-
-        EthCAN_Frame lFrame;
-
-        ReadFrame(&lFrame);
-
-        Cmd_Send(lFrame);
-    }
+    Loop_Rx();
+    Loop_Tx();
 }
 
 EthCAN_Result CAN_Config_Reset()
@@ -194,45 +195,6 @@ EthCAN_Result CAN_Config_Set(const FW_Config & aConfig)
     return lResult;
 }
 
-#define RETRY_COUNT (21)
-
-EthCAN_Result CAN_Send(const EthCAN_Frame & aFrame)
-{
-    uint8_t lCtrl;
-    uint8_t lRetry;
-    uint8_t lTxA;
-    uint8_t lTxB = 0;
-
-    for (lRetry = 0; lRetry < RETRY_COUNT; lRetry++)
-    {
-        lTxA = MCP_TXB[lTxB];
-
-        lCtrl = Register_Read(lTxA + MCP_B_CTRL);
-        if (0 == (lCtrl & MCP_TXB_CTRL_REQ_M))
-        {
-            break;
-        }
-
-        lTxB = (lTxB + 1) % MCP_TXB_QTY;
-    }
-    
-    if (RETRY_COUNT <= lRetry)
-    {
-        MSG_ERROR("CAN_Send - EthCAN_ERROR_TIMEOUT ", __LINE__);
-        return EthCAN_ERROR_TIMEOUT;
-    }
-
-    Registers_Set(lTxA + MCP_B_DATA, aFrame.mData, EthCAN_FRAME_DATA_SIZE(aFrame));
-
-    Register_Set(lTxA + MCP_B_DATA_LENGTH, aFrame.mDataSize_byte);
-
-    Id_Write(lTxA + MCP_B_ID, aFrame.mId);
-
-    Register_Modify(lTxA + MCP_B_CTRL, MCP_TXB_CTRL_REQ_M, MCP_TXB_CTRL_REQ_M);
-
-    return EthCAN_OK_PENDING;
-}
-
 // Static functions
 ////////////////////////////////////////////////////////////////////////////
 
@@ -254,6 +216,7 @@ void ClearBuffers()
     }
 }
 
+// Critical path
 uint32_t Id_FromMCP(const MCP_Id & aIn)
 {
     uint32_t lResult;
@@ -299,6 +262,7 @@ void Id_ToMCP(MCP_Id * aOut, uint32_t aIn)
     }
 }
 
+// Critical path
 void Id_Write(uint8_t aReg, uint32_t aIn)
 {
     MCP_Id lId;
@@ -320,127 +284,185 @@ void Id_Write(uint8_t aReg, uint32_t aIn, bool aAdvanced)
     }
 }
 
-bool IsFrameAvailable()
-{
-    uint8_t lStatus = ReadStatus();
-
-    return 0 != (lStatus & MCP_STATUS_RXxIF_MASK);
-}
-
-void ReadFrame(EthCAN_Frame * aFrame)
+// Critical path
+void Loop_Rx()
 {
     static unsigned int sIndex = 0;
 
-    uint8_t lStatus = ReadStatus();
-    for (unsigned int i = 0; i < MCP_RXB_QTY; i++)
-    {
-        if (0 != (lStatus & MCP_STATUS_RXxIF(sIndex)))
-        {
-            ReadFrame(aFrame, MCP_RXB[sIndex]);
+    uint8_t lStatus;
 
-            Register_Modify(MCP_CAN_INTF, MCP_RXxIF(sIndex), 0);
-
-            sIndex = ( sIndex + 1 ) % MCP_RXB_QTY;
-            break;
-        }
-
-        sIndex = ( sIndex + 1 ) % MCP_RXB_QTY;
-    }
-}
-
-void ReadFrame(EthCAN_Frame * aFrame, uint8_t aAddr)
-{
-    MCP_Id lId;
-
-    Registers_Read(lId.mData, aAddr + MCP_B_ID, sizeof(lId));
-
-    aFrame->mId = Id_FromMCP(lId);
-
-    uint8_t lCtrl = Register_Read(aAddr + MCP_B_CTRL);
-
-    aFrame->mDataSize_byte = Register_Read(aAddr + MCP_B_DATA_LENGTH) & MCP_B_DATA_LENGTH_MASK;
-
-    if (MCP_RXB_CTRL_RTR == (lCtrl & MCP_RXB_CTRL_RTR))
-    {
-        aFrame->mDataSize_byte |= EthCAN_FLAG_CAN_RTR;
-    }
-
-    Registers_Read(aFrame->mData, aAddr + MCP_B_DATA, EthCAN_FRAME_DATA_SIZE(*aFrame));
-}
-
-uint8_t ReadStatus()
-{
-    uint8_t lResult;
-
-    SPI_Begin();
+    Select();
     {
         SPI.transfer(MCP_READ_STATUS);
 
-        lResult = SPI.transfer(0x00);
+        lStatus = SPI.transfer(0x00);
     }
-    SPI_End();
+    Unselect();
 
-    return lResult;
+    switch (lStatus & MCP_STATUS_RXxIF_MASK)
+    {
+    case 0: break;
+
+    case MCP_STATUS_RXxIF(0): ReadFrame(0); sIndex = 1; break;
+    case MCP_STATUS_RXxIF(1): ReadFrame(1); sIndex = 0; break;
+
+    case MCP_STATUS_RXxIF_MASK:
+        if (0 == sIndex)
+        {
+            ReadFrame(0);
+            ReadFrame(1);
+        }
+        else
+        {
+            ReadFrame(1);
+            ReadFrame(0);
+        }
+        break;
+    }
+}
+
+void Loop_Tx()
+{
+    if (NULL == sFrame)
+    {
+        sFrame = Buffer_Pop(BUFFER_TYPE_TX_CAN);
+    }
+
+    if (NULL != sFrame)
+    {
+        uint8_t lCtrl[MCP_TXB_QTY];
+
+        for (unsigned int i = 0; i < MCP_TXB_QTY; i ++)
+        {
+            lCtrl[i]= Register_Read(MCP_TXB[i] + MCP_B_CTRL);
+        }
+
+        if (0 == (lCtrl[0] & MCP_TXB_CTRL_REQ_M))
+        {
+            if (0 == (lCtrl[1] & MCP_TXB_CTRL_REQ_M))
+            {
+                sPrio = 3;
+                WriteFrame(1);
+            }
+            else
+            {
+                WriteFrame(0);
+            }
+        }
+        else
+        {
+            if (0 == (lCtrl[1] & MCP_TXB_CTRL_REQ_M))
+            {
+                if (0 < sPrio)
+                {
+                    sPrio--;
+                }
+                WriteFrame(1);
+            }
+        }
+    }
+}
+
+void ReadFrame(uint8_t aIndex)
+{
+    EthCAN_Frame * lFrame = Buffer_Pop(BUFFER_TYPE_FREE);
+    if (NULL != lFrame)
+    {
+        uint8_t lCtrl;
+        MCP_Id  lId;
+        uint8_t lSize_byte;
+
+        Select();
+        {
+            SPI.transfer(MCP_READ);
+            SPI.transfer(MCP_RXB[aIndex] + MCP_B_CTRL);
+
+            lCtrl = SPI.transfer(0x00);
+
+            lId.mData[0] = SPI.transfer(0x00);
+            lId.mData[1] = SPI.transfer(0x00);
+            lId.mData[2] = SPI.transfer(0x00);
+            lId.mData[3] = SPI.transfer(0x00);
+
+            lSize_byte = SPI.transfer(0x00) & MCP_B_DATA_LENGTH_MASK;
+        }
+        Unselect();
+
+        Select();
+        {
+            SPI.transfer(MCP_READ);
+            SPI.transfer(MCP_RXB[aIndex] + MCP_B_DATA);
+
+            for(unsigned int i = 0; i < lSize_byte; i++)
+            {
+                lFrame->mData[i] = SPI.transfer(0x00);
+            }
+        }
+        Unselect();
+
+        Select();
+        {
+            SPI.transfer(MCP_BITMOD);
+            SPI.transfer(MCP_CAN_INTF);
+            SPI.transfer(MCP_RXxIF(aIndex));
+            SPI.transfer(0);
+        }
+        Unselect();
+
+        lFrame->mDataSize_byte = lSize_byte;
+        lFrame->mId            = Id_FromMCP(lId);
+
+        if (MCP_RXB_CTRL_RTR == (lCtrl & MCP_RXB_CTRL_RTR))
+        {
+            lFrame->mDataSize_byte |= EthCAN_FLAG_CAN_RTR;
+        }
+
+        Buffer_Push(lFrame, BUFFER_TYPE_TX_SERIAL);
+    }
 }
 
 void Register_Modify(uint8_t aReg, uint8_t aMask, uint8_t aVal)
 {
-    SPI_Begin();
+    Select();
     {
         SPI.transfer(MCP_BITMOD);
         SPI.transfer(aReg);
         SPI.transfer(aMask);
         SPI.transfer(aVal);
     }
-    SPI_End();
+    Unselect();
 }
 
 int8_t Register_Read(uint8_t aReg)
 {
     uint8_t lResult;
 
-    SPI_Begin();
+    Select();
     {
         SPI.transfer(MCP_READ);
         SPI.transfer(aReg);
 
         lResult = SPI.transfer(0x00);
     }
-    SPI_End();
+    Unselect();
 
     return lResult;
 }
 
 void Register_Set(uint8_t aReg, uint8_t aVal)
 {
-    SPI_Begin();
+    Select();
     {
         SPI.transfer(MCP_WRITE);
         SPI.transfer(aReg);
         SPI.transfer(aVal);
     }
-    SPI_End();
-}
-
-// aSize_byte The maximum is 8
-void Registers_Read(uint8_t * aOut, uint8_t aReg, unsigned int aSize_byte)
-{
-    SPI_Begin();
-    {
-        SPI.transfer(MCP_READ);
-        SPI.transfer(aReg);
-
-        for(unsigned int i = 0; i < aSize_byte; i++)
-        {
-            aOut[i] = SPI.transfer(0x00);
-        }
-    }
-    SPI_End();
+    Unselect();
 }
 
 void Registers_Set(uint8_t aReg, const uint8_t * aIn, unsigned int aSize_byte)
 {
-    SPI_Begin();
+    Select();
     {
         SPI.transfer(MCP_WRITE);
         SPI.transfer(aReg);
@@ -450,16 +472,16 @@ void Registers_Set(uint8_t aReg, const uint8_t * aIn, unsigned int aSize_byte)
             SPI.transfer(aIn[i]);
         }
     }
-    SPI_End();
+    Unselect();
 }
 
 void Reset()
 {
-    SPI_Begin();
+    Select();
     {
         SPI.transfer(MCP_RESET);
     }
-    SPI_End();
+    Unselect();
 
     delay(10);
 }
@@ -486,23 +508,18 @@ void SetRate(EthCAN_Rate aRate)
     }
 }
 
-void Select  () { digitalWrite(SPI_CS, LOW ); }
-void Unselect() { digitalWrite(SPI_CS, HIGH); }
-
-void SPI_Begin()
+void WriteFrame(uint8_t aIndex)
 {
-    #ifdef SPI_HAS_TRANSACTION
-        SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
-    #endif
+    uint8_t  lTxA = MCP_TXB[aIndex];
 
-    Select();
-}
+    Registers_Set(lTxA + MCP_B_DATA, sFrame->mData, EthCAN_FRAME_DATA_SIZE(*sFrame));
 
-void SPI_End()
-{
-    Unselect();
+    Register_Set(lTxA + MCP_B_DATA_LENGTH, sFrame->mDataSize_byte);
 
-    #ifdef SPI_HAS_TRANSACTION
-        SPI.endTransaction();
-    #endif
+    Id_Write(lTxA + MCP_B_ID, sFrame->mId);
+
+    Register_Modify(lTxA + MCP_B_CTRL, MCP_TXB_CTRL_REQ_M, MCP_TXB_CTRL_REQ_M);
+
+    Buffer_Push(sFrame, BUFFER_TYPE_FREE);
+    sFrame = NULL;
 }
