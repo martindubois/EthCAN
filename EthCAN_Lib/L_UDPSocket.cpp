@@ -26,10 +26,9 @@ uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
     int lRet = getifaddrs(&lAddrs);
     if (0 != lRet)
     {
+        TRACE_ERROR(stderr, "UDPSocket::GetIPv4 - EthCAN_ERROR_NETWORK");
         throw EthCAN_ERROR_NETWORK;
     }
-
-    assert(NULL != lAddrs);
 
     uint32_t lResult = 0;
 
@@ -47,6 +46,8 @@ uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
                 break;
             }
         }
+
+        lCurrent = lCurrent->ifa_next;
     }
 
     if (NULL == lCurrent)
@@ -125,7 +126,7 @@ void UDPSocket::Init()
 
     assert(0 != lAddr.sin_port);
 
-    mPort = lAddr.sin_port;
+    mPort = ntohs(lAddr.sin_port);
 }
 
 void UDPSocket::Timeout_Set(unsigned int aTimeout_ms)
