@@ -290,6 +290,7 @@ namespace EthCAN
         case EthCAN_ERROR_BUSY                   : return "EthCAN_ERROR_BUSY";
         case EthCAN_ERROR_CAN                    : return "EthCAN_ERROR_CAN";
         case EthCAN_ERROR_CAN_RATE               : return "EthCAN_ERROR_CAN_RATE";
+        case EthCAN_ERROR_CONFIG                 : return "EthCAN_ERROR_CONFIG";
         case EthCAN_ERROR_DATA_SIZE              : return "EthCAN_ERROR_DATA_SIZE";
         case EthCAN_ERROR_DATA_UNEXPECTED        : return "EthCAN_ERROR_DATA_UNEXPECTED";
         case EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER : return "EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER";

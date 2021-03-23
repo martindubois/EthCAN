@@ -35,7 +35,12 @@
 
 #define EthCAN_MASK_QTY (2)
 
+#define EthCAN_NAME_SIZE_byte (16)
+
 #define EthCAN_VERSION_SIZE_byte (4)
+
+#define EthCAN_WIFI_NAME_SIZE_byte     (32)
+#define EthCAN_WIFI_PASSWORD_SIZE_byte (32)
 
 // Data type
 /////////////////////////////////////////////////////////////////////////////
@@ -47,7 +52,7 @@
 ///       server is ignored.
 typedef struct
 {
-    char mName[16]; ///< The device name - Used for the DHCP request and to find the device
+    char mName[EthCAN_NAME_SIZE_byte]; ///< The device name - Used for the DHCP request and to find the device
 
     uint32_t mCAN_Filters[EthCAN_FILTER_QTY]; ///< The CAN filters
     uint32_t mCAN_Masks  [EthCAN_MASK_QTY  ]; ///< The CAN mask
@@ -76,9 +81,9 @@ typedef struct
     // 1 + 32 + 32
     // = 65 bytes
 
-    char mWiFi_Flags;        ///< Is the WiFi access poing enabled?
-    char mWiFi_Name    [32]; ///< The WiFi name - If empty, the WiFi is disabled
-    char mWiFi_Password[32]; ///< The WiFi password
+    char mWiFi_Flags;                                    ///< Is the WiFi access poing enabled?
+    char mWiFi_Name    [EthCAN_WIFI_NAME_SIZE_byte    ]; ///< The WiFi name - If empty, the WiFi is disabled
+    char mWiFi_Password[EthCAN_WIFI_PASSWORD_SIZE_byte]; ///< The WiFi password
 }
 EthCAN_Config;
 

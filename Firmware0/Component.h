@@ -25,3 +25,5 @@
 #define MSG_ERROR(M,D)    Serial.print("ERROR  "  ); Serial.print(M); Serial.println(D);
 #define MSG_INFO(M,D)     Serial.print("INFO  "   ); Serial.print(M); Serial.println(D);
 #define MSG_WARNING(M)    Serial.print("WARNING  "); Serial.println(M)
+
+#define strcpy_s strcpy

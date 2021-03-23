@@ -4,12 +4,15 @@
 // Product   EthCan
 // File      Firmware0/Config.h
 
+// CODE REVIEW 2021-03-23 KMS - Martin Dubois, P.Eng.
+
 #include <Arduino.h>
 
 #include <EEPROM.h>
 
 #include "Component.h"
 
+// ===== Firmware0 ==========================================================
 #include "CAN.h"
 #include "Info.h"
 #include "UDP.h"
@@ -57,18 +60,18 @@ static bool sCAN = false;
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-static void Init();
-
 static void Load(void * aOut, uint8_t aOffset, unsigned int aSize_byte);
-static void Store(uint8_t aOffset, const void * aIn, unsigned int aSize_byte);
+static bool Store(uint8_t aOffset, const void * aIn, unsigned int aSize_byte);
+
+static bool Validate(const EthCAN_Config & aIn);
+static bool Validate_Id(uint32_t aIn, bool aAdvanced);
+static bool Validate_String(const char * aIn, unsigned int aMin_byte, unsigned int aSize_byte);
 
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
 void Config_Erase()
 {
-    MSG_DEBUG("Config_Erase(  )");
-
     uint8_t lWhat;
 
     Load(&lWhat, STORE_WHAT, sizeof(lWhat));
@@ -84,9 +87,7 @@ void Config_Erase()
 
 void Config_Load()
 {
-    // MSG_DEBUG("Config_Load()");
-
-    Init();
+    EthCAN_CONFIG_DEFAULT(&gConfig);
 
     EEPROM.begin(STORE_SIZE_byte);
 
@@ -108,8 +109,6 @@ void Config_Load()
         Load(&gConfig.mCAN_Flags  , STORE_CAN_FLAGS  , sizeof(gConfig.mCAN_Flags));
         Load(&gConfig.mCAN_Masks  , STORE_CAN_MASKS  , sizeof(gConfig.mCAN_Masks));
         Load(&gConfig.mCAN_Rate   , STORE_CAN_RATE   , sizeof(gConfig.mCAN_Rate));
-        // TODO Firmware.Config.Load
-        //      Validate filters
     }
 
     if (0 != (lWhat & EthCAN_FLAG_STORE_IPv4))
@@ -117,8 +116,6 @@ void Config_Load()
         Load(&gConfig.mIPv4_Address, STORE_IPv4_ADDR   , sizeof(gConfig.mIPv4_Address));
         Load(&gConfig.mIPv4_Gateway, STORE_IPv4_GATEWAY, sizeof(gConfig.mIPv4_Gateway));
         Load(&gConfig.mIPv4_NetMask, STORE_IPv4_MASK   , sizeof(gConfig.mIPv4_NetMask));
-        // TODO Firmware.Config.Load
-        //      Validate IPv4
     }
 
     if (0 != (lWhat & EthCAN_FLAG_STORE_SERVER))
@@ -126,8 +123,6 @@ void Config_Load()
         Load(&gConfig.mServer_Flags, STORE_SERVER_FLAGS, sizeof(gConfig.mServer_Flags));
         Load(&gConfig.mServer_IPv4 , STORE_SERVER_IPv4 , sizeof(gConfig.mServer_IPv4));
         Load(&gConfig.mServer_Port , STORE_SERVER_PORT , sizeof(gConfig.mServer_Port));
-        // TODO Firmware.Config.Load
-        //      Validate server IPv4 and port
     }
 
     if (0 != (lWhat & EthCAN_FLAG_STORE_WIFI))
@@ -135,8 +130,12 @@ void Config_Load()
         Load(&gConfig.mWiFi_Flags   , STORE_WIFI_FLAGS   , sizeof(gConfig.mWiFi_Flags));
         Load(&gConfig.mWiFi_Name    , STORE_WIFI_NAME    , sizeof(gConfig.mWiFi_Name));
         Load(&gConfig.mWiFi_Password, STORE_WIFI_PASSWORD, sizeof(gConfig.mWiFi_Password));
-        // TODO Firmware.Config.Load
-        //      Validate WiFi
+    }
+
+    if (!Validate(gConfig))
+    {
+        MSG_ERROR("Config_Load - Corrupted configuration", "");
+        EthCAN_CONFIG_DEFAULT(&gConfig);
     }
 }
 
@@ -149,6 +148,7 @@ void Config_Loop()
     }
 }
 
+// Critical path
 void Config_OnFrame(const EthCAN_Frame & aFrame)
 {
     EthCAN_Header lHeader;
@@ -177,8 +177,6 @@ void Config_OnFrame(const EthCAN_Frame & aFrame)
 
 uint8_t Config_Reset()
 {
-    MSG_DEBUG("Config_Reset()");
-
     sCAN = (0 != gConfig.mCAN_Flags) || (EthCAN_RATE_DEFAULT != gConfig.mCAN_Rate);
     if (!sCAN)
     {
@@ -205,7 +203,7 @@ uint8_t Config_Reset()
         }
     }
 
-    Init();
+    EthCAN_CONFIG_DEFAULT(&gConfig);
 
     return sCAN ? EthCAN_FLAG_BUSY : 0;
 }
@@ -219,7 +217,10 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn, uint8_t * aFlags)
 
     const EthCAN_Config * lConfig = reinterpret_cast<const EthCAN_Config *>(aIn + 1);
 
-    // TODO Firmware.Config.Validate
+    if (!Validate(*lConfig))
+    {
+        return Info_Count_Error(__LINE__, EthCAN_ERROR_CONFIG);
+    }
 
     sCAN = (gConfig.mCAN_Flags != lConfig->mCAN_Flags) || (gConfig.mCAN_Rate != lConfig->mCAN_Rate);
     if (!sCAN)
@@ -259,71 +260,60 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn, uint8_t * aFlags)
 
 EthCAN_Result Config_Store(const EthCAN_Header * aIn)
 {
-    MSG_DEBUG("Config_Store(  )");
-
     uint8_t lIn = aIn->mFlags;
     uint8_t lWhat;
     
     Load(&lWhat, STORE_WHAT, sizeof(lWhat));
     if (0xff == lWhat)
     {
-        MSG_DEBUG("Config_Store - New configuration");
+        MSG_INFO("Config_Store - New configuration", "");
         lWhat = 0;
     }
 
-    Store(STORE_NAME, &gConfig.mName, sizeof(gConfig.mName));
+    bool lCommit = Store(STORE_NAME, &gConfig.mName, sizeof(gConfig.mName));
 
     if (0 != (lIn & EthCAN_FLAG_STORE_CAN))
     {
-        Store(STORE_CAN_FILTERS, &gConfig.mCAN_Filters, sizeof(gConfig.mCAN_Filters));
-        Store(STORE_CAN_FLAGS  , &gConfig.mCAN_Flags  , sizeof(gConfig.mCAN_Flags));
-        Store(STORE_CAN_MASKS  , &gConfig.mCAN_Masks  , sizeof(gConfig.mCAN_Masks));
-        Store(STORE_CAN_RATE   , &gConfig.mCAN_Rate   , sizeof(gConfig.mCAN_Rate));
+        lCommit |= Store(STORE_CAN_FILTERS, &gConfig.mCAN_Filters, sizeof(gConfig.mCAN_Filters));
+        lCommit |= Store(STORE_CAN_FLAGS  , &gConfig.mCAN_Flags  , sizeof(gConfig.mCAN_Flags));
+        lCommit |= Store(STORE_CAN_MASKS  , &gConfig.mCAN_Masks  , sizeof(gConfig.mCAN_Masks));
+        lCommit |= Store(STORE_CAN_RATE   , &gConfig.mCAN_Rate   , sizeof(gConfig.mCAN_Rate));
     }
 
     if (0 != (lIn & EthCAN_FLAG_STORE_IPv4))
     {
-        Store(STORE_IPv4_ADDR   , &gConfig.mIPv4_Address, sizeof(gConfig.mIPv4_Address));
-        Store(STORE_IPv4_GATEWAY, &gConfig.mIPv4_Gateway, sizeof(gConfig.mIPv4_Gateway));
-        Store(STORE_IPv4_MASK   , &gConfig.mIPv4_NetMask, sizeof(gConfig.mIPv4_NetMask));
+        lCommit |= Store(STORE_IPv4_ADDR   , &gConfig.mIPv4_Address, sizeof(gConfig.mIPv4_Address));
+        lCommit |= Store(STORE_IPv4_GATEWAY, &gConfig.mIPv4_Gateway, sizeof(gConfig.mIPv4_Gateway));
+        lCommit |= Store(STORE_IPv4_MASK   , &gConfig.mIPv4_NetMask, sizeof(gConfig.mIPv4_NetMask));
     }
 
     if (0 != (lIn & EthCAN_FLAG_STORE_SERVER))
     {
-        Store(STORE_SERVER_FLAGS, &gConfig.mServer_Flags, sizeof(gConfig.mServer_Flags));
-        Store(STORE_SERVER_IPv4 , &gConfig.mServer_IPv4 , sizeof(gConfig.mServer_IPv4));
-        Store(STORE_SERVER_PORT , &gConfig.mServer_Port , sizeof(gConfig.mServer_Port));
+        lCommit |= Store(STORE_SERVER_FLAGS, &gConfig.mServer_Flags, sizeof(gConfig.mServer_Flags));
+        lCommit |= Store(STORE_SERVER_IPv4 , &gConfig.mServer_IPv4 , sizeof(gConfig.mServer_IPv4));
+        lCommit |= Store(STORE_SERVER_PORT , &gConfig.mServer_Port , sizeof(gConfig.mServer_Port));
     }
 
     if (0 != (lIn & EthCAN_FLAG_STORE_WIFI))
     {
-        Store(STORE_WIFI_FLAGS   , &gConfig.mWiFi_Flags   , sizeof(gConfig.mWiFi_Flags));
-        Store(STORE_WIFI_NAME    , &gConfig.mWiFi_Name    , sizeof(gConfig.mWiFi_Name));
-        Store(STORE_WIFI_PASSWORD, &gConfig.mWiFi_Password, sizeof(gConfig.mWiFi_Password));
+        lCommit |= Store(STORE_WIFI_FLAGS   , &gConfig.mWiFi_Flags   , sizeof(gConfig.mWiFi_Flags));
+        lCommit |= Store(STORE_WIFI_NAME    , &gConfig.mWiFi_Name    , sizeof(gConfig.mWiFi_Name));
+        lCommit |= Store(STORE_WIFI_PASSWORD, &gConfig.mWiFi_Password, sizeof(gConfig.mWiFi_Password));
     }
     
     lWhat |= lIn;
-    Store(STORE_WHAT, &lWhat, sizeof(lWhat));
+    lCommit |= Store(STORE_WHAT, &lWhat, sizeof(lWhat));
 
-    // TODO Firmware0.Config.Store
-    //      Do not commit if nothing changed.
-
-    EEPROM.commit();
+    if (lCommit)
+    {
+        EEPROM.commit();
+    }
     
     return EthCAN_OK;
 }
 
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
-
-void Init()
-{
-    memset(&gConfig, 0, sizeof(gConfig));
-
-    gConfig.mCAN_Rate = EthCAN_RATE_DEFAULT;
-
-    strcpy(gConfig.mName, "EthCAN");
-}
 
 void Load(void * aOut, uint8_t aOffset, unsigned int aSize_byte)
 {
@@ -335,12 +325,97 @@ void Load(void * aOut, uint8_t aOffset, unsigned int aSize_byte)
     }
 }
 
-void Store(uint8_t aOffset, const void * aIn, unsigned int aSize_byte)
+bool Store(uint8_t aOffset, const void * aIn, unsigned int aSize_byte)
 {
     const uint8_t * lIn = reinterpret_cast<const uint8_t *>(aIn);
+    bool lResult = false;
 
     for (unsigned int i = 0; i < aSize_byte; i ++)
     {
-        EEPROM.write(aOffset + i, lIn[i]);
+        uint8_t lByte = EEPROM.read(aOffset + i);
+        if (lIn[i] != lByte)
+        {
+            EEPROM.write(aOffset + i, lIn[i]);
+            lResult = true;
+        }
     }
+
+    return lResult;
+}
+
+bool Validate(const EthCAN_Config & aIn)
+{
+    if (!Validate_String(aIn.mName, 1, EthCAN_NAME_SIZE_byte)) { return false; }
+
+    unsigned int i;
+
+    for (i = 0; i < EthCAN_FILTER_QTY; i++)
+    {
+        if (!Validate_Id(aIn.mCAN_Filters[i], aIn.mCAN_Flags & EthCAN_FLAG_CAN_ADVANCED)) { return false; }
+    }
+
+    for (i = 0; i < EthCAN_MASK_QTY; i++)
+    {
+        if (!Validate_Id(aIn.mCAN_Masks[i], aIn.mCAN_Flags & EthCAN_FLAG_CAN_ADVANCED)) { return false; }
+    }
+
+    if (EthCAN_RATE_QTY <= aIn.mCAN_Rate) { return false; }
+
+    if (0 != aIn.mIPv4_Address)
+    {
+        if (0 == aIn.mIPv4_NetMask) { return false; }
+
+        if (0 == (aIn.mIPv4_Address &    aIn.mIPv4_NetMask )) { return false; }
+        if (0 == (aIn.mIPv4_Address & (~ aIn.mIPv4_NetMask))) { return false; }
+
+        if (0 != aIn.mIPv4_Gateway)
+        {
+            if ((aIn.mIPv4_Address & aIn.mIPv4_NetMask) != (aIn.mIPv4_Gateway & aIn.mIPv4_NetMask)) { return false; }
+        }
+    }
+
+    unsigned int lMin_byte = 0;
+
+    if (EthCAN_FLAG_WIFI_AP == (aIn.mWiFi_Flags & EthCAN_FLAG_WIFI_AP))
+    {
+        if (0 == aIn.mIPv4_Address) { return false; }
+
+        lMin_byte = 1;
+    }
+
+    if (!Validate_String(aIn.mWiFi_Name    , lMin_byte, EthCAN_WIFI_NAME_SIZE_byte    )) { return false; }
+    if (!Validate_String(aIn.mWiFi_Password, lMin_byte, EthCAN_WIFI_PASSWORD_SIZE_byte)) { return false; }
+
+    return true;
+}
+
+bool Validate_Id(uint32_t aIn, bool aAdvanced)
+{
+    uint32_t lMask;
+
+    if (aAdvanced)
+    {
+        lMask = (0 != (aIn & 0x00000800)) ? 0x00001400 : 0x00001700;
+    }
+    else
+    {
+        lMask = (EthCAN_ID_EXTENDED == (aIn & EthCAN_ID_EXTENDED)) ? 0x60000000 : 0x7ffff800;
+    }
+
+    return 0 == (aIn & lMask);
+}
+
+bool Validate_String(const char * aIn, unsigned int aMin_byte, unsigned int aSize_byte)
+{
+    for (unsigned int i = 0; i < aSize_byte; i ++)
+    {
+        if ('\0' == aIn[i])
+        {
+            MSG_ERROR("Validate_String - Too short - ", aMin_byte);
+            return (aMin_byte <= i);
+        }
+    }
+
+    MSG_ERROR("Validate_String - Too long - ", aSize_byte)
+    return false;
 }

@@ -641,7 +641,7 @@ void Select_Name(KmsLib::ToolBase* aToolBase, const char* aArg)
     USE_DEVICE;
 
     const char* lArg = aArg;
-    char lName[16];
+    char lName[EthCAN_NAME_SIZE_byte];
 
     if (aToolBase->Parse(&lArg, lName, sizeof(lName), "EthCAN"))
     {
@@ -689,8 +689,8 @@ void Setup_AccessPoint(KmsLib::ToolBase* aToolBase, const char* aArg)
     const char* lArg = aArg;
     unsigned int lAddress;
     unsigned int lNetMask;
-    char lName[32];
-    char lPassword[32];
+    char lName    [EthCAN_WIFI_NAME_SIZE_byte];
+    char lPassword[EthCAN_WIFI_PASSWORD_SIZE_byte];
 
     if (   Parse_Address_NetMask(aToolBase, &lArg, &lAddress, &lNetMask)
         && Parse_SSID_Password  (aToolBase, &lArg, lName, lPassword, "EthCAN", "EthCANPassword"))
@@ -748,8 +748,8 @@ void Setup_Link(KmsLib::ToolBase* aToolBase, const char* aArg)
     unsigned int lIndex[2];
     unsigned int lAddress;
     unsigned int lNetMask;
-    char lName[32];
-    char lPassword[32];
+    char lName    [EthCAN_WIFI_NAME_SIZE_byte];
+    char lPassword[EthCAN_WIFI_PASSWORD_SIZE_byte];
 
     if (   aToolBase->Parse(&lArg, lIndex + 0, 0, lCount - 2, false)
         && aToolBase->Parse(&lArg, lIndex + 1, 1, lCount - 1, false)
@@ -798,8 +798,8 @@ void Setup_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
     USE_SELECTED_DEVICE;
 
     const char* lArg = aArg;
-    char lName[32];
-    char lPassword[32];
+    char lName    [EthCAN_WIFI_NAME_SIZE_byte];
+    char lPassword[EthCAN_WIFI_PASSWORD_SIZE_byte];
 
     if (Parse_SSID_Password(aToolBase, &lArg, lName, lPassword, "", ""))
     {
@@ -1053,8 +1053,8 @@ bool Parse_IPv4(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aOut)
 
 bool Parse_SSID_Password(KmsLib::ToolBase* aToolBase, const char** aArg, char* aName, char* aPassword, const char* aNameDefault, const char* aPasswordDefault)
 {
-    return aToolBase->Parse(aArg, aName    , 32, aNameDefault)
-        && aToolBase->Parse(aArg, aPassword, 32, aPasswordDefault);
+    return aToolBase->Parse(aArg, aName    , EthCAN_WIFI_NAME_SIZE_byte    , aNameDefault)
+        && aToolBase->Parse(aArg, aPassword, EthCAN_WIFI_PASSWORD_SIZE_byte, aPasswordDefault);
 }
 
 bool Receiver(EthCAN::Device* aDevice, void* aContext, const EthCAN_Frame& aFrame)
