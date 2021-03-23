@@ -4,6 +4,8 @@
 // Product   EthCan
 // File      Firmware0/CAN.cpp
 
+// CODE REVIEW 2021-03-23 KMS - Martin Dubois, P.Eng.
+
 #include <Arduino.h>
 
 #include "Component.h"
@@ -20,11 +22,11 @@
 // Data types
 /////////////////////////////////////////////////////////////////////////////
 
-// --> INIT <==+=======+====+
-//      |      |       |    |
-//      +--> SYNC --> FRAME |
-//             |            |
-//             +--> DATA ---+
+// --> INIT <===============+==============================+====+
+//      |                   |                              |    |
+//      +--EthCAN_SYNC--> SYNC --EthCAN_RESULT_REQUEST--> FRAME |
+//                          |                                   |
+//                          +--EthCAN_OK--> DATA ---------------+
 typedef enum
 {
     STATE_DATA,
@@ -37,13 +39,14 @@ State;
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
+// TODO Firmware
+//      Try 2000000 bps
 #define BAUD_RATE_bps (1000000)
 
 // Variables
 /////////////////////////////////////////////////////////////////////////////
 
-static EthCAN_Result sResult = EthCAN_RESULT_NO_ERROR;
-static State         sState  = STATE_INIT;
+static State sState = STATE_INIT;
 
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
@@ -66,21 +69,21 @@ void CAN_Config()
     FW_Config lConfig;
     unsigned int i;
 
-    for (i = 0; i < 6; i ++)
+    for (i = 0; i < EthCAN_FILTER_QTY; i ++)
     {
         lConfig.mFilters[i] = gConfig.mCAN_Filters[i];
     }
 
     lConfig.mFlags = gConfig.mCAN_Flags;
 
-    for (i = 0; i < 2; i ++)
+    for (i = 0; i < EthCAN_MASK_QTY; i ++)
     {
         lConfig.mMasks[i] = gConfig.mCAN_Masks[i];
     }
 
     lConfig.mRate = gConfig.mCAN_Rate;
 
-    sResult = SendAndReceive(EthCAN_REQUEST_CONFIG_SET, &lConfig, sizeof(lConfig), NULL, 0);
+    Send(EthCAN_REQUEST_CONFIG_SET, &lConfig, sizeof(lConfig));
 }
 
 void CAN_Loop()
@@ -99,10 +102,10 @@ void CAN_GetInfo(EthCAN_Info * aInfo)
 {
     FW_Info lInfo;
 
-    aInfo->mResult_CAN = SendAndReceive(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
-    if (EthCAN_OK == aInfo->mResult_CAN)
+    aInfo->mFirmware1_Result = SendAndReceive(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
+    if (EthCAN_OK == aInfo->mFirmware1_Result)
     {
-        for (unsigned int i = 0; i < 4; i ++)
+        for (unsigned int i = 0; i < EthCAN_VERSION_SIZE_byte; i ++)
         {
             aInfo->mFirmware1_Version[i] = lInfo.mFirmware[i];
         }
@@ -111,14 +114,24 @@ void CAN_GetInfo(EthCAN_Info * aInfo)
         aInfo->mCAN_Result       = lInfo.mResult;
         aInfo->mCounter_RxErrors = lInfo.mRxErrors;
         aInfo->mCounter_TxErrors = lInfo.mTxErrors;
+
+        // Copy debug counter, if not 0! This way, Firmaware0 can use the
+        // mCounter_Debug[0] if the Firmware1 does not use it.
+
+        uint32_t lDebug = lInfo.mDebug[1];
+        lDebug <<= 16;
+        lDebug |= lInfo.mDebug[0];
+
+        if (0 != lDebug)
+        {
+            aInfo->mCounter_Debug[0] = lDebug;
+        }
     }
 }
 
 EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 {
-    MSG_DEBUG("CAN_Send()");
-
-    if (sizeof(EthCAN_Frame) > aIn->mDataSize_byte)
+    if (CAN_HEADER_SIZE_byte > aIn->mDataSize_byte)
     {
         return Info_Count_Error(__LINE__, EthCAN_ERROR_DATA_SIZE);
     }
@@ -126,8 +139,14 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
     const EthCAN_Frame * lFrame = reinterpret_cast<const EthCAN_Frame *>(aIn + 1);
 
     unsigned int lDataSize_byte = EthCAN_FRAME_DATA_SIZE(*lFrame);
+    unsigned int lTotalSize_byte = CAN_HEADER_SIZE_byte + lDataSize_byte;
 
-    Send(EthCAN_REQUEST_SEND, lFrame, 5 + lDataSize_byte);
+    if (aIn->mDataSize_byte < lTotalSize_byte)
+    {
+        return Info_Count_Error(__LINE__, EthCAN_ERROR_DATA_SIZE);
+    }
+
+    Send(EthCAN_REQUEST_SEND, lFrame, lTotalSize_byte);
 
     Info_Count_Tx_Frame(lDataSize_byte);
 
@@ -137,11 +156,12 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
+// TODO Firmware0
+//      Optimize the poll delay and implement a timeout even when waiting
+
 EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, bool aWait)
 {
     unsigned int lOutSize_byte = 0;
-    EthCAN_Result lResult;
-    bool lRetry = true;
 
     for (;;)
     {
@@ -149,7 +169,6 @@ EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, bool aWait)
         {
             if (aWait)
             {
-                lRetry = false;
                 delay(100);
                 continue;
             }
@@ -157,9 +176,8 @@ EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, bool aWait)
             break;
         }
 
-        lRetry = true;
-
         uint8_t lByte = Serial2.read();
+        EthCAN_Result lResult;
 
         switch (sState)
         {
@@ -199,9 +217,9 @@ void Receive_Frame(uint8_t aByte)
     const EthCAN_Frame * lFrame = reinterpret_cast<EthCAN_Frame *>(sBuffer);
 
     if (   (sizeof(EthCAN_Frame) <= sCount)
-        || ((5 < sCount) && ((5 + EthCAN_FRAME_DATA_SIZE(*lFrame)) <= sCount)))
+        || ((CAN_HEADER_SIZE_byte < sCount) && (EthCAN_FRAME_TOTAL_SIZE(*lFrame) <= sCount)))
     {
-        Info_Count_Rx_Frame(sCount - 5, lFrame->mId);
+        Info_Count_Rx_Frame(sCount - CAN_HEADER_SIZE_byte, lFrame->mId);
 
         Config_OnFrame(*lFrame);
         sCount = 0;
@@ -217,7 +235,9 @@ void Receive_Init(uint8_t aByte)
     }
     else
     {
-        Serial.write(aByte);
+        #ifdef _TRACE_
+            Serial.write(aByte);
+        #endif
     }
 }
 
@@ -227,7 +247,7 @@ EthCAN_Result Receive_Sync(uint8_t aByte, bool aDataExpected)
 
     switch (aByte)
     {
-    case EthCAN_RESULT_MESSAGE:
+    case EthCAN_RESULT_REQUEST:
         sState = STATE_FRAME;
         break;
 

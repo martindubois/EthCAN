@@ -29,7 +29,7 @@ static const uint32_t IPv4_NOT_FOUND = 0x03040506;
 KMS_TEST_BEGIN(System_Base)
 {
     EthCAN::System* lS0;
-    uint8_t         lV[4];
+    uint8_t         lV[EthCAN_VERSION_SIZE_byte];
 
     // Create
     lS0 = EthCAN::System::Create();

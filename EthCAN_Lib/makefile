@@ -52,7 +52,7 @@ Device_Impl.o: ../Import/Includes/SafeAPI.h
 Device_Impl.o: ../Import/Includes/WindowsToLinux.h
 Device_Impl.o: ../Includes/EthCAN_Result.h ../Includes/EthCAN_Protocol.h
 Device_Impl.o: ../Includes/EthCAN/Display.h ../Includes/EthCAN_Types.h
-Device_Impl.o: ../Includes/EthCAN/System.h ../Includes/EthCAN/Object.h
+Device_Impl.o: ../Includes/EthCAN/System.h ../Includes/EthCAN/Object.h OS.h
 Device_Impl.o: Serial.h IMessageReceiver.h Thread.h UDPSocket.h Device_Impl.h
 Device_Impl.o: ../Includes/EthCAN/Device.h
 Device.o: Component.h ../Import/Includes/KmsBase.h
@@ -66,6 +66,8 @@ Display.o: ../Includes/EthCAN_Protocol.h ../Includes/EthCAN_Types.h
 File.o: Component.h ../Import/Includes/KmsBase.h ../Import/Includes/SafeAPI.h
 File.o: ../Import/Includes/WindowsToLinux.h ../Includes/EthCAN_Result.h
 File.o: ../Includes/EthCAN/File.h ../Includes/EthCAN_Types.h
+L_OS.o: Component.h ../Import/Includes/KmsBase.h ../Import/Includes/SafeAPI.h
+L_OS.o: ../Import/Includes/WindowsToLinux.h ../Includes/EthCAN_Result.h OS.h
 L_Serial.o: Component.h ../Import/Includes/KmsBase.h
 L_Serial.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
 L_Serial.o: ../Includes/EthCAN_Result.h Serial.h IMessageReceiver.h
@@ -106,7 +108,7 @@ System.o: ../Includes/EthCAN/System.h ../Includes/EthCAN_Protocol.h
 System.o: ../Common/Version.h System_Impl.h IMessageReceiver.h
 Thread.o: Component.h ../Import/Includes/KmsBase.h
 Thread.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
-Thread.o: ../Includes/EthCAN_Result.h Thread.h IMessageReceiver.h
+Thread.o: ../Includes/EthCAN_Result.h UDPSocket.h Thread.h IMessageReceiver.h
 UDPSocket.o: Component.h ../Import/Includes/KmsBase.h
 UDPSocket.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
 UDPSocket.o: ../Includes/EthCAN_Result.h ../Includes/EthCAN_Protocol.h

@@ -11,9 +11,11 @@
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
-#define EthCAN_ID_EXTENDED (0x80000000)
+#define CAN_FLAG_RTR         (0x40)
+#define CAN_HEADER_SIZE_byte (5)
+#define CAN_OFFSET_DATA_SIZE (4)
 
-#define EthCAN_FLAG_CAN_RTR (0x40)
+#define EthCAN_FILTER_QTY (6)
 
 #define EthCAN_FLAG_CAN_ADVANCED   (0x01)
 #define EthCAN_FLAG_CAN_FILTERS_ON (0x02)
@@ -29,6 +31,12 @@
 
 #define EthCAN_FLAG_WIFI_AP (0x01)
 
+#define EthCAN_ID_EXTENDED (0x80000000)
+
+#define EthCAN_MASK_QTY (2)
+
+#define EthCAN_VERSION_SIZE_byte (4)
+
 // Data type
 /////////////////////////////////////////////////////////////////////////////
 
@@ -41,10 +49,11 @@ typedef struct
 {
     char mName[16]; ///< The device name - Used for the DHCP request and to find the device
 
-    uint32_t mCAN_Filters[6]; ///< The CAN filters
-    uint32_t mCAN_Masks[2];   ///< The CAN mask
-    uint8_t  mCAN_Flags;      ///< See EthCAN_FLAG_CAN_ADVANCED
-    uint8_t  mCAN_Rate;       ///< See EthCAN_Rate
+    uint32_t mCAN_Filters[EthCAN_FILTER_QTY]; ///< The CAN filters
+    uint32_t mCAN_Masks  [EthCAN_MASK_QTY  ]; ///< The CAN mask
+
+    uint8_t  mCAN_Flags; ///< See EthCAN_FLAG_CAN_ADVANCED
+    uint8_t  mCAN_Rate;  ///< See EthCAN_Rate
 
     uint8_t mReserved0[2];
 
@@ -85,7 +94,7 @@ typedef struct
 {
     uint32_t mId; ///< The id
 
-    uint8_t mDataSize_byte; ///< The data size (in byte) and possibly EthCAN_FLAG_CAN_RTR
+    uint8_t mDataSize_byte; ///< The data size (in byte) and possibly CAN_FLAG_RTR
 
     uint8_t mData[8]; ///< The data
 
@@ -93,10 +102,11 @@ typedef struct
 }
 EthCAN_Frame;
 
-#define EthCAN_FRAME_DATA_SIZE(F) ((F).mDataSize_byte & ~ EthCAN_FLAG_CAN_RTR)
-#define EthCAN_FRAME_EXTENDED(F)  (EthCAN_ID_EXTENDED == ((F).mId & EthCAN_ID_EXTENDED))
-#define EthCAN_FRAME_ID(F)        ((F).mId & ~ EthCAN_ID_EXTENDED)
-#define EthCAN_FRAME_RTR(F)       (EthCAN_FLAG_CAN_RTR == ((F).mDataSize_byte & EthCAN_FLAG_CAN_RTR))
+#define EthCAN_FRAME_DATA_SIZE(F)  ((F).mDataSize_byte & ~ CAN_FLAG_RTR)
+#define EthCAN_FRAME_EXTENDED(F)   (EthCAN_ID_EXTENDED == ((F).mId & EthCAN_ID_EXTENDED))
+#define EthCAN_FRAME_ID(F)         ((F).mId & ~ EthCAN_ID_EXTENDED)
+#define EthCAN_FRAME_RTR(F)        (CAN_FLAG_RTR == ((F).mDataSize_byte & CAN_FLAG_RTR))
+#define EthCAN_FRAME_TOTAL_SIZE(F) (CAN_HEADER_SIZE_byte + EthCAN_FRAME_DATA_SIZE(F))
 
 /// \brief EthCAN_Info
 typedef struct
@@ -112,30 +122,29 @@ typedef struct
     uint32_t mIPv4_NetMask; ///< The current IPv4 mask
 
     uint8_t mFirmware0_Version[4];  ///< The firmware 0 version
-    uint8_t mFirmware1_Version[4];  ///< The firmware 1 version
+    uint8_t mFirmware1_Version[4];  ///< The firmware 1 version (Valid if mFirmware1_Result == EthCAN_OK)
     uint8_t mHardware_Version [4];  ///< The hardware version
 
-    uint32_t mMessageId    ; ///< The last message id
+    uint8_t mFirmware1_Result; ///< The result of the info retrieval from the firmware 1
 
-    uint8_t mResult_CAN; ///< The result of the CAN configuration
+    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 1
+    // = 22   + 2 + 12    + 12    + 1
+    // = 24       + 24            + 1
+    // = 48                       + 1
+    // = 49
 
-    // 16 + 6 + 2 + 3 * 4 + 3 * 4 + 4 + 1
-    // = 22   + 2 + 12    + 12    + 5
-    // = 24       + 24            + 5
-    // = 48                       + 5
-    // = 53
+    uint8_t mReserved2[192 - 49 - 78];
 
-    uint8_t mReserved2[192 - 53 - 58];
+    // 2 * 1 + 13 * 4 + 2 * 1 + 2 + 2 * 4 + 2 * 2 + 2 * 1 + 6
+    // = 2   + 52    + 2     + 2 + 8     + 4     + 2     + 6
+    // = 54          + 4         + 12            + 8
+    // = 58                      + 20
+    // = 78
 
-    // 2 * 1 + 9 * 4 + 2 * 1 + 2 + 4 + 2 * 2 + 2 * 1 + 6
-    // = 2   + 36    + 2     + 6     + 4     + 2     + 6
-    // = 38          + 8             + 6             + 6
-    // = 46                          + 12
-    // = 58
+    uint8_t mCAN_Errors; ///< CAN error flags (Valid if mFirmware1_Result == EthCAN_OK)
+    uint8_t mCAN_Result; ///< CAN initialisation result (Valid if mFirmware1_Result == EthCAN_OK)
 
-    uint8_t mCAN_Errors; ///< CAN error flags
-    uint8_t mCAN_Result; ///< CAN initialisation result
-
+    uint32_t mCounter_Debug[4]; ///< Counters used for debuggings
     uint32_t mCounter_Errors  ; ///< Errors
     uint32_t mCounter_Events  ; ///< Events
     uint32_t mCounter_Fx_byte ; ///< Byte formwarded
@@ -146,11 +155,12 @@ typedef struct
     uint32_t mCounter_Tx_byte ; ///< Byte transmitted to the CAN bus
     uint32_t mCounter_Tx_frame; ///< Frame transmitted to the CAN bus
 
-    uint8_t mCounter_RxErrors; ///< Errors as reported by the hardware
-    uint8_t mCounter_TxErrors; ///< Errors as reported by the hardware
+    uint8_t mCounter_RxErrors; ///< Errors as reported by the hardware (Valid if mFirmware1_Result == EthCAN_OK)
+    uint8_t mCounter_TxErrors; ///< Errors as reported by the hardware (Valid if mFirmware1_Result == EthCAN_OK)
 
     uint8_t mReserver3[2];
 
+    uint32_t mLast_Forward_Id  ; ///< The last message id
     uint32_t mLast_Rx_Id       ; ///< Last received CAN id
     uint16_t mLast_Error_Line  ; ///< Last error line
     uint16_t mLast_Request_Id  ; ///< Last request id

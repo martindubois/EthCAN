@@ -69,7 +69,6 @@ typedef enum
     EthCAN_ERROR_QTY,
 
     EthCAN_RESULT_INVALID = 0xf0,
-    EthCAN_RESULT_MESSAGE,
     EthCAN_RESULT_NO_ERROR,
     EthCAN_RESULT_REQUEST,
 }

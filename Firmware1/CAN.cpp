@@ -149,12 +149,12 @@ EthCAN_Result CAN_Config_Reset()
     return lResult;
 }
 
-EthCAN_Result CAN_Config_Set(const FW_Config & aConfig)
+void CAN_Config_Set(const FW_Config & aConfig)
 {
     Reset();
 
-    EthCAN_Result lResult = SetMode(MCP_CAN_CTRL_MODE_CONFIG);
-    if (EthCAN_OK == lResult)
+    sResult = SetMode(MCP_CAN_CTRL_MODE_CONFIG);
+    if (EthCAN_OK == sResult)
     {
         SetRate(static_cast<EthCAN_Rate>(aConfig.mRate));
 
@@ -187,12 +187,8 @@ EthCAN_Result CAN_Config_Set(const FW_Config & aConfig)
             Register_Modify(MCP_RXB[1] + MCP_B_CTRL, 0                     , 0);
         }
 
-        lResult = SetMode(MCP_CAN_CTRL_MODE_NORMAL);
+        sResult = SetMode(MCP_CAN_CTRL_MODE_NORMAL);
     }
-
-    sResult = lResult;
-
-    return lResult;
 }
 
 // Static functions
@@ -414,7 +410,7 @@ void ReadFrame(uint8_t aIndex)
 
         if (MCP_RXB_CTRL_RTR == (lCtrl & MCP_RXB_CTRL_RTR))
         {
-            lFrame->mDataSize_byte |= EthCAN_FLAG_CAN_RTR;
+            lFrame->mDataSize_byte |= CAN_FLAG_RTR;
         }
 
         Buffer_Push(lFrame, BUFFER_TYPE_TX_SERIAL);

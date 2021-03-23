@@ -19,9 +19,9 @@ extern "C"
 /////////////////////////////////////////////////////////////////////////////
 
 extern void CAN_Begin();
+extern void CAN_Config_Set(const FW_Config & aConfig);
 extern void CAN_GetInfo(FW_Info * aInfo);
 extern void CAN_Loop();
 
 extern EthCAN_Result CAN_Config_Reset();
-extern EthCAN_Result CAN_Config_Set(const FW_Config & aConfig);
 extern EthCAN_Result CAN_Send(const EthCAN_Frame & aFrame);

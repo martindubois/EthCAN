@@ -13,6 +13,8 @@
 #include "IMessageReceiver.h"
 
 class Device_Impl;
+class Serial;
+class UDPSocket;
 
 class System_Impl : public EthCAN::System, public IMessageReceiver
 {

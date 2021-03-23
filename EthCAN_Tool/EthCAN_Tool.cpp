@@ -256,7 +256,7 @@ void Config_CAN_Filters(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     const char* lArg = aArg;
 
-    for (unsigned int i = 0; i < 6; i ++)
+    for (unsigned int i = 0; i < EthCAN_FILTER_QTY; i ++)
     {
         if (!aToolBase->Parse(&lArg, sConfig.mCAN_Filters + i, 0, 0x9fffffff, true))
         {
@@ -284,7 +284,7 @@ void Config_CAN_Masks(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     const char* lArg = aArg;
 
-    for (unsigned int i = 0; i < 2; i++)
+    for (unsigned int i = 0; i < EthCAN_MASK_QTY; i++)
     {
         if (!aToolBase->Parse(&lArg, sConfig.mCAN_Masks + i, 0, 0x9fffffff, true, 0))
         {
@@ -876,7 +876,7 @@ void Detect(KmsLib::ToolBase* aToolBase, const char* aArg)
 
 void GetVersion(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
-    uint8_t lVersion[4];
+    uint8_t lVersion[EthCAN_VERSION_SIZE_byte];
 
     EthCAN_Result lRet = EthCAN::System::GetVersion(lVersion);
     if (EthCAN_OK == lRet)

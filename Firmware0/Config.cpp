@@ -183,7 +183,7 @@ uint8_t Config_Reset()
     if (!sCAN)
     {
         unsigned int i = 0;
-        for (i = 0; i < 6; i ++)
+        for (i = 0; i < EthCAN_FILTER_QTY; i ++)
         {
             if (DEFAULT_CAN_FILTER != gConfig.mCAN_Filters[i])
             {
@@ -194,7 +194,7 @@ uint8_t Config_Reset()
 
         if (!sCAN)
         {
-            for (i = 0; i < 2; i ++)
+            for (i = 0; i < EthCAN_MASK_QTY; i ++)
             {
                 if (DEFAULT_CAN_MASK != gConfig.mCAN_Masks[i])
                 {
@@ -226,7 +226,7 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn, uint8_t * aFlags)
     {
         unsigned int i;
 
-        for (i = 0; i < 6; i ++)
+        for (i = 0; i < EthCAN_FILTER_QTY; i ++)
         {
             if (gConfig.mCAN_Filters[i] != lConfig->mCAN_Filters[i])
             {
@@ -237,7 +237,7 @@ EthCAN_Result Config_Set(const EthCAN_Header * aIn, uint8_t * aFlags)
 
         if (!sCAN)
         {
-            for (i = 0; i < 2; i ++)
+            for (i = 0; i < EthCAN_MASK_QTY; i ++)
             {
                 if (gConfig.mCAN_Masks[i] != lConfig->mCAN_Masks[i])
                 {

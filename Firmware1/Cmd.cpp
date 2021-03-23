@@ -117,7 +117,7 @@ void Loop_Rx()
             case EthCAN_REQUEST_RESET       : Reset       (); break;
 
             case EthCAN_REQUEST_CONFIG_SET: sExpected_byte = sizeof(FW_Config); break;
-            case EthCAN_REQUEST_SEND      : sExpected_byte = 5; break;
+            case EthCAN_REQUEST_SEND      : sExpected_byte = CAN_HEADER_SIZE_byte; break;
 
             default: sState = STATE_INIT;
             }
@@ -162,14 +162,14 @@ void Loop_Tx()
 
         if ((1 == sSent_byte) && (0 < lReady_byte))
         {
-            Serial.write(EthCAN_RESULT_MESSAGE);
+            Serial.write(EthCAN_RESULT_REQUEST);
             sSent_byte ++;
             lReady_byte --;
         }
 
         if ((2 <= sSent_byte) && (0 < lReady_byte))
         {
-            unsigned int lTotal_byte = 2 + 5 + EthCAN_FRAME_DATA_SIZE(*sFrame);
+            unsigned int lTotal_byte = 2 + EthCAN_FRAME_TOTAL_SIZE(*sFrame);
             unsigned int lSize_byte = lTotal_byte - sSent_byte;
             if (lReady_byte < lSize_byte)
             {
@@ -207,7 +207,9 @@ void Config_Reset()
 
 void Config_Set()
 {
-    Result(CAN_Config_Set(* reinterpret_cast<FW_Config *>(sBuffer)));
+    CAN_Config_Set(* reinterpret_cast<FW_Config *>(sBuffer));
+
+    sState = STATE_INIT;
 }
 
 void Info_Get()
@@ -228,9 +230,9 @@ void Reset()
 
 void Send()
 {
-    if (5 == sExpected_byte)
+    if (CAN_HEADER_SIZE_byte == sExpected_byte)
     {
-        sExpected_byte += sBuffer[4] & ~ EthCAN_FLAG_CAN_RTR;
+        sExpected_byte += sBuffer[CAN_OFFSET_DATA_SIZE] & ~ CAN_FLAG_RTR;
     }
 
     if (sExpected_byte <= sLevel_byte)

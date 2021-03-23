@@ -110,7 +110,9 @@ static void Receive_Frame(uint8_t aByte);
 static void Receive_Init (uint8_t aByte);
 static bool Receive_Sync (uint8_t aByte, bool aDataExpected);
 
-static bool Request(KmsLib::ToolBase* aToolBase, EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte);
+static bool Send(KmsLib::ToolBase* aToolBase, EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte);
+
+static bool SendAndReceive(KmsLib::ToolBase* aToolBase, EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte);
 
 static bool Write(KmsLib::ToolBase* aToolBase, const void* aIn, unsigned int aInSize_byte);
 
@@ -186,7 +188,7 @@ void Config_Display(KmsLib::ToolBase* aToolBase, const char* aArg)
     printf("Configuration\n");
     printf("    Filters :\n");
     
-    for (i = 0; i < 6; i++)
+    for (i = 0; i < EthCAN_FILTER_QTY; i++)
     {
         printf("        ");  EthCAN::Display_Id(stdout, sConfig.mFilters[i]);
     }
@@ -194,7 +196,7 @@ void Config_Display(KmsLib::ToolBase* aToolBase, const char* aArg)
     printf("    Flags   : 0x%02x\n", sConfig.mFlags);
     printf("    Masks   :\n");
 
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < EthCAN_MASK_QTY; i++)
     {
         printf("        "); EthCAN::Display_Id(stdout, sConfig.mMasks[i]);
     }
@@ -208,7 +210,7 @@ void Config_Filters(KmsLib::ToolBase* aToolBase, const char* aArg)
 {
     const char* lArg = aArg;
 
-    for (unsigned int i = 0; i < 6; i++)
+    for (unsigned int i = 0; i < EthCAN_FILTER_QTY; i++)
     {
         if (!aToolBase->Parse(&lArg, sConfig.mFilters + i, 0, 0x9fffffff, true, 0))
         {
@@ -344,7 +346,7 @@ void Send(KmsLib::ToolBase* aToolBase, const char* aArg)
     {
         lFrame.mDataSize_byte = lCount;
 
-        lCount &= ~EthCAN_FLAG_CAN_RTR;
+        lCount &= ~CAN_FLAG_RTR;
         if (8 < lCount)
         {
             aToolBase->SetError(__LINE__, "Invalid data size");
@@ -528,9 +530,8 @@ bool Port_OpenAndConfigure(KmsLib::ToolBase* aToolBase, const char* aPortName)
     return true;
 }
 
-bool Request(KmsLib::ToolBase* aToolBase, EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte)
+bool Send(KmsLib::ToolBase* aToolBase, EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte)
 {
-    assert(NULL != aToolBase);
     assert(EthCAN_REQUEST_QTY > aCode);
 
     uint8_t lRequest[2];
@@ -547,15 +548,23 @@ bool Request(KmsLib::ToolBase* aToolBase, EthCAN_RequestCode aCode, const void *
 
             lResult = Write(aToolBase, aIn, aInSize_byte);
         }
+    }
 
-        if (lResult)
+    return lResult;
+}
+
+bool SendAndReceive(KmsLib::ToolBase* aToolBase, EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte)
+{
+    assert(NULL != aToolBase);
+
+    bool lResult = Send(aToolBase, aCode, aIn, aInSize_byte);
+    if (lResult)
+    {
+        unsigned int lOutSize_byte = Receive(aOut, aOutSize_byte);
+        if (aOutSize_byte != lOutSize_byte)
         {
-            unsigned int lOutSize_byte = Receive(aOut, aOutSize_byte);
-            if (aOutSize_byte != lOutSize_byte)
-            {
-                aToolBase->SetError(__LINE__, "The device did not send the expected data");
-                lResult = false;
-            }
+            aToolBase->SetError(__LINE__, "The device did not send the expected data");
+            lResult = false;
         }
     }
 
@@ -622,9 +631,9 @@ void Receive_Frame(uint8_t aByte)
         sFrameCount = 0;
         sState = STATE_INIT;
     }
-    else if (5 <= sFrameCount)
+    else if (CAN_HEADER_SIZE_byte <= sFrameCount)
     {
-        if ((lFrame->mDataSize_byte & ~EthCAN_FLAG_CAN_RTR) <= static_cast<uint8_t>(sFrameCount - 5))
+        if (EthCAN_FRAME_DATA_SIZE(*lFrame) <= static_cast<uint8_t>(sFrameCount - CAN_HEADER_SIZE_byte))
         {
             EthCAN::Display(stdout, *lFrame);
             sFrameCount = 0;
@@ -662,7 +671,7 @@ bool Receive_Sync(uint8_t aByte, bool aDataExpected)
 
     switch (aByte)
     {
-    case EthCAN_RESULT_MESSAGE: sState = STATE_FRAME;
+    case EthCAN_RESULT_REQUEST: sState = STATE_FRAME;
 
     case EthCAN_OK:
         EthCAN::Display(stdout, static_cast<EthCAN_Result>(aByte));
@@ -720,25 +729,25 @@ bool Write(KmsLib::ToolBase* aToolBase, const void* aIn, unsigned int aInSize_by
 
 bool Config_Reset(KmsLib::ToolBase* aToolBase)
 {
-    return Request(aToolBase, EthCAN_REQUEST_CONFIG_RESET, NULL, 0, NULL, 0);
+    return SendAndReceive(aToolBase, EthCAN_REQUEST_CONFIG_RESET, NULL, 0, NULL, 0);
 }
 
 bool Config_Set(KmsLib::ToolBase* aToolBase, const FW_Config& aConfig)
 {
-    return Request(aToolBase, EthCAN_REQUEST_CONFIG_SET, &aConfig, sizeof(aConfig), NULL, 0);
+    return Send(aToolBase, EthCAN_REQUEST_CONFIG_SET, &aConfig, sizeof(aConfig), NULL, 0);
 }
 
 bool GetInfo(KmsLib::ToolBase* aToolBase, FW_Info* aInfo)
 {
-    return Request(aToolBase, EthCAN_REQUEST_INFO_GET, NULL, 0, aInfo, sizeof(*aInfo));
+    return SendAndReceive(aToolBase, EthCAN_REQUEST_INFO_GET, NULL, 0, aInfo, sizeof(*aInfo));
 }
 
 bool Reset(KmsLib::ToolBase* aToolBase)
 {
-    return Request(aToolBase, EthCAN_REQUEST_RESET, NULL, 0, NULL, 0);
+    return SendAndReceive(aToolBase, EthCAN_REQUEST_RESET, NULL, 0, NULL, 0);
 }
 
 bool Send(KmsLib::ToolBase* aToolBase, const EthCAN_Frame& aFrame)
 {
-    return Request(aToolBase, EthCAN_REQUEST_SEND, &aFrame, 5 + (aFrame.mDataSize_byte & ~ EthCAN_FLAG_CAN_RTR), NULL, 0);
+    return Send(aToolBase, EthCAN_REQUEST_SEND, &aFrame, EthCAN_FRAME_TOTAL_SIZE(aFrame), NULL, 0);
 }

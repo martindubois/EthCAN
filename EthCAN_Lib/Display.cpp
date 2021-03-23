@@ -30,7 +30,7 @@ namespace EthCAN
         unsigned int i;
 
         fprintf(lOut, "    CAN Filters    :");
-        for (i = 0; i < 6; i++)
+        for (i = 0; i < EthCAN_FILTER_QTY; i++)
         {
             fprintf(lOut, " 0x%x", aIn.mCAN_Filters[i]);
         }
@@ -41,7 +41,7 @@ namespace EthCAN
         fprintf(lOut, "    CAN Flags      : 0x%02x\n", aIn.mCAN_Flags);
 
         fprintf(lOut, "    CAN Masks      :");
-        for (i = 0; i < 2; i++)
+        for (i = 0; i < EthCAN_MASK_QTY; i++)
         {
             fprintf(lOut, " 0x%x", aIn.mCAN_Masks[i]);
         }
@@ -101,20 +101,19 @@ namespace EthCAN
             return;
         }
 
-        fprintf(lOut, "        Ethernet address : "); Display_EthAddress(lOut, aIn.mEth_Address);
-        fprintf(lOut, "        Firmware 0       : "); Display_Version(lOut, aIn.mFirmware0_Version);
-        fprintf(lOut, "        Firmware 1       : "); Display_Version(lOut, aIn.mFirmware1_Version);
-        fprintf(lOut, "        Hardware         : "); Display_Version(lOut, aIn.mHardware_Version);
-        if (0 != aIn.mIPv4_Address) { fprintf(lOut, "        IPv4 Address     : "); Display_IPv4Address(lOut, aIn.mIPv4_Address); }
-        if (0 != aIn.mIPv4_Gateway) { fprintf(lOut, "        IPv4 Gateway     : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway); }
-        if (0 != aIn.mIPv4_NetMask) { fprintf(lOut, "        IPv4 Net. Mask   : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask); }
-        fprintf(lOut, "        Last message id  : %u\n", aIn.mMessageId);
-        if (0 != aIn.mName[0]) { fprintf(lOut, "        Name             : %s\n", aIn.mName); }
-        fprintf(lOut, "        Result CAN       : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mResult_CAN));
+        fprintf(lOut, "        Ethernet address  : "); Display_EthAddress(lOut, aIn.mEth_Address);
+        fprintf(lOut, "        Firmware 0        : "); Display_Version(lOut, aIn.mFirmware0_Version);
+        fprintf(lOut, "        Firmware 1        : "); Display_Version(lOut, aIn.mFirmware1_Version);
+        fprintf(lOut, "        Hardware          : "); Display_Version(lOut, aIn.mHardware_Version);
+        if (0 != aIn.mIPv4_Address) { fprintf(lOut, "        IPv4 Address      : "); Display_IPv4Address(lOut, aIn.mIPv4_Address); }
+        if (0 != aIn.mIPv4_Gateway) { fprintf(lOut, "        IPv4 Gateway      : "); Display_IPv4Address(lOut, aIn.mIPv4_Gateway); }
+        if (0 != aIn.mIPv4_NetMask) { fprintf(lOut, "        IPv4 Net. Mask    : "); Display_IPv4Address(lOut, aIn.mIPv4_NetMask); }
+        if (0 != aIn.mName[0]) { fprintf(lOut, "        Name              : %s\n", aIn.mName); }
+        fprintf(lOut, "        Firmware 1 result : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mFirmware1_Result));
 
         if (0 != aIn.mCAN_Errors)
         {
-            fprintf(lOut, "        CAN Errors       :");
+            fprintf(lOut, "        CAN Errors        :");
             if (0 != (aIn.mCAN_Errors & 0x02)) { fprintf(lOut, " RxWarning" ); }
             if (0 != (aIn.mCAN_Errors & 0x04)) { fprintf(lOut, " TxWarning" ); }
             if (0 != (aIn.mCAN_Errors & 0x08)) { fprintf(lOut, " RxError"   ); }
@@ -124,22 +123,27 @@ namespace EthCAN
             fprintf(lOut, "\n");
         }
 
-        fprintf(lOut, "        CAN Result       : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mCAN_Result));
+        fprintf(lOut, "        CAN Result        : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mCAN_Result));
 
         fprintf(lOut, "        Counters\n");
-        if (0 != aIn.mCounter_Errors) { fprintf(lOut, "            Errors   : %u\n", aIn.mCounter_Errors); }
-        if (0 != aIn.mCounter_Events) { fprintf(lOut, "            Events   : %u\n", aIn.mCounter_Events); }
-        fprintf(lOut, "            Fx       : %u bytes, %u frames\n", aIn.mCounter_Fx_byte, aIn.mCounter_Fx_frame);
-        if (0 != aIn.mCounter_Requests) { fprintf(lOut, "            Requests : %u\n", aIn.mCounter_Requests); }
-        fprintf(lOut, "            Rx       : %u bytes, %u frames, %u errors\n", aIn.mCounter_Rx_byte, aIn.mCounter_Rx_frame, aIn.mCounter_RxErrors);
-        fprintf(lOut, "            Tx       : %u bytes, %u frames, %u errors\n", aIn.mCounter_Tx_byte, aIn.mCounter_Tx_frame, aIn.mCounter_TxErrors);
+        for (unsigned int i = 0; i < 0; i ++)
+        {
+            if (0 != aIn.mCounter_Debug[i]) { fprintf(lOut, "            Debug %u   : %u (0x%08x)\n", i, aIn.mCounter_Debug[i], aIn.mCounter_Debug[i]); }
+        }
+        if (0 != aIn.mCounter_Errors) { fprintf(lOut, "            Errors    : %u\n", aIn.mCounter_Errors); }
+        if (0 != aIn.mCounter_Events) { fprintf(lOut, "            Events    : %u\n", aIn.mCounter_Events); }
+        fprintf(lOut, "            Fx        : %u bytes, %u frames\n", aIn.mCounter_Fx_byte, aIn.mCounter_Fx_frame);
+        if (0 != aIn.mCounter_Requests) { fprintf(lOut, "            Requests  : %u\n", aIn.mCounter_Requests); }
+        fprintf(lOut, "            Rx        : %u bytes, %u frames, %u errors\n", aIn.mCounter_Rx_byte, aIn.mCounter_Rx_frame, aIn.mCounter_RxErrors);
+        fprintf(lOut, "            Tx        : %u bytes, %u frames, %u errors\n", aIn.mCounter_Tx_byte, aIn.mCounter_Tx_frame, aIn.mCounter_TxErrors);
 
         fprintf(lOut, "        Last\n");
-        fprintf(lOut, "            Error Code   : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mLast_Error_Code));
-        fprintf(lOut, "            Error Line   : %u\n", aIn.mLast_Error_Line);
-        fprintf(lOut, "            Request Code : "); Display(lOut, static_cast<EthCAN_RequestCode>(aIn.mLast_Request_Code));
-        fprintf(lOut, "            Request Id   : %u\n", aIn.mLast_Request_Id);
-        fprintf(lOut, "            Rx Id        : 0x%x\n", aIn.mLast_Rx_Id);
+        fprintf(lOut, "            Error Code    : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mLast_Error_Code));
+        fprintf(lOut, "            Error Line    : %u\n", aIn.mLast_Error_Line);
+        fprintf(lOut, "            Fessage id    : %u\n", aIn.mLast_Forward_Id);
+        fprintf(lOut, "            Request Code  : "); Display(lOut, static_cast<EthCAN_RequestCode>(aIn.mLast_Request_Code));
+        fprintf(lOut, "            Request Id    : %u\n", aIn.mLast_Request_Id);
+        fprintf(lOut, "            Rx Id         : 0x%x\n", aIn.mLast_Rx_Id);
     }
 
     void Display(FILE* aOut, EthCAN_Rate aIn)
@@ -233,7 +237,7 @@ namespace EthCAN
         fprintf(lOut, "%s\n", lStr);
     }
 
-    void Display_Version(FILE* aOut, const uint8_t aIn[4])
+    void Display_Version(FILE* aOut, const uint8_t aIn[EthCAN_VERSION_SIZE_byte])
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
 
@@ -283,10 +287,11 @@ namespace EthCAN
 
         case EthCAN_ERROR                        : return "EthCAN_ERROR";
         case EthCAN_ERROR_BUFFER                 : return "EthCAN_ERROR_BUFFER";
+        case EthCAN_ERROR_BUSY                   : return "EthCAN_ERROR_BUSY";
         case EthCAN_ERROR_CAN                    : return "EthCAN_ERROR_CAN";
         case EthCAN_ERROR_CAN_RATE               : return "EthCAN_ERROR_CAN_RATE";
         case EthCAN_ERROR_DATA_SIZE              : return "EthCAN_ERROR_DATA_SIZE";
-        case EthCAN_ERROR_DATA_UNEXPECTED        : return "EthCAN_ERROR_UNEXPECTED_DATA";
+        case EthCAN_ERROR_DATA_UNEXPECTED        : return "EthCAN_ERROR_DATA_UNEXPECTED";
         case EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER : return "EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER";
         case EthCAN_ERROR_EXCEPTION              : return "EthCAN_ERROR_EXCEPTION";
         case EthCAN_ERROR_FILE_NAME              : return "EthCAN_ERROR_FILE_NAME";
@@ -298,7 +303,7 @@ namespace EthCAN
         case EthCAN_ERROR_INPUT_STREAM_READ      : return "EthCAN_ERROR_INPUT_STREAM_READ";
         case EthCAN_ERROR_IPv4_ADDRESS           : return "EthCAN_ERROR_IPv4_ADDRESS";
         case EthCAN_ERROR_IPv4_MASK              : return "EthCAN_ERROR_IPv4_MASK";
-        case EthCAN_ERROR_NETWORK                : return "EthCAN_ERROR_NETWORL";
+        case EthCAN_ERROR_NETWORK                : return "EthCAN_ERROR_NETWORK";
         case EthCAN_ERROR_NOT_CONNECTED          : return "EthCAN_ERROR_NOT_CONNECTED";
         case EthCAN_ERROR_NOT_CONNECTED_ETH      : return "EthCAN_ERROR_NOT_CONNECTED_ETH";
         case EthCAN_ERROR_NOT_RUNNING            : return "EthCAN_ERROR_NOT_RUNNING";

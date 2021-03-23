@@ -42,8 +42,8 @@ Device.o: Component.h ../Import/Includes/KmsBase.h
 Device.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
 Device.o: ../Import/Includes/KmsTest.h ../Includes/EthCAN/Device.h
 Device.o: ../Includes/EthCAN_Result.h ../Includes/EthCAN_Types.h
-Device.o: ../Includes/EthCAN/Object.h ../Includes/EthCAN/System.h
-Device.o: ../Includes/EthCAN_Protocol.h
+Device.o: ../Includes/EthCAN/Object.h ../Includes/EthCAN/Display.h
+Device.o: ../Includes/EthCAN_Protocol.h ../Includes/EthCAN/System.h OS.h
 Display.o: Component.h ../Import/Includes/KmsBase.h
 Display.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
 Display.o: ../Import/Includes/KmsTest.h ../Includes/EthCAN/Display.h
@@ -53,9 +53,13 @@ EthCAN_Lib_Test.o: Component.h ../Import/Includes/KmsBase.h
 EthCAN_Lib_Test.o: ../Import/Includes/SafeAPI.h
 EthCAN_Lib_Test.o: ../Import/Includes/WindowsToLinux.h
 EthCAN_Lib_Test.o: ../Import/Includes/KmsTest.h
+File.o: Component.h ../Import/Includes/KmsBase.h ../Import/Includes/SafeAPI.h
+File.o: ../Import/Includes/WindowsToLinux.h ../Import/Includes/KmsTest.h
+File.o: ../Includes/EthCAN/File.h ../Includes/EthCAN_Result.h
+File.o: ../Includes/EthCAN_Types.h
 System.o: Component.h ../Import/Includes/KmsBase.h
 System.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
 System.o: ../Import/Includes/KmsTest.h ../Includes/EthCAN/Device.h
 System.o: ../Includes/EthCAN_Result.h ../Includes/EthCAN_Types.h
 System.o: ../Includes/EthCAN/Object.h ../Includes/EthCAN/System.h
-System.o: ../Includes/EthCAN_Protocol.h ../Common/Version.h
+System.o: ../Includes/EthCAN_Protocol.h ../Common/Version.h OS.h

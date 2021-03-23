@@ -17,11 +17,6 @@ extern "C"
 
 #include <EthCAN/Object.h>
 
-// ===== EthCAN_Lib =========================================================
-class Serial;
-class Thread;
-class UDPSocket;
-
 namespace EthCAN
 {
 

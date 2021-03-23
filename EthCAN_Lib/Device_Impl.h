@@ -17,6 +17,10 @@ extern "C"
 // ===== EthCAN_Lib =========================================================
 #include "IMessageReceiver.h"
 
+class Serial;
+class Thread;
+class UDPSocket;
+
 class Device_Impl : public EthCAN::Device, public IMessageReceiver
 {
 

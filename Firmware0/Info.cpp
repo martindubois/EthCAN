@@ -78,9 +78,9 @@ const uint8_t * Info_Get()
 
 uint16_t Info_Get_MessageId()
 {
-    sInfo.mMessageId++;
+    sInfo.mLast_Forware_Id++;
 
-    return sInfo.mMessageId;
+    return sInfo.mLast_Forward_Id;
 }
 
 void Info_Init(const char * aName)
@@ -94,7 +94,7 @@ void Info_Init(const char * aName)
 
     strcpy(sInfo.mName, aName);
 
-    sInfo.mResult_CAN = EthCAN_ERROR_PENDING;
+    sInfo.mFirmware1_Result = EthCAN_RESULT_NO_ERROR;
 
     sInfo.mLast_Error_Code   = EthCAN_RESULT_NO_ERROR;
     sInfo.mLast_Request_Code = EthCAN_REQUEST_INVALID;

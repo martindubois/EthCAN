@@ -76,7 +76,7 @@ namespace EthCAN
     /// \brief Display
     /// \param aOut The output stream
     /// \param aIn  The data to display
-    extern void Display_Version(FILE* aOut, const uint8_t aIn[4]);
+    extern void Display_Version(FILE* aOut, const uint8_t aIn[EthCAN_VERSION_SIZE_byte]);
 
     /// \brief Retrieve the name of a CAN rate
     /// \param aIn See EthCAN_Rate

@@ -42,7 +42,7 @@ namespace EthCAN
         return lResult;
     }
 
-    EthCAN_Result System::GetVersion(uint8_t aOut[4])
+    EthCAN_Result System::GetVersion(uint8_t aOut[EthCAN_VERSION_SIZE_byte])
     {
         if (NULL == aOut) { return EthCAN_ERROR_OUTPUT_BUFFER; }
 

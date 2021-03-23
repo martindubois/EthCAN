@@ -18,10 +18,6 @@ extern "C"
 
 #include <EthCAN/Object.h>
 
-// ===== EthCAN_Lib =========================================================
-class Serial;
-class UDPSocket;
-
 namespace EthCAN
 {
 
@@ -41,7 +37,7 @@ namespace EthCAN
         /// \brief Get the library version
         /// \param aOut The output buffer
         /// \retval EthCAN_OK
-        static EthCAN_Result GetVersion(uint8_t aOut[4]);
+        static EthCAN_Result GetVersion(uint8_t aOut[EthCAN_VERSION_SIZE_byte]);
 
         /// \brief Is the result code OK ?
         /// \param aIn See EthCAN_Result
