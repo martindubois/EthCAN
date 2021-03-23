@@ -78,7 +78,7 @@ const uint8_t * Info_Get()
 
 uint16_t Info_Get_MessageId()
 {
-    sInfo.mLast_Forware_Id++;
+    sInfo.mLast_Forward_Id++;
 
     return sInfo.mLast_Forward_Id;
 }

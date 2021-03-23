@@ -10,10 +10,12 @@
 
 #include "Component.h"
 
-// ===== Common =============================================================
+// ===== Firmware0 ==========================================================
+
+#include "Includes/EthCAN_Types.h"
+
 #include "Common/Firmware.h"
 
-// ===== Firmware0 ==========================================================
 #include "Config.h"
 #include "Info.h"
 
@@ -35,13 +37,6 @@ typedef enum
     STATE_SYNC,
 }
 State;
-
-// Constants
-/////////////////////////////////////////////////////////////////////////////
-
-// TODO Firmware
-//      Try 2000000 bps
-#define BAUD_RATE_bps (1000000)
 
 // Variables
 /////////////////////////////////////////////////////////////////////////////
@@ -93,7 +88,7 @@ void CAN_Loop()
 
 void CAN_Setup()
 {
-    Serial2.begin(BAUD_RATE_bps, SERIAL_8N1, 36, 4, false);
+    Serial2.begin(FIRMWARE_BAUD_RATE_bps, SERIAL_8N1, 36, 4, false);
 
     CAN_Config();
 }
@@ -156,25 +151,26 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
-// TODO Firmware0
-//      Optimize the poll delay and implement a timeout even when waiting
-
 EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, bool aWait)
 {
     unsigned int lOutSize_byte = 0;
+    unsigned int lRetry = 0;
 
     for (;;)
     {
         if (!Serial2.available())
         {
-            if (aWait)
+            if (aWait && (10 < lRetry))
             {
-                delay(100);
+                lRetry ++;
+                delay(5);
                 continue;
             }
 
             break;
         }
+
+        lRetry = 0;
 
         uint8_t lByte = Serial2.read();
         EthCAN_Result lResult;

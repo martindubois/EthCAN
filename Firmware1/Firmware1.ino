@@ -19,7 +19,7 @@
 #ifdef _TEST_
     #define COM_SPEED_bps (115200)
 #else
-    #define COM_SPEED_bps (1000000)
+    #define COM_SPEED_bps FIRMWARE_BAUD_RATE_bps
 #endif
 
 #define LED_POWER (3)
