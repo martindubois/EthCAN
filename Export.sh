@@ -34,14 +34,14 @@ cp _DocUser/EthCAN.ReadMe.txt                         $DST_FOLDER
 cp Binaries/EthCAN_Test                               $DST_FOLDER/Binaries
 cp Binaries/EthCAN_Tool                               $DST_FOLDER/Binaries
 cp Import/Binaries/KmsCopy                            $DST_FOLDER
-cp Import/KmsBase/KmsBase.KmsLib.ReadMe.txt           $DST_FOLDER
+cp Import/KmsBase.KmsLib.ReadMe.txt                   $DST_FOLDER
 cp Includes/*.h                                       $DST_FOLDER/Includes
 cp Includes/EthCAN/*.h                                $DST_FOLDER/Includes/EthCAN
-cp Libraries/EthCAN.a                                 $DST_FOLDER/Libraries
+cp Libraries/EthCAN_Lib.a                             $DST_FOLDER/Libraries
 cp EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt   $DST_FOLDER
 cp EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt $DST_FOLDER
 # KmsVersion "kms-ethcan_" ".deb" 13
-cp Packages/kms-ethcan_1.0-1.deb                      $DST_FOLDER/Packages
+cp Packages/kms-ethcan_1.0-2.deb                      $DST_FOLDER/Packages
 cp Scripts/Import.sh                                  $DST_FOLDER
 cp Scripts/Import.sh.txt                              $DST_FOLDER
 cp Scripts/Import.txt                                 $DST_FOLDER
