@@ -12,8 +12,6 @@
 
 // ===== Firmware0 ==========================================================
 
-#include "Includes/EthCAN_Types.h"
-
 #include "Common/Firmware.h"
 
 #include "Config.h"

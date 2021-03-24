@@ -559,7 +559,7 @@ void Device_Impl::Eth_Receive()
 {
     assert(NULL != mSocket_Client);
 
-    uint8_t lBuffer[256];
+    uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
 
     unsigned int lSize_byte = sizeof(EthCAN_Header) + mReq_OutSize_byte;
     assert(sizeof(lBuffer) >= lSize_byte);
@@ -589,7 +589,7 @@ bool Device_Impl::OnLoopIteration()
     assert(0 != mInfo.mIPv4_Address);
     assert(NULL != mSocket_Server);
 
-    uint8_t lBuffer[256];
+    uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
     uint32_t lFrom;
 
     bool lResult = true;
@@ -775,7 +775,7 @@ void Device_Impl::Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, u
 
     mId_Client++;
 
-    uint8_t lBuffer[256];
+    uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
 
     unsigned int lSize_byte = sizeof(EthCAN_Header) + aInSize_byte;
     assert(sizeof(lBuffer) >= lSize_byte);

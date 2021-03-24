@@ -2,7 +2,7 @@
 // Author    KMS - Martin Dubois, P.Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
-// File      Firmware/Buffer.h
+// File      Firmware1/Buffer.h
 
 #pragma once
 

@@ -2,16 +2,20 @@
 // Author    KMS - Martin Dubois, P.Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCan
-// File      Firmware0/Info.h
+// File      Firmware0/Info.cpp
+
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
 
 #include <Arduino.h>
+
+#include "Component.h"
+
+// ===== Firmware0 ==========================================================
 
 extern "C"
 {
     #include "Includes/EthCAN_Protocol.h"
 }
-
-#include "Component.h"
 
 #include "Common/Version.h"
 
@@ -85,8 +89,6 @@ uint16_t Info_Get_MessageId()
 
 void Info_Init(const char * aName)
 {
-    // MSG_DEBUG("Info_Init(  )");
-
     sInfo.mFirmware0_Version[0] = VERSION_MAJOR;
     sInfo.mFirmware0_Version[1] = VERSION_MINOR;
     sInfo.mFirmware0_Version[2] = VERSION_BUILD;

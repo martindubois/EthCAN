@@ -4,12 +4,16 @@
 // Product   EthCan
 // File      Firmware0/UDP.cpp
 
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+
 #include <Arduino.h>
 
 #include "Component.h"
 
+// ===== Firmware0 ==========================================================
 #include "CAN.h"
 #include "Config.h"
+#include "Header.h"
 #include "Info.h"
 
 #include "USB.h"
@@ -32,13 +36,6 @@ State;
 
 static const uint8_t SYNC = EthCAN_SYNC;
 
-// Static variables
-/////////////////////////////////////////////////////////////////////////////
-
-static uint8_t      sSerial_Buffer[256];
-static unsigned int sSerial_Level = 0;
-static State        sSerial_State = STATE_TRACE;
-
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
@@ -54,36 +51,39 @@ static void OnInfoGet    (const EthCAN_Header * aIn);
 static void OnReset      (const EthCAN_Header * aIn);
 static void OnSend       (const EthCAN_Header * aIn);
 
-static void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn);
-
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
 void USB_Loop()
 {
+    static uint8_t      sBuffer[EthCAN_PACKET_SIZE_MAX_byte];
+    static unsigned int sLevel_byte = 0;
+    static State        sState = STATE_TRACE;
+
     while(0 < Serial.available())
     {
         uint8_t lByte = Serial.read();
 
-        switch (sSerial_State)
+        switch (sState)
         {
         case STATE_DATA:
-            sSerial_Buffer[sSerial_Level] = lByte;
-            sSerial_Level ++;
-            if (sizeof(EthCAN_Header) <= sSerial_Level)
+            sBuffer[sLevel_byte] = lByte;
+            sLevel_byte ++;
+            if (sizeof(EthCAN_Header) <= sLevel_byte)
             {
-                const EthCAN_Header * lHeader = reinterpret_cast<EthCAN_Header *>(sSerial_Buffer);
+                const EthCAN_Header * lHeader = reinterpret_cast<EthCAN_Header *>(sBuffer);
 
-                if (lHeader->mTotalSize_byte <= sSerial_Level)
+                if (lHeader->mTotalSize_byte <= sLevel_byte)
                 {
                     OnPacket(lHeader);
-                    sSerial_Level = 0;
-                    sSerial_State = STATE_TRACE;
+                    sLevel_byte = 0;
+                    sState = STATE_TRACE;
                 }
-                else if (sizeof(sSerial_Buffer) <= sSerial_Level)
+                else if (sizeof(sBuffer) <= sLevel_byte)
                 {
-                    sSerial_Level = 0;
-                    sSerial_State = STATE_TRACE;
+                    MSG_WARNING("USB_Loop - Buffer overflow");
+                    sLevel_byte = 0;
+                    sState = STATE_TRACE;
                 }
             }
             break;
@@ -91,7 +91,7 @@ void USB_Loop()
         case STATE_TRACE:
             if (EthCAN_SYNC == lByte)
             {
-                sSerial_State = STATE_DATA;
+                sState = STATE_DATA;
             }
             break;
         }
@@ -100,8 +100,6 @@ void USB_Loop()
 
 void USB_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame)
 {
-    MSG_DEBUG("USB_OnFrame( ,  )");
-
     Serial.write(&SYNC, sizeof(SYNC));
 
     Serial.write(reinterpret_cast<const uint8_t *>(&aHeader), sizeof(aHeader));
@@ -113,7 +111,7 @@ void USB_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame)
 
 void OnPacket(const EthCAN_Header * aIn)
 {
-    if (sizeof(EthCAN_Header) + aIn->mDataSize_byte <= aIn->mTotalSize_byte)
+    if (Header_Validate(*aIn, aIn->mTotalSize_byte))
     {
         Info_Count_Request(aIn->mCode, aIn->mId);
 
@@ -131,10 +129,6 @@ void OnPacket(const EthCAN_Header * aIn)
 
         default: MSG_ERROR("OnPacket - Invalid request code : ", aIn->mCode);
         }
-    }
-    else
-    {
-        MSG_ERROR("OnPacket - Invalid request size : ", aIn->mTotalSize_byte);
     }
 }
 
@@ -264,14 +258,4 @@ void OnSend(const EthCAN_Header * aIn)
         Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
     }
     END_USB
-}
-
-void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn)
-{
-    aOut->mCode           = aIn->mCode;
-    aOut->mDataSize_byte  = 0;
-    aOut->mFlags          = 0;
-    aOut->mId             = aIn->mId;
-    aOut->mResult         = EthCAN_OK;
-    aOut->mTotalSize_byte = sizeof(EthCAN_Header);
 }

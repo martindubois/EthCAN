@@ -6,10 +6,10 @@
 
 #pragma once
 
+// ===== Firmware0 ==========================================================
 extern "C"
 {
     #include "Includes/EthCAN_Result.h"
-    #include "Includes/EthCAN_Types.h"
 }
 
 // Functions

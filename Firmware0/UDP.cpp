@@ -4,14 +4,18 @@
 // Product   EthCan
 // File      Firmware0/UDP.cpp
 
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+
 #include <Arduino.h>
 
 #include <WiFi.h>
 
 #include "Component.h"
 
+// ===== Firmware0 ==========================================================
 #include "CAN.h"
 #include "Config.h"
+#include "Header.h"
 #include "Info.h"
 
 #include "UDP.h"
@@ -31,8 +35,6 @@ static void OnInfoGet    (const EthCAN_Header * aIn);
 static void OnReset      (const EthCAN_Header * aIn);
 static void OnSend       (const EthCAN_Header * aIn);
 
-static void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn);
-
 // Static variables
 /////////////////////////////////////////////////////////////////////////////
 
@@ -45,7 +47,7 @@ void UDP_Loop()
 {
     sUDP.parsePacket();
 
-    uint8_t lBuffer[256];
+    uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
 
     unsigned int lSize_byte = sUDP.read(lBuffer, sizeof(lBuffer));
     if (0 < lSize_byte)
@@ -73,8 +75,6 @@ void UDP_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame, uin
 
 void UDP_Setup()
 {
-    // MSG_DEBUG("UDP_Setup()");
-
     sUDP.begin(EthCAN_UDP_PORT);
 }
 
@@ -83,37 +83,25 @@ void UDP_Setup()
 
 void OnPacket(const void * aPacket, unsigned int aSize_byte)
 {
-    if (sizeof(EthCAN_Header) <= aSize_byte)
+    const EthCAN_Header * lHeader = reinterpret_cast<const EthCAN_Header *>(aPacket);
+    if (Header_Validate(*lHeader, aSize_byte))
     {
-        const EthCAN_Header * lHeader = reinterpret_cast<const EthCAN_Header *>(aPacket);
+        Info_Count_Request(lHeader->mCode, lHeader->mId);
 
-        if (sizeof(EthCAN_Header) + lHeader->mDataSize_byte <= lHeader->mTotalSize_byte)
+        switch (lHeader->mCode)
         {
-            Info_Count_Request(lHeader->mCode, lHeader->mId);
+        case EthCAN_REQUEST_CONFIG_ERASE: OnConfigErase(lHeader); break;
+        case EthCAN_REQUEST_CONFIG_GET  : OnConfigGet  (lHeader); break;
+        case EthCAN_REQUEST_CONFIG_RESET: OnConfigReset(lHeader); break;
+        case EthCAN_REQUEST_CONFIG_SET  : OnConfigSet  (lHeader); break;
+        case EthCAN_REQUEST_CONFIG_STORE: OnConfigStore(lHeader); break;
+        case EthCAN_REQUEST_DO_NOTHING  : OnDoNothing  (lHeader); break;
+        case EthCAN_REQUEST_INFO_GET    : OnInfoGet    (lHeader); break;
+        case EthCAN_REQUEST_RESET       : OnReset      (lHeader); break;
+        case EthCAN_REQUEST_SEND        : OnSend       (lHeader); break;
 
-            switch (lHeader->mCode)
-            {
-            case EthCAN_REQUEST_CONFIG_ERASE: OnConfigErase(lHeader); break;
-            case EthCAN_REQUEST_CONFIG_GET  : OnConfigGet  (lHeader); break;
-            case EthCAN_REQUEST_CONFIG_RESET: OnConfigReset(lHeader); break;
-            case EthCAN_REQUEST_CONFIG_SET  : OnConfigSet  (lHeader); break;
-            case EthCAN_REQUEST_CONFIG_STORE: OnConfigStore(lHeader); break;
-            case EthCAN_REQUEST_DO_NOTHING  : OnDoNothing  (lHeader); break;
-            case EthCAN_REQUEST_INFO_GET    : OnInfoGet    (lHeader); break;
-            case EthCAN_REQUEST_RESET       : OnReset      (lHeader); break;
-            case EthCAN_REQUEST_SEND        : OnSend       (lHeader); break;
-
-            default: MSG_ERROR("OnPacket - Invalid request code : ", lHeader->mCode);
-            }
+        default: MSG_ERROR("OnPacket - Invalid request code : ", lHeader->mCode);
         }
-        else
-        {
-            MSG_ERROR("OnPacket - Invalid request size : ", lHeader->mTotalSize_byte);
-        }
-    }
-    else
-    {
-        MSG_ERROR("OnPacket - UDP packet smaller than the request header : ", aSize_byte);
     }
 }
 
@@ -244,14 +232,4 @@ void OnSend(const EthCAN_Header * aIn)
         sUDP.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
     }
     END_UDP
-}
-
-void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn)
-{
-    aOut->mCode           = aIn->mCode;
-    aOut->mDataSize_byte  = 0;
-    aOut->mFlags          = 0;
-    aOut->mId             = aIn->mId;
-    aOut->mResult         = EthCAN_OK;
-    aOut->mTotalSize_byte = sizeof(EthCAN_Header);
 }
