@@ -734,7 +734,7 @@ bool Config_Reset(KmsLib::ToolBase* aToolBase)
 
 bool Config_Set(KmsLib::ToolBase* aToolBase, const FW_Config& aConfig)
 {
-    return Send(aToolBase, EthCAN_REQUEST_CONFIG_SET, &aConfig, sizeof(aConfig), NULL, 0);
+    return Send(aToolBase, EthCAN_REQUEST_CONFIG_SET, &aConfig, sizeof(aConfig));
 }
 
 bool GetInfo(KmsLib::ToolBase* aToolBase, FW_Info* aInfo)
@@ -749,5 +749,5 @@ bool Reset(KmsLib::ToolBase* aToolBase)
 
 bool Send(KmsLib::ToolBase* aToolBase, const EthCAN_Frame& aFrame)
 {
-    return Send(aToolBase, EthCAN_REQUEST_SEND, &aFrame, EthCAN_FRAME_TOTAL_SIZE(aFrame), NULL, 0);
+    return Send(aToolBase, EthCAN_REQUEST_SEND, &aFrame, EthCAN_FRAME_TOTAL_SIZE(aFrame));
 }
