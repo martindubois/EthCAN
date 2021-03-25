@@ -1,0 +1,15 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      Firmware0/Export.cmd.txt
+
+Build .
+    Firmware0.ino.bin
+    Firmware0.ino.partitions.bin
+
+_DocUser .
+    EthCAN.Firmware0.ReadMe.txt
+
+Scripts .
+    Prog.cmd
