@@ -4,6 +4,8 @@
 // Product   EthCan
 // File      Firmware1/Firmware1.ino
 
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+
 #include "Component.h"
 
 // ===== Firmware1 ==========================================================
@@ -41,7 +43,9 @@ void setup()
 
     CAN_Begin();
 
-    for (unsigned int lRetry = 0; lRetry < 4; lRetry ++)
+    // TODO Firmware1
+    //      Is this retry loop needed?
+    for (uint8_t lRetry = 0; lRetry < 4; lRetry ++)
     {
         if (EthCAN_OK == CAN_Config_Reset())
         {

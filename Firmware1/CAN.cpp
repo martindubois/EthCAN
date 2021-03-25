@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      Firmware1/CAN.cpp
 
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+
 #include <Arduino.h>
 
 #include "Component.h"
@@ -51,8 +53,6 @@ static const uint8_t CONFIG_BYTE[EthCAN_RATE_QTY][MCP_CNF_QTY]
 
 static EthCAN_Frame * sFrame = NULL;
 
-static uint8_t sPrio;
-
 static EthCAN_Result sResult = EthCAN_RESULT_NO_ERROR;
 
 // Static function declarations
@@ -74,7 +74,7 @@ static void   Register_Modify(uint8_t aReg, uint8_t aMask, uint8_t aVal);
 static int8_t Register_Read  (uint8_t aReg);
 static void   Register_Set   (uint8_t aReg, uint8_t aVal);
 
-static void Registers_Set (uint8_t aReg, const uint8_t * aIn, unsigned int aSize_byte);
+static void Registers_Set(uint8_t aReg, const uint8_t * aIn, uint8_t aSize_byte);
 
 static void Reset();
 
@@ -196,7 +196,7 @@ void CAN_Config_Set(const FW_Config & aConfig)
 
 void ClearBuffers()
 {
-    unsigned int i;
+    uint8_t i;
 
     for(i = 0; i < MCP_TXB_QTY; i++)
     {
@@ -283,7 +283,7 @@ void Id_Write(uint8_t aReg, uint32_t aIn, bool aAdvanced)
 // Critical path
 void Loop_Rx()
 {
-    static unsigned int sIndex = 0;
+    static uint8_t sIndex = 0;
 
     uint8_t lStatus;
 
@@ -319,6 +319,8 @@ void Loop_Rx()
 
 void Loop_Tx()
 {
+    static uint8_t sPrio;
+
     if (NULL == sFrame)
     {
         sFrame = Buffer_Pop(BUFFER_TYPE_TX_CAN);
@@ -389,7 +391,7 @@ void ReadFrame(uint8_t aIndex)
             SPI.transfer(MCP_READ);
             SPI.transfer(MCP_RXB[aIndex] + MCP_B_DATA);
 
-            for(unsigned int i = 0; i < lSize_byte; i++)
+            for(uint8_t i = 0; i < lSize_byte; i++)
             {
                 lFrame->mData[i] = SPI.transfer(0x00);
             }
@@ -456,7 +458,7 @@ void Register_Set(uint8_t aReg, uint8_t aVal)
     Unselect();
 }
 
-void Registers_Set(uint8_t aReg, const uint8_t * aIn, unsigned int aSize_byte)
+void Registers_Set(uint8_t aReg, const uint8_t * aIn, uint8_t aSize_byte)
 {
     Select();
     {
@@ -498,7 +500,7 @@ EthCAN_Result SetMode(uint8_t aMode)
 
 void SetRate(EthCAN_Rate aRate)
 {
-    for (unsigned int i = 0; i < 3; i++)
+    for (uint8_t i = 0; i < 3; i++)
     {
         Register_Set(MCP_CNF[i], CONFIG_BYTE[aRate][i]);
     }
@@ -506,7 +508,7 @@ void SetRate(EthCAN_Rate aRate)
 
 void WriteFrame(uint8_t aIndex)
 {
-    uint8_t  lTxA = MCP_TXB[aIndex];
+    uint8_t lTxA = MCP_TXB[aIndex];
 
     Registers_Set(lTxA + MCP_B_DATA, sFrame->mData, EthCAN_FRAME_DATA_SIZE(*sFrame));
 

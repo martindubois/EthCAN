@@ -25,6 +25,6 @@ extern "C"
 /////////////////////////////////////////////////////////////////////////////
 
 extern void Buffer_Begin();
-extern void Buffer_Push(EthCAN_Frame * aFrame, unsigned int aType);
+extern void Buffer_Push(EthCAN_Frame * aFrame, uint8_t aType);
 
-extern EthCAN_Frame * Buffer_Pop(unsigned int aType);
+extern EthCAN_Frame * Buffer_Pop(uint8_t aType);

@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      Firmware/Buffer.cpp
 
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+
 #include <Arduino.h>
 
 #include "Component.h"
@@ -14,7 +16,7 @@
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
-#define BUFFER_QTY (8)
+#define BUFFER_QTY (16)
 
 // Data types
 /////////////////////////////////////////////////////////////////////////////
@@ -46,7 +48,7 @@ static Queue  sQueues [BUFFER_TYPE_QTY];
 
 void Buffer_Begin()
 {
-    unsigned int i;
+    uint8_t i;
 
     memset(sBuffers, 0, sizeof(sBuffers));
     memset(sQueues , 0, sizeof(sQueues));
@@ -67,7 +69,7 @@ void Buffer_Begin()
 }
 
 // Critical path
-void Buffer_Push(EthCAN_Frame * aFrame, unsigned int aType)
+void Buffer_Push(EthCAN_Frame * aFrame, uint8_t aType)
 {
     Buffer * lBuffer = reinterpret_cast<Buffer *>(aFrame);
     uint8_t  lIndex  = lBuffer->mIndex;
@@ -88,7 +90,7 @@ void Buffer_Push(EthCAN_Frame * aFrame, unsigned int aType)
 }
 
 // Critical path
-EthCAN_Frame * Buffer_Pop(unsigned int aType)
+EthCAN_Frame * Buffer_Pop(uint8_t aType)
 {
     Queue * lQueue = sQueues + aType;
 
