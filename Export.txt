@@ -16,3 +16,9 @@ EthCAN_Lib/_DocUser .
 
 EthCAN_Tool/_DocUser .
 	EthCAN.EthCAN_Tool.ReadMe.txt
+
+Firmware0/_DocUser .
+	EthCAN.Firmware0.ReadMe.txt
+
+Firmware1/_DocUser .
+	EthCAN.Firmware1.ReadMe.txt

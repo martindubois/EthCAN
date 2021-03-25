@@ -27,6 +27,8 @@ OutputDir=Installer
 Source: "_DocUser\EthCAN.ReadMe.txt"                        ; DestDir: "{app}"; Flags: isreadme
 Source: "EthCAN_Lib\_DocUser\EthCAN.EthCAN_Lib.ReadMe.txt"  ; DestDir: "{app}"
 Source: "EthCAN_Tool\_DocUser\EthCAN.EthCAN_Tool.ReadMe.txt"; DestDir: "{app}"
+Source: "Firmware0\_DocUser\EthCAN.Firmware0.ReadMe.txt"    ; DestDir: "{app}"
+Source: "Firmware1\_DocUser\EthCAN.Firmware1.ReadMe.txt"    ; DestDir: "{app}"
 Source: "Import\KmsBase.KmsLib.ReadMe.txt"                  ; DestDir: "{app}"
 Source: "Import\Libraries\Debug_64_DLL\KmsLib.lib"          ; DestDir: "{app}\Libraries\Debug_64"
 Source: "Import\Libraries\Release_64_DLL\KmsLib.lib"        ; DestDir: "{app}\Libraries\Release_64"

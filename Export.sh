@@ -40,6 +40,8 @@ cp Includes/EthCAN/*.h                                $DST_FOLDER/Includes/EthCA
 cp Libraries/EthCAN_Lib.a                             $DST_FOLDER/Libraries
 cp EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt   $DST_FOLDER
 cp EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt $DST_FOLDER
+cp Firmware0/_DocUser/EthCAN.Firmware0.ReadMe.txt     $DST_FOLDER
+cp Firmware1/_DocUser/EthCAN.Firmware1.ReadMe.txt     $DST_FOLDER
 # KmsVersion "kms-ethcan_" ".deb" 13
 cp Packages/kms-ethcan_1.0-2.deb                      $DST_FOLDER/Packages
 cp Scripts/Import.sh                                  $DST_FOLDER
