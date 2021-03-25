@@ -435,5 +435,6 @@ void System_Impl::Request_Init(EthCAN_Header* aOut)
 
     aOut->mCode = EthCAN_REQUEST_INFO_GET;
     aOut->mId = mRequestId;
+    aOut->mResult = EthCAN_RESULT_REQUEST;
     aOut->mTotalSize_byte = sizeof(*aOut);
 }

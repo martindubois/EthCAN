@@ -766,6 +766,7 @@ void Device_Impl::Request_Init(EthCAN_Header* aHeader, uint8_t aCode, uint8_t aF
     aHeader->mDataSize_byte  = aDataSize_byte;
     aHeader->mFlags          = aFlags;
     aHeader->mId             = mId_Client;
+    aHeader->mResult         = EthCAN_RESULT_REQUEST;
     aHeader->mTotalSize_byte = lTotalSize_byte;
 }
 
