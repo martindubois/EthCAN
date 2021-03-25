@@ -11,6 +11,7 @@
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
+#define CAN_DATA_SIZE_MASK   (0x0f)
 #define CAN_FLAG_RTR         (0x40)
 #define CAN_HEADER_SIZE_byte (5)
 #define CAN_OFFSET_DATA_SIZE (4)
@@ -107,7 +108,7 @@ typedef struct
 }
 EthCAN_Frame;
 
-#define EthCAN_FRAME_DATA_SIZE(F)  ((F).mDataSize_byte & ~ CAN_FLAG_RTR)
+#define EthCAN_FRAME_DATA_SIZE(F)  ((F).mDataSize_byte & CAN_DATA_SIZE_MASK)
 #define EthCAN_FRAME_EXTENDED(F)   (EthCAN_ID_EXTENDED == ((F).mId & EthCAN_ID_EXTENDED))
 #define EthCAN_FRAME_ID(F)         ((F).mId & ~ EthCAN_ID_EXTENDED)
 #define EthCAN_FRAME_RTR(F)        (CAN_FLAG_RTR == ((F).mDataSize_byte & CAN_FLAG_RTR))

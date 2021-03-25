@@ -241,7 +241,7 @@ void System_Impl::Detect_Receive(UDPSocket* aSocket)
 
     for (;;)
     {
-        char lBuffer[256];
+        char lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
 
         uint32_t lFrom;
 

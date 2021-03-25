@@ -1,8 +1,8 @@
 
 // Author    KMS - Martin Dubois, P.Eng.
 // Copyright (C) 2021 KMS
-// Product   EthCAN
-// File      Firmware0/CAN.h
+// Product   EthCan
+// File      Firmware0/Header.h
 
 #pragma once
 
@@ -10,16 +10,11 @@
 extern "C"
 {
     #include "Includes/EthCAN_Protocol.h"
-    #include "Includes/EthCAN_Result.h"
 }
 
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
-extern void CAN_Config();
-extern void CAN_Loop();
-extern void CAN_Setup();
+extern void Header_Init(EthCAN_Header * aOut, const EthCAN_Header * aIn);
 
-extern void CAN_GetInfo(EthCAN_Info * aInfo);
-
-extern EthCAN_Result CAN_Send(const EthCAN_Header * aIn);
+extern bool Header_Validate(const EthCAN_Header & aIn, unsigned int aSize_byte);

@@ -4,6 +4,8 @@
 // Product   EthCAN
 // File      Firmware1/Cmd.cpp
 
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+
 #include <Arduino.h>
 
 #include "Component.h"
@@ -56,7 +58,7 @@ static State   sState = STATE_INIT;
 static void Loop_Rx();
 static void Loop_Tx();
 
-static void Result(EthCAN_Result aResult);
+static void SendResult(EthCAN_Result aResult);
 
 // ===== Commands ===========================================================
 
@@ -142,7 +144,7 @@ void Loop_Rx()
 void Loop_Tx()
 {
     static EthCAN_Frame * sFrame = NULL;
-    static unsigned int   sSent_byte = 0;
+    static uint8_t        sSent_byte = 0;
 
     if (NULL == sFrame)
     {
@@ -151,45 +153,50 @@ void Loop_Tx()
 
     if (NULL != sFrame)
     {
-        unsigned int lReady_byte = Serial.availableForWrite();
-
-        if ((0 == sSent_byte) && (0 < lReady_byte))
+        uint8_t lReady_byte = Serial.availableForWrite();
+        if (0 < lReady_byte)
         {
-            Sync();
-            sSent_byte ++;
-            lReady_byte --;
-        }
-
-        if ((1 == sSent_byte) && (0 < lReady_byte))
-        {
-            Serial.write(EthCAN_RESULT_REQUEST);
-            sSent_byte ++;
-            lReady_byte --;
-        }
-
-        if ((2 <= sSent_byte) && (0 < lReady_byte))
-        {
-            unsigned int lTotal_byte = 2 + EthCAN_FRAME_TOTAL_SIZE(*sFrame);
-            unsigned int lSize_byte = lTotal_byte - sSent_byte;
-            if (lReady_byte < lSize_byte)
+            if (0 == sSent_byte)
             {
-                lSize_byte = lReady_byte;
+                Sync();
+                sSent_byte ++;
+                lReady_byte --;
             }
 
-            Serial.write(reinterpret_cast<const uint8_t *>(sFrame) + sSent_byte - 2, lSize_byte);
-            sSent_byte += lSize_byte;
-
-            if (lTotal_byte == sSent_byte)
+            if (0 < lReady_byte)
             {
-                Buffer_Push(sFrame, BUFFER_TYPE_FREE);
-                sSent_byte = 0;
-                sFrame = NULL;
+                if (1 == sSent_byte)
+                {
+                    Serial.write(EthCAN_RESULT_REQUEST);
+                    sSent_byte ++;
+                    lReady_byte --;
+                }
+
+                if ((2 <= sSent_byte) && (0 < lReady_byte))
+                {
+                    uint8_t lTotal_byte = 2 + EthCAN_FRAME_TOTAL_SIZE(*sFrame);
+                    uint8_t lSize_byte = lTotal_byte - sSent_byte;
+                    if (lReady_byte < lSize_byte)
+                    {
+                        lSize_byte = lReady_byte;
+                    }
+
+                    Serial.write(reinterpret_cast<const uint8_t *>(sFrame) + sSent_byte - 2, lSize_byte);
+                    sSent_byte += lSize_byte;
+
+                    if (lTotal_byte == sSent_byte)
+                    {
+                        Buffer_Push(sFrame, BUFFER_TYPE_FREE);
+                        sSent_byte = 0;
+                        sFrame = NULL;
+                    }
+                }
             }
         }
     }
 }
 
-void Result(EthCAN_Result aResult)
+void SendResult(EthCAN_Result aResult)
 {
     Sync();
 
@@ -202,7 +209,7 @@ void Result(EthCAN_Result aResult)
 
 void Config_Reset()
 {
-    Result(CAN_Config_Reset());
+    SendResult(CAN_Config_Reset());
 }
 
 void Config_Set()
@@ -216,14 +223,14 @@ void Info_Get()
 {
     CAN_GetInfo(&sInfo);
 
-    Result(EthCAN_OK);
+    SendResult(EthCAN_OK);
 
     Serial.write(reinterpret_cast<uint8_t *>(&sInfo), sizeof(sInfo));
 }
 
 void Reset()
 {
-    Result(EthCAN_OK);
+    SendResult(EthCAN_OK);
 
     asm volatile ("  jmp 0");
 }

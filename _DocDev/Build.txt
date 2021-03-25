@@ -19,6 +19,8 @@ Version             ______ . ______ . ______ . ______ - _____________________
 [ ] File "_DocUser/EthCAN.ReadMe.txt"
 [ ] File "EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt"
 [ ] File "EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt"
+[ ] File "Firmware0/_DocUser/EthCAN.Firmware0.ReadMe.txt"
+[ ] File "Firmware1/_DocUser/EthCAN.Firmware1.ReadMe.txt"
 
 ===== Linux only ============================================================
 [ ] File "Scripts/control"

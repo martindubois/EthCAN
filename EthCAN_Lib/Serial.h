@@ -59,7 +59,7 @@ private:
     }
     State;
 
-    uint8_t mBuffer[256];
+    uint8_t mBuffer[EthCAN_PACKET_SIZE_MAX_byte];
 
     unsigned int mBufferLevel;
 

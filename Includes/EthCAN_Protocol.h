@@ -11,16 +11,17 @@
 // Constants
 /////////////////////////////////////////////////////////////////////////////
 
-#define EthCAN_UDP_PORT (3489)
-
-#define EthCAN_SYNC (0xff)
-
-// Constants
-/////////////////////////////////////////////////////////////////////////////
-
 #define EthCAN_FLAG_NO_RESPONSE (0x80)
 
 #define EthCAN_FLAG_BUSY (0x80)
+
+#define EthCAN_PACKET_SIZE_MAX_byte (256)
+
+#define EthCAN_UDP_PORT (3489)
+
+#define EthCAN_USB_SPEED_bps (115200)
+
+#define EthCAN_SYNC (0xff)
 
 // Data type
 /////////////////////////////////////////////////////////////////////////////
