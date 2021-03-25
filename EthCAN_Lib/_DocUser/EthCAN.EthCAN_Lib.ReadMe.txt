@@ -4,12 +4,4 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
-1.0.2 KI Linux
-
-1.0.1 KI Linux
-
-1.0.0 KI Windows
-
-0.0.2 Dev Linux
-
-0.0.1 Dev Windows
+1.0.5 Windows

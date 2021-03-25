@@ -6,6 +6,12 @@
 
 #pragma once
 
+// ===== Includes ===========================================================
+extern "C"
+{
+    #include <EthCAN_Protocol.h>
+}
+
 // ===== EthCAN_Lib =========================================================
 #include "IMessageReceiver.h"
 
