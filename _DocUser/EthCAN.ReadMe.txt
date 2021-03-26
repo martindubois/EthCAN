@@ -4,4 +4,6 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      _DocUser/EthCAN.ReadMe.txt
 
+1.0.6 Linux
+
 1.0.5 Windows
