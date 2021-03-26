@@ -34,9 +34,6 @@ void Serial::Connect()
     assert(lDCB.DCBlength == sizeof(lDCB));
     assert(lDCB.fBinary);
 
-    // TODO USB
-    //      Test at 230400 bps
-
     lDCB.BaudRate = CBR_115200;
     lDCB.ByteSize = 8;
     lDCB.Parity   = NOPARITY;

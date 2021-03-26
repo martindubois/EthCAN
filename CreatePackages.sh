@@ -38,6 +38,8 @@ cp Binaries/EthCAN_Tool                               Packages/$PACKAGE_NAME/usr
 cp DoxyFile_en.txt                                    Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 cp EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt   Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 cp EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
+cp Firmware0/_DocUser/EthCAN.Firmware0.ReadMe.txt     Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
+cp Firmware1/_DocUser/EthCAN.Firmware1.ReadMe.txt     Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 cp Import/KmsBase.KmsLib.ReadMe.txt                   Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 cp Import/Libraries/KmsLib.a                          Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/Libraries
 cp Includes/*.h                                       Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/Includes

@@ -2,6 +2,6 @@
 Author    KMS - Martin Dubois, P.Eng.
 Copyright (C) 2021 KMS
 Product   EthCAN
-File      EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt
+File      Firmware0/_DocUser/EthCAN.Firmware0.ReadMe.txt
 
-1.0.5 Windows
+1.0.3

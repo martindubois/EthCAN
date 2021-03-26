@@ -9,9 +9,12 @@ echo Executing  Scripts/Make_Arduino.cmd %1  ...
 
 rem ===== Initialisation ====================================================
 
-set ARDUINO_FOLDER=C:\Program Files (x86)\Arduino
-set BUILD_FOLDER=Build
-set PACKAGES_FOLDER=%USERPROFILE%\AppData\Local\Arduino15\packages
+call ../Scripts/Set_Arduino.cmd
+if ERRORLEVEL 1 (
+    echo FATAL ERROR  Set_Arduino.cmd  failed - %ERRORLEVEL%
+    pause
+    exit /B 5
+)
 
 set BUILDER="%ARDUINO_FOLDER%\arduino-builder.exe"
 
@@ -40,7 +43,7 @@ if not exist %BUILD_FOLDER% mkdir %BUILD_FOLDER%
 if ERRORLEVEL 1 (
     echo ERROR  %BUILDER% -build-options-file build.options.json -build-path %BUILD_FOLDER% -compile %COMPONENT%.ino  failed - %ERRORLEVEL%
     pause
-    exit /B
+    exit /B 30
 )
 
 rem ===== End ===============================================================

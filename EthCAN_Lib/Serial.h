@@ -6,6 +6,12 @@
 
 #pragma once
 
+// ===== Includes ===========================================================
+extern "C"
+{
+    #include <EthCAN_Protocol.h>
+}
+
 // ===== EthCAN_Lib =========================================================
 #include "IMessageReceiver.h"
 
@@ -59,7 +65,7 @@ private:
     }
     State;
 
-    uint8_t mBuffer[256];
+    uint8_t mBuffer[EthCAN_PACKET_SIZE_MAX_byte];
 
     unsigned int mBufferLevel;
 

@@ -241,7 +241,7 @@ void System_Impl::Detect_Receive(UDPSocket* aSocket)
 
     for (;;)
     {
-        char lBuffer[256];
+        char lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
 
         uint32_t lFrom;
 
@@ -435,5 +435,6 @@ void System_Impl::Request_Init(EthCAN_Header* aOut)
 
     aOut->mCode = EthCAN_REQUEST_INFO_GET;
     aOut->mId = mRequestId;
+    aOut->mResult = EthCAN_RESULT_REQUEST;
     aOut->mTotalSize_byte = sizeof(*aOut);
 }

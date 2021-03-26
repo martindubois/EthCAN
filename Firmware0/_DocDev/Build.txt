@@ -1,0 +1,27 @@
+
+Author    KMS - Martin Dubois, P.Eng.
+Copyright (C) 2021 KMS
+Product   EthCAN
+File      Firmware0/_DocDev/Build.txt
+
+Name                _________________________________________________________
+
+Date and time       20 ______ - ______ - ______               ______ : ______
+
+[ ] File "Common/Version.h"
+
+Version             ______ . ______ . ______ . ______ - _____________________
+
+[ ] File "Firmware0/_DocUser/EthCAN.Firmware0.ReadMe.txt"
+[ ] Tool "PowerShell" - In the Firmware0 folder inside the product folder
+        .\Build.cmd
+
+[ ] Tool "GIT"
+    - Index modified file and commit them using
+      "{Major.Minor.Build}[_Type]_Firmware0" as message
+    - Add the tag {Major.Minor.Build}[_Type]_Firmware0"
+    - Push the repository to the servers
+
+Time and duration   ______ : ______             ______ heures, ______ minutes
+
+Signature           _________________________________________________________

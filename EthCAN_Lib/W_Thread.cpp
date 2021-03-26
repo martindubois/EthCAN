@@ -50,6 +50,21 @@ void Thread::Zone0_Leave()
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
+void Thread::Destroy()
+{
+    assert(NULL != mHandle);
+    assert(NULL != mSemaphore);
+
+    BOOL lRetB = CloseHandle(mHandle);
+    assert(lRetB);
+
+    lRetB = CloseHandle(mSemaphore);
+    assert(lRetB);
+
+    mHandle = NULL;
+    mSemaphore = NULL;
+}
+
 void Thread::Start()
 {
     InitializeCriticalSection(&mZone0);
@@ -77,20 +92,8 @@ void Thread::Start()
 void Thread::Wait()
 {
     assert(NULL != mHandle);
-    assert(NULL != mSemaphore);
 
-    DWORD lRet = WaitForSingleObject(mHandle, 3000);
-
-    BOOL lRetB = CloseHandle(mHandle);
-    assert(lRetB);
-
-    lRetB = CloseHandle(mSemaphore);
-    assert(lRetB);
-
-    mHandle = NULL;
-    mSemaphore = NULL;
-
-    if (WAIT_OBJECT_0 != lRet)
+    if (WAIT_OBJECT_0 != WaitForSingleObject(mHandle, 3000))
     {
         TRACE_ERROR(stderr, "Thread::Wait - EthCAN_ERROR_THREAD");
         throw EthCAN_ERROR_THREAD;
