@@ -28,6 +28,7 @@ fi
 mkdir $DST_FOLDER/Binaries
 mkdir $DST_FOLDER/Includes
 mkdir $DST_FOLDER/Includes/EthCAN
+mkdir $DST_FOLDER/Libraries
 mkdir $DST_FOLDER/Packages
 
 cp _DocUser/EthCAN.ReadMe.txt                         $DST_FOLDER
