@@ -13,7 +13,7 @@ echo Excuting  CreatePackages.sh  ...
 # ===== Version =============================================================
 
 # KmsVersion "PACKAGE_VERSION=" "\n" 13
-PACKAGE_VERSION=1.0-6
+PACKAGE_VERSION=1.0-7
 
 # KmsVersion "VERSION=" "\n" 2
 VERSION=1.0

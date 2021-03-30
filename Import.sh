@@ -12,7 +12,18 @@ echo Excuting  Import.sh  ...
 
 # ===== Dependencies =========================================================
 
-KMS_BASE=~/Export/KmsBase/3.0.28_Linux
+PROCESSOR=`uname -p`
+echo $PROCESSOR
+
+if [ "aarch64" = "$PROCESSOR" ]
+then
+    KMS_BASE=~/Export/KmsBase/3.0.31_Linux
+fi
+
+if [ "x86_64" = "$PROCESSOR" ]
+then
+    KMS_BASE=~/Export/KmsBase/3.0.28_Linux
+fi
 
 if [ ! -d $KMS_BASE ]
 then
