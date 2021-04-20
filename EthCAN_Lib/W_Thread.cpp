@@ -37,16 +37,6 @@ void Thread::Sem_Wait(unsigned int aTimeout_ms)
     }
 }
 
-void Thread::Zone0_Enter()
-{
-    EnterCriticalSection(&mZone0);
-}
-
-void Thread::Zone0_Leave()
-{
-    LeaveCriticalSection(&mZone0);
-}
-
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
@@ -67,8 +57,6 @@ void Thread::Destroy()
 
 void Thread::Start()
 {
-    InitializeCriticalSection(&mZone0);
-
     mSemaphore = CreateSemaphore(NULL, 0, 1, NULL);
     if (NULL == mSemaphore)
     {

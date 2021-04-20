@@ -15,6 +15,7 @@ extern "C"
 #include <EthCAN/Device.h>
 
 // ===== EthCAN_Lib =========================================================
+#include "Gate.h"
 #include "IMessageReceiver.h"
 
 class Serial;
@@ -99,15 +100,19 @@ private:
 
     Receiver mReceiver;
 
-    uint8_t       mReq_Code;
-    void*         mReq_Out;
-    unsigned int  mReq_OutSize_byte;
-    EthCAN_Result mReq_Result;
-
     Serial* mSerial;
 
     UDPSocket* mSocket_Client;
     UDPSocket* mSocket_Server;
 
     Thread* mThread;
+
+    // ======================================================================
+    Gate mZone0;
+
+    uint8_t       mReq_Code;
+    void*         mReq_Out;
+    unsigned int  mReq_OutSize_byte;
+    EthCAN_Result mReq_Result;
+
 };

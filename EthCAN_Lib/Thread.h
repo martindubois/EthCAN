@@ -11,6 +11,7 @@
 #endif
 
 // ===== EthCAN_Lib =========================================================
+#include "Gate.h"
 #include "IMessageReceiver.h"
 
 class Thread
@@ -25,8 +26,7 @@ public:
     void Sem_Signal(); // L and W_Thread.cpp
     void Sem_Wait(unsigned int aTimeout_ms); // L and W_Thread.cpp
 
-    void Zone0_Enter(); // L and W_Thread.cpp
-    void Zone0_Leave(); // L and W_Thread.cpp
+    Gate mZone0;
 
 // internal
 
@@ -69,8 +69,6 @@ private:
 
         pthread_t mThread;
 
-        pthread_mutex_t mZone0;
-
     #endif
 
     #ifdef _KMS_WINDOWS_
@@ -80,8 +78,6 @@ private:
         HANDLE mSemaphore;
 
         DWORD mThreadId;
-
-        CRITICAL_SECTION mZone0;
 
     #endif
 

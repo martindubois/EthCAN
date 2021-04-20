@@ -61,12 +61,12 @@ void Serial::Receiver_Start(IMessageReceiver* aReceiver, unsigned int aMessage)
 
     assert(NULL != mThread);
 
-    mThread->Zone0_Enter();
+    mThread->mZone0.Enter();
     {
         mMessage = aMessage;
         mReceiver = aReceiver;
     }
-    mThread->Zone0_Leave();
+    mThread->mZone0.Leave();
 }
 
 void Serial::Send(const void* aIn, unsigned int aSize_byte)
@@ -171,14 +171,14 @@ bool Serial::Receive_Data()
     assert(sizeof(EthCAN_Header) <= lHeader->mTotalSize_byte);
     if (lHeader->mTotalSize_byte <= mBufferLevel)
     {
-        mThread->Zone0_Enter();
+        mThread->mZone0.Enter();
         {
             if (NULL != mReceiver)
             {
                 lResult = mReceiver->OnMessage(this, mMessage, mBuffer, lHeader->mTotalSize_byte);
             }
         }
-        mThread->Zone0_Leave();
+        mThread->mZone0.Leave();
 
         Buffer_Flush(lHeader->mTotalSize_byte);
 

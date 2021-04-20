@@ -27,7 +27,7 @@ void Thread::Sem_Wait(unsigned int aTimeout_ms)
 {
     int lRet = 0;
 
-    Zone0_Enter();
+    mZone0.Enter();
     {
         timespec lAbsTime;
 
@@ -36,27 +36,15 @@ void Thread::Sem_Wait(unsigned int aTimeout_ms)
 
         while ((0 >= mCount) && (0 == lRet))
         {
-            lRet = pthread_cond_timedwait(&mCond, &mZone0, &lAbsTime);
+            lRet = pthread_cond_timedwait(&mCond, mZone0.GetInternal(), &lAbsTime);
         }
     }
-    Zone0_Leave();
+    mZone0.Leave();
 
     if (0 != lRet)
     {
         throw EthCAN_ERROR_TIMEOUT;
     }
-}
-
-void Thread::Zone0_Enter()
-{
-    int lRet = pthread_mutex_lock(&mZone0);
-    assert(0 == lRet);
-}
-
-void Thread::Zone0_Leave()
-{
-    int lRet = pthread_mutex_unlock(&mZone0);
-    assert(0 == lRet);
 }
 
 // Private
@@ -66,9 +54,6 @@ void Thread::Destroy()
 {
     int lRet = pthread_cond_destroy(&mCond);
     assert(0 == lRet);
-
-    lRet = pthread_mutex_destroy(&mZone0);
-    assert(0 == lRet);
 }
 
 void Thread::Start()
@@ -76,9 +61,6 @@ void Thread::Start()
     mCount = 0;
 
     int lRet = pthread_cond_init(&mCond, NULL);
-    assert(0 == lRet);
-
-    lRet = pthread_mutex_init(&mZone0, NULL);
     assert(0 == lRet);
 
     lRet = pthread_create(&mThread, NULL, Run_Link, this);

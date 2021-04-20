@@ -25,7 +25,7 @@ Thread::Thread(IMessageReceiver* aReceiver, unsigned int aMessage) : mMessage(aM
 
 Thread::~Thread()
 {
-    Zone0_Enter();
+    mZone0.Enter();
     {
         switch (mState)
         {
@@ -34,11 +34,11 @@ Thread::~Thread()
             mState = STATE_STOPPING;
 
         case STATE_STOPPING:
-            Zone0_Leave();
+            mZone0.Leave();
             {
                 Wait();
             }
-            Zone0_Enter();
+            mZone0.Enter();
             break;
 
         case STATE_STOPPED:
@@ -49,7 +49,7 @@ Thread::~Thread()
         default: assert(false);
         }
     }
-    Zone0_Leave();
+    mZone0.Leave();
 
     Destroy();
 }
@@ -65,7 +65,7 @@ int Thread::Run()
 
     try
     {
-        Zone0_Enter();
+        mZone0.Enter();
         {
             switch (mState)
             {
@@ -75,11 +75,11 @@ int Thread::Run()
                 lContinue = true;
                 while (lContinue && (STATE_RUNNING == mState))
                 {
-                    Zone0_Leave();
+                    mZone0.Leave();
                     {
                         lContinue = mReceiver->OnMessage(this, mMessage, NULL, 0);
                     }
-                    Zone0_Enter();
+                    mZone0.Enter();
                 }
                 break;
 
@@ -92,7 +92,7 @@ int Thread::Run()
 
             mState = STATE_STOPPED;
         }
-        Zone0_Leave();
+        mZone0.Leave();
     }
     catch (...)
     {

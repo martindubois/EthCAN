@@ -4,6 +4,8 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
+- Return EthCAN_ERROR_BUSY when a request is already pending
+
 1.0.7 Linux arm64
 
 1.0.6 Linux amd64
