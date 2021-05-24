@@ -11,6 +11,19 @@
 // ===== Includes ===========================================================
 #include <EthCAN/File.h>
 
+// Macros
+// //////////////////////////////////////////////////////////////////////////
+
+#ifdef _KMS_WINDOWS_
+    #define VERIFY_REFERENCE(R)            \
+        if (NULL == &(R))                  \
+        {                                  \
+            return EthCAN_ERROR_REFERENCE; \
+        }
+#else
+    #define VERIFY_REFERENCE(R)
+#endif
+
 namespace EthCAN
 {
 
@@ -58,7 +71,8 @@ namespace EthCAN
     EthCAN_Result File_Save(const char* aFileName, const EthCAN_Config& aIn)
     {
         if (NULL == aFileName) { return EthCAN_ERROR_FILE_NAME; }
-        if (NULL == &aIn     ) { return EthCAN_ERROR_REFERENCE; }
+
+        VERIFY_REFERENCE(an)
 
         FILE* lFile;
 
@@ -83,7 +97,8 @@ namespace EthCAN
     EthCAN_Result File_Save(FILE* aFile, const EthCAN_Config& aIn)
     {
         if (NULL == aFile) { return EthCAN_ERROR_OUTPUT_STREAM; }
-        if (NULL == &aIn ) { return EthCAN_ERROR_REFERENCE; }
+
+        VERIFY_REFERENCE(aIn)
 
         if (1 != fwrite(&aIn, sizeof(aIn), 1, aFile))
         {

@@ -20,7 +20,7 @@ extern "C"
 // Macros
 /////////////////////////////////////////////////////////////////////////
 
-#ifdef _KMS_LINUX_
+#if defined(_KMS_LINUX_) || defined(_KMS_OS_X_)
     #define FIELD_ADDR_32 s_addr
 #endif
 

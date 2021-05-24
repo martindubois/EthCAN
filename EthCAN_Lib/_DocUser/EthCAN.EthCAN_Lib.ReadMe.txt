@@ -4,9 +4,11 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
-1.0.9 KI Linux arm64
+1.0.10 Darwin - KMS Internal
 
-1.0.8 KI Linux amd64
+1.0.9 Linux arm64 - KMS Internal
+
+1.0.8 Linux amd64 - KMS Internal
 - EthCAN_ERROR_BUSY when a request is pending
 
 1.0.7 Linux arm64

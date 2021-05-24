@@ -406,7 +406,9 @@ EthCAN_Result Device_Impl::Reset(uint8_t aFlags)
 
 EthCAN_Result Device_Impl::Send(const EthCAN_Frame& aIn, uint8_t aFlags)
 {
-    if (NULL == &aIn) { return EthCAN_ERROR_INPUT_BUFFER; }
+    #ifdef _KMS_WINDOWS_
+        if (NULL == &aIn) { return EthCAN_ERROR_INPUT_BUFFER; }
+    #endif
 
     BEGIN
     {

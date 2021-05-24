@@ -96,7 +96,9 @@ KMS_TEST_BEGIN(Device_SetupA)
     KMS_TEST_COMPARE(EthCAN_ERROR_NOT_RUNNING, lD0->Receiver_Stop());
 
     // Send
-    KMS_TEST_COMPARE(EthCAN_ERROR_INPUT_BUFFER, lD0->Send(*reinterpret_cast<EthCAN_Frame*>(NULL)));
+    #ifdef _KMS_WINDOWS_
+        KMS_TEST_COMPARE(EthCAN_ERROR_INPUT_BUFFER, lD0->Send(*reinterpret_cast<EthCAN_Frame*>(NULL)));
+    #endif
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Send(lFrame));
 
     // Reset - After all other test

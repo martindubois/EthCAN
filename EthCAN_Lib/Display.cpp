@@ -11,6 +11,20 @@
 // ===== Includes ===========================================================
 #include <EthCAN/Display.h>
 
+// Macros
+// //////////////////////////////////////////////////////////////////////////
+
+#ifdef _KMS_WINDOWS_
+    #define VERIFY_REFERENCE(O,R)                \
+        if (NULL == &(R))                        \
+        {                                        \
+            fprintf((O), "Invalid reference\n"); \
+            return;                              \
+        }
+#else
+    #define VERIFY_REFERENCE(O,R)
+#endif
+
 namespace EthCAN
 {
 
@@ -21,11 +35,7 @@ namespace EthCAN
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
 
-        if (NULL == &aIn)
-        {
-            fprintf(lOut, "Invalid reference\n");
-            return;
-        }
+        VERIFY_REFERENCE(aOut, aIn)
 
         unsigned int i;
 
@@ -67,11 +77,7 @@ namespace EthCAN
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
 
-        if (NULL == &aIn)
-        {
-            fprintf(lOut, "Invalid reference\n");
-            return;
-        }
+        VERIFY_REFERENCE(aOut, aIn)
 
         unsigned int lDataSize_byte = EthCAN_FRAME_DATA_SIZE(aIn);
         fprintf(lOut, "%u bytes sent to ", lDataSize_byte);
@@ -95,11 +101,7 @@ namespace EthCAN
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
 
-        if (NULL == &aIn)
-        {
-            fprintf(lOut, "Invalid reference\n");
-            return;
-        }
+        VERIFY_REFERENCE(aOut, aIn)
 
         fprintf(lOut, "        Ethernet address  : "); Display_EthAddress(lOut, aIn.mEth_Address);
         fprintf(lOut, "        Firmware 0        : "); Display_Version(lOut, aIn.mFirmware0_Version);
@@ -274,6 +276,8 @@ namespace EthCAN
         case EthCAN_RATE_80_Kb  : lResult = "EthCAN_RATE_80_Kb"  ; break;
         case EthCAN_RATE_83_3_Kb: lResult = "EthCAN_RATE_83_3_Kb"; break;
         case EthCAN_RATE_95_Kb  : lResult = "EthCAN_RATE_95_Kb"  ; break;
+
+        case EthCAN_RATE_QTY : lResult = "EthCAN_RATE_QTY (Invalid value)"; break;
         }
 
         return lResult;
@@ -283,7 +287,10 @@ namespace EthCAN
     {
         switch (aIn)
         {
-        case EthCAN_OK: return "EthCAN_OK";
+        case EthCAN_OK        : return "EthCAN_OK";
+        case EthCAN_OK_PENDING: return "EthCAN_OK_PENDING";
+
+        case EthCAN_OK_QTY: return "EthCAN_OK_QTY (Invalid value)";
 
         case EthCAN_ERROR                        : return "EthCAN_ERROR";
         case EthCAN_ERROR_BUFFER                 : return "EthCAN_ERROR_BUFFER";
@@ -332,6 +339,8 @@ namespace EthCAN
         case EthCAN_ERROR_SOCKET_SEND            : return "EthCAN_ERROR_SOCKET_SEND";
         case EthCAN_ERROR_THREAD                 : return "EthCAN_ERROR_THREAD";
         case EthCAN_ERROR_TIMEOUT                : return "EthCAN_ERROR_TIMEOUT";
+
+        case EthCAN_ERROR_QTY: return "EthCAN_ERROR_QTY (Invalid value)";
 
         case EthCAN_RESULT_INVALID : return "EthCAN_RESULT_INVALID";
         case EthCAN_RESULT_NO_ERROR: return "EthCAN_RESULT_NO_ERROR";

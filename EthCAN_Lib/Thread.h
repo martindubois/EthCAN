@@ -6,7 +6,7 @@
 
 #pragma once
 
-#ifdef _KMS_LINUX_
+#if defined(_KMS_LINUX_) || defined(_KMS_OS_X_)
     #include <pthread.h>
 #endif
 
@@ -61,7 +61,7 @@ private:
 
     State mState; // Zone 0
 
-    #ifdef _KMS_LINUX_
+    #if defined(_KMS_LINUX_) || defined(_KMS_OS_X_)
 
         pthread_cond_t mCond;
 

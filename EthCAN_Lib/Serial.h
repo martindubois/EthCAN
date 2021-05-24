@@ -80,7 +80,7 @@ private:
 
     Thread* mThread;
 
-    FILE* mTrace = NULL;
+    FILE* mTrace;
 
     #ifdef _KMS_WINDOWS_
         HANDLE mHandle;

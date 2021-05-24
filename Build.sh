@@ -14,6 +14,8 @@ echo Excuting  Build.sh  ...
 
 KMS_VERSION=Import/Binaries/KmsVersion
 
+OS=`uname`
+
 VERSION_H=Common/Version.h
 
 # ===== Execution ===========================================================
@@ -38,10 +40,13 @@ if [ 0 != $? ] ; then
     exit 30
 fi
 
-./CreatePackages.sh
-if [ 0 != $? ] ; then
-    echo ERROR  ./CreatePackages.sh  failed
-    exit 40
+if [ "Linux" = "$OS" ]
+then
+    ./CreatePackages.sh
+    if [ 0 != $? ] ; then
+        echo ERROR  ./CreatePackages.sh  failed
+        exit 40
+    fi
 fi
 
 $KMS_VERSION -S $VERSION_H ./Export.sh

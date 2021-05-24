@@ -9,7 +9,7 @@
 // Functions
 /////////////////////////////////////////////////////////////////////////////
 
-#ifdef _KMS_LINUX_
+#if defined(_KMS_LINUX_) || defined(_KMS_OS_X_)
     #define OS_Sleep(T) usleep(1000 * (T))
 #endif
 

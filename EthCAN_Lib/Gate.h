@@ -6,7 +6,7 @@
 
 #pragma once
 
-#ifdef _KMS_LINUX_
+#if defined(_KMS_LINUX_) || defined(_KMS_OS_X_)
     #include <pthread.h>
 #endif
 
@@ -22,7 +22,7 @@ public:
     void Enter(); // L and W_Thread.cpp
     void Leave(); // L and W_Thread.cpp
 
-    #ifdef _KMS_LINUX_
+    #if defined(_KMS_LINUX_) || defined(_KMS_OS_X_)
         pthread_mutex_t * GetInternal();
     #endif
 
@@ -32,7 +32,7 @@ private:
 
     const Gate & operator = (const Gate &);
 
-    #ifdef _KMS_LINUX_
+    #if defined(_KMS_LINUX_) || defined(_KMS_OS_X_)
 
         pthread_mutex_t mInternal;
 

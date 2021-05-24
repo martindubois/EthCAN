@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#ifdef _KMS_LINUX_
+#if defined(_KMS_LINUX_) || defined(_KMS_OS_X_)
 
     // ===== System =========================================================
     #include <netinet/ip.h>
