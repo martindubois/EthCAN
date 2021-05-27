@@ -62,8 +62,6 @@ if ERRORLEVEL 1 (
     exit /B 50
 )
 
-copy %BIN_FILE_0%  %DST%
-copy %BIN_FILE_1%  %DST%
 copy %BOOT_APP%    %DST%
 copy %BOOT_LOADER% %DST%
 copy %PROG_TOOL%   %DST%
