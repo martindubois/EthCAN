@@ -1,0 +1,12 @@
+{
+  "additionalFiles": "..,..,..,..,..\\..,..\\..,..,..\\..\\..,..\\..\\..,..\\..\\..,..\\..\\..,..\\..\\..,..\\..,..\\..,..\\..,..",
+  "builtInLibrariesFolders": "C:\\Program Files (x86)\\Arduino\\libraries",
+  "builtInToolsFolders": "C:\\Program Files (x86)\\Arduino\\tools-builder,C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,C:\\Users\\mdubois.KMS-QUEBEC\\AppData\\Local\\Arduino15\\packages",
+  "compiler.optimization_flags": "",
+  "customBuildProperties": "build.warn_data_percentage=75,runtime.tools.avr-gcc.path=C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,runtime.tools.avr-gcc-4.9.2-atmel3.5.4-arduino2.path=C:\\Users\\mdubois.KMS-QUEBEC\\AppData\\Local\\Arduino15\\packages\\Longan Card\\tools\\avr-gcc\\4.9.2-atmel3.5.4-arduino2,runtime.tools.arduinoOTA.path=C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,runtime.tools.arduinoOTA-1.1.1.path=C:\\Users\\mdubois.KMS-QUEBEC\\AppData\\Local\\Arduino15\\packages\\Longan Card\\tools\\arduinoOTA\\1.1.1,runtime.tools.avrdude.path=C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,runtime.tools.avrdude-6.3.0-arduino9.path=C:\\Users\\mdubois.KMS-QUEBEC\\AppData\\Local\\Arduino15\\packages\\Longan Card\\tools\\avrdude\\6.3.0-arduino9,runtime.tools.arduinoOTA-1.3.0.path=C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,runtime.tools.avrdude-6.3.0-arduino17.path=C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr,runtime.tools.avr-gcc-7.3.0-atmel3.6.1-arduino7.path=C:\\Program Files (x86)\\Arduino\\hardware\\tools\\avr",
+  "fqbn": "Longan Card:avr:atmega168bc",
+  "hardwareFolders": "C:\\Program Files (x86)\\Arduino\\hardware,C:\\Users\\mdubois.KMS-QUEBEC\\AppData\\Local\\Arduino15\\packages",
+  "otherLibrariesFolders": "C:\\Users\\mdubois.KMS-QUEBEC\\Documents\\Arduino\\libraries",
+  "runtime.ide.version": "10813",
+  "sketchLocation": "C:\\_VC\\EthCAN\\Firmware1\\Firmware1.ino"
+}

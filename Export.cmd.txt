@@ -7,16 +7,16 @@
 # CODE REVIEW
 
 . Binaries
-. Drivers
-. Drivers/Debug_64
 
 Installer
 # KmsVersion "EthCAN_" ".exe" 3
-	EthCAN_1.0.3.exe
+	EthCAN_1.0.5.exe
 
 x64/Debug Binaries/Debug_64
     EthCAN_Lib_Test.exe
 	EthCAN_Tool.exe
+	Firmware1_Tool.exe
 
 x64/Release Binaries/Release_64
     EthCAN_Lib_Test.exe
+	Firmware1_Tool.exe

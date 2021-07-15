@@ -5,8 +5,11 @@
 # File      .gitignore
 
 /KmsDoc/
+/Import/
 /doxygen_en/
 /doxygen_fr/
+
+/File_Base_Test.bin
 
 # Linux
 
@@ -23,4 +26,6 @@
 /Installer/
 
 .vs/
+Debug/
+Release/
 x64/

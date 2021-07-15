@@ -18,7 +18,7 @@ BINARIES=./Binaries
 
 Test()
 {
-    $BINARIES/$1 "$2"
+    $BINARIES/$1 "$2" $3
     if [ 0 != $? ] ; then
         echo ERROR  $BINARIES/$1 "$2"  failed
         exit 10
@@ -27,7 +27,7 @@ Test()
 
 # ===== Execution ===========================================================
 
-Test EthCAN_Lib_Test
+Test EthCAN_Lib_Test group 0
 Test EthCAN_Tool "Execute=ExecuteScript $BASE_TXT"
 
 # ===== End =================================================================

@@ -10,9 +10,35 @@
 
 echo Excuting  Import.sh  ...
 
+# ===== Configuration ========================================================
+
+EXPORT_FOLDER=~/Export
+
 # ===== Dependencies =========================================================
 
-KMS_BASE=~/Export/KmsBase/3.0.28_Linux
+OS=`uname`
+echo $OS
+
+PROCESSOR=`uname -p`
+echo $PROCESSOR
+
+if [ "Darwin" = "$OS" ]
+then
+    KMS_BASE=$EXPORT_FOLDER/KmsBase/3.0.32_Darwin
+fi
+
+if [ "Linux" = "$OS" ]
+then
+    if [ "aarch64" = "$PROCESSOR" ]
+    then
+        KMS_BASE=$EXPORT_FOLDER/KmsBase/3.0.31_Linux
+    fi
+
+    if [ "x86_64" = "$PROCESSOR" ]
+    then
+        KMS_BASE=$EXPORT_FOLDER/KmsBase/3.0.28_Linux
+    fi
+fi
 
 if [ ! -d $KMS_BASE ]
 then
@@ -32,6 +58,16 @@ then
 fi
 
 # ===== Execution ============================================================
+
+if [ ! -d Binaries ]
+then
+    mkdir Binaries
+fi
+
+if [ ! -d Libraries ]
+then
+    mkdir Libraries
+fi
 
 if [ ! -d $DST_FOLDER ]
 then

@@ -1,0 +1,109 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      EthCAN_Tool/Tests/SetupA.txt
+
+Echo == Detect - First because we need a device to work with
+
+Detect
+Error Exit
+
+Echo == Select - First because we need a device to work with
+
+Select Index
+Error Exit
+
+Echo == Device Config Erase
+
+# Device Config Erase
+# Error Exit
+
+Echo == Device Config Get
+
+Device Config Get
+Error Exit
+
+Echo == Device Config Reset
+
+Device Config Reset
+Error Exit
+
+Echo == Device Config Set
+
+Device Config Set
+Error Exit
+
+Echo == Device Config Store
+
+Device Config Store
+Error Exit
+
+Echo == Device Receiver Start
+
+Device Receiver Start
+Error Exit
+
+Echo == Device Receiver Stop
+
+Device Receiver Stop
+Error Exit
+
+Echo == Device Debug
+
+Device Debug
+Error Exit
+
+Echo == Device GetInfo
+
+Device GetInfo
+Error Exit
+
+Echo == Setup AccessPoint {Address} {NetMasl} {SSID} {Password} - Before resetting
+
+Error Clear
+Error Exit
+Setup AccessPoint
+
+Echo == Setup Sniffer - Before Reseting
+
+Error Clear
+Setup Sniffer
+Device Receiver Stop
+Error Exit
+
+Echo == Device Send - Before reseting
+
+Device Send
+
+Echo == Device Reset - Before releasing
+
+Device Reset
+
+Echo == Device Release
+
+Device Release
+Error Exit
+
+Echo == List
+
+List
+Error Exit
+
+Echo == Select Ethernet {Address}
+
+Select Ethernet 03:04:05:06:07:08
+
+Echo == Select IP {Address}
+
+Select IP 3.4.5.6
+
+Echo == Select Name [Name]
+
+Select Name
+
+Echo == Exit
+
+Echo PASSED!
+
+Exit 0

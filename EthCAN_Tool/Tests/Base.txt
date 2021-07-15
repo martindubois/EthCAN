@@ -1,0 +1,206 @@
+
+# Author    KMS - Martin Dubois, P.Eng.
+# Copyright (C) 2021 KMS
+# Product   EthCAN
+# File      EthCAN_Tool/Tests/Base.txt
+
+Echo == Config CAN Filters {0_hex} ... {5_hex}
+
+Config CAN Filters
+Config CAN Filters NotValid
+
+Error Clear
+Config CAN Filters 0 0 0 0 0 0
+Error Exit
+
+Echo == Config CAN Flags {Flags_hex}
+
+Config CAN Flags Invalid
+
+Error Clear
+Config CAN Flags
+Error Exit
+
+Echo == Config CAN Masks {0_hex} {1_Hex}
+
+Config CAN Masks
+Config CAN Masks NotValid
+
+Error Clear
+Config CAN Masks 0 0
+Error Exit
+
+Echo == Config CAN Rate [Rate_Kbps]
+
+Config CAN Rate NotValid
+
+Error Clear
+Config CAN Rate
+Error Exit
+
+Echo == Config Clear
+
+Config Clear
+Error Exit
+
+Echo == Config Display
+
+Config Display
+Error Exit
+
+Echo == Config File Load {FileName}
+
+Config File Load
+
+Echo == Config File Save {FileName}
+
+Config File Save
+
+Echo == Config IP {Address} {Gateway} {NetMask}
+
+Config IP
+Config IP 256.0.0.1 0.0.0.0 256.0.0.0
+
+Error Clear
+Config IP 0.0.0.0 0.0.0.0
+Error Exit
+
+Echo == Config Name [Name]
+
+Config Name
+Error Exit
+
+Echo == Config Server {IPv4} [Port]
+
+Config Server
+
+Error Clear
+Config Server 0.0.0.0 0
+Error Exit
+
+Echo == Config WiFi [Name] [Password]
+
+Config WiFi
+Error Exit
+
+Echo == Device Config Erase
+
+Device Config Erase
+
+Echo == Device Config Get
+
+Device Config Get
+
+Echo == Device Config Reset
+
+Device Config Reset
+
+Echo == Device Config Set
+
+Device Config Set
+
+Echo == Device Config Store [Flags_hex]
+
+Device Config Store
+
+Echo == Device Receiver Start
+
+Device Receiver Start
+
+Echo == Device Receiver Stop
+
+Device Receiver Stop
+
+Echo == Device Debug
+
+Device Debug
+
+Echo == Device GetInfo
+
+Device GetInfo
+
+Echo == Device Release
+
+Device Release
+
+Echo == Device Reset
+
+Device Reset
+
+Echo == Device Send [Ext] [Id] [Count] ...
+
+Device Send
+
+Echo == Debug
+
+Debug
+
+Echo == Detect
+
+Error Clear
+Detect
+Error Exit
+
+Echo == GetVersion
+
+GetVersion
+Error Exit
+
+Echo == List
+
+List
+Error Exit
+
+Echo == Select Ethernet {Eth-Addr}
+
+Select Ethernet
+
+Echo == Select Index [Index]
+
+Select Index
+
+Echo == Select IP {IPv4}
+
+Select IP
+
+Echo == Select Name [Name]
+
+Select Name
+
+Echo == Select USB [Index]
+
+Select USB
+
+Echo == Setup AccessPoint {Address} {NetMask} [SSID] [Password]
+
+Setup AccessPoint
+
+Echo == Setup Bridge [Index0] [Index1]
+
+Setup Bridge
+
+Echo == Setup DHCP
+
+Setup DHCP
+
+Echo == Setup Link {Index0} {Index1} {Address} {NetMask} [SSID] [Password]
+
+Setup Link
+
+Echo == Setup Sniffer
+
+Setup Sniffer
+
+Echo == Setup StaticIP {Address} {Gateway} {NetMask}
+
+Setup StaticIP
+
+Echo == Setup WiFi [SSID] [Password]
+
+Setup WiFi
+
+Echo == Exit
+
+Echo PASSED!
+
+Exit 0
