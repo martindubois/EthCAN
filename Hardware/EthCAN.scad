@@ -9,20 +9,26 @@ use <C:/_VC/Base3D/Metric/M3.scad>
 use <C:/_VC/Base3D/SAE/Screw8.scad>
 
 use <CAN-BUS.scad>
+use <DCtoDC.scad>
 use <ESP-32-POE-ISO.scad>
+use <Mount_Ronin.scad>
 
-CFG_BOARDS = 1;
-CFG_MOUNT  = 1;
+CFG_BOARDS = 0;
+
+// 1  Wall Mount
+// 2  DIN Mount
+// 3  RONIN Mount
+CFG_MOUNT = 3;
 
 if ( 0 != CFG_BOARDS )
 {
-    translate( [ 3, 7, 10 ] ) CAN_BUS();
-    translate( [ 9, 3,  3 ] ) ESP_32_POE_ISO();
+    translate( [ CAN_X, CAN_Y, BOARD_Z ] ) CAN_BUS();
+    translate( [ ESP_X, ESP_Y, BOARD_Z ] ) ESP_32_POE_ISO();
 }
 
 Bottom();
 
-Top();
+// Top();
 
 // Public
 /////////////////////////////////////////////////////////////////////////////
@@ -33,51 +39,55 @@ module Bottom()
     {
         union()
         {
-            if ( 0 != CFG_MOUNT )
+            if ( 1 == CFG_MOUNT )
                 Mount();
 
-            cube( [ SIZE_X, SIZE_Y, TICK ] );
-
-            translate( [ 0, 0, TICK ] )
-            {
-                // Sides
-                for ( y = [ 0, SIZE_Y - 4 ] )
-                    Cube( 0, y, SIZE_X, 4, 1 );
-
-                Cube( SIZE_X - 7, 4, 7, SIZE_Y - 8, 1 ); // Back
-                Cube( 0, 4, 10, SIZE_Y - 8, 1 ); // Front
-            }
-
-            translate( [ 0, 0, TICK + 1 ] )
-            {
-                // Sides
-                cube( [ 68, 3 - SPACE, 1 ] );
-                Cube( 78,          0        , SIZE_X - 78, 3 - SPACE, 1 );
-                Cube(  0, SIZE_Y - 3 + SPACE, SIZE_X     , 3 - SPACE, 1 );
-
-                Cube( SIZE_X - 6, 3 - SPACE, 6, SIZE_Y - 6 + 2 * SPACE, 1 ); // Back
-                Cube(          0, 3 - SPACE, 9, SIZE_Y - 6 + 2 * SPACE, 1 ); // Front
-            }
-
-            translate( [ 0, 0, TICK + 2 ] )
-            {
-                // Sides
-                cube( [ 68, TICK - SPACE, 3 ] );
-                Cube( 78,                     0, SIZE_X - 78, TICK - SPACE, 3 );
-                Cube(  0, SIZE_Y - TICK + SPACE, SIZE_X     , TICK - SPACE, 3 );
-
-                // Back
-                Wall_YZ( SIZE_X - TICK,          TICK     - SPACE, 11, 3 );
-                Wall_YZ( SIZE_X - TICK, SIZE_Y - TICK - 3 + SPACE,  3, 3 );
-
-                Wall_YZ( 0, TICK - SPACE, SIZE_Y - 2 * TICK + 2 * SPACE, 3 ); // Front
-            }
+            cube( [ SIZE_X, SIZE_Y, BOTTOM_Z ] );
         }
+
+        translate( [ TICK, TICK, BOARD_Z + 1 ] )
+            cube( [ SIZE_X - 2 * TICK, SIZE_Y - 2 * TICK, BOTTOM_Z - TICK - 2 - 1 + EPS ] );
+
+        translate( [ USB_X, - EPS, BOARD_Z - 1 ] )
+            cube( [ USB_SIZE_X, 2 * EPS + TICK + 0.5, 9 ] );
+
+        translate( [ VOID_X, VOID_Y, 1 ] )
+            cube( [ VOID_SIZE_X, VOID_SIZE_Y + 3, BOTTOM_Z - 1 + EPS ] );
+
+        translate( [ VOID_X, VOID_Y + VOID_SIZE_Y - EPS, 1 ] )
+            cube( [ VOID_SIZE_X - 7, EPS + 9, BOTTOM_Z - 1 + EPS ] );
+
+        translate( [ CAN_X, CAN_Y, BOARD_Z ] )
+            CAN_BUS_Bottom();
+
+        translate( [ ESP_X, ESP_Y, BOARD_Z ] )
+            ESP_32_POE_ISO_Bottom();
 
         Holes_Bottom();
 
-        if ( 0 != CFG_MOUNT )
-            Mount_Holes();
+        for ( y = [ 17, 22, 27, 32, 37, 42, 47, 52 ] )
+        {
+            translate( [ - EPS, y, 0 ] )
+            {
+                scale( [ 1, 0.5, 1 ] )
+                    Cylinder_X( 2 * EPS + SIZE_X, 2 );
+            }
+        }
+
+        if ( 1 == CFG_MOUNT ) Mount_Holes();
+    }
+
+    translate( [ 55, 35, 1 + DCtoDC_Base_Z() ] )
+        DCtoDC_Base();
+
+    if ( 3 == CFG_MOUNT )
+    {
+        translate( [ - Mount_Ronin_Size_X(), 36, 0 ] )
+        {
+            Mount_Ronin_Bottom();
+
+            // Mount_Ronin_Cap();
+        }
     }
 }
 
@@ -89,136 +99,168 @@ module Top()
         {
             union()
             {
-                translate( [ 0, 0, SIZE_Z - TICK ] ) cube( [ SIZE_X, SIZE_Y, TICK ] );
+                translate( [ 0, 0, BOTTOM_Z ] )
+                    cube( [ SIZE_X, SIZE_Y, TOP_Z ] );
 
-                translate( [ 0, 0, 5 ] )
-                {
-                    // Sides
-                    Wall_XZ( TICK + SPACE,              TICK,     68 -     TICK      -     SPACE, SIZE_Z - TICK - 5 );
-                    Wall_XZ(           78,              TICK, SIZE_X -     TICK - 78 -     SPACE, SIZE_Z - TICK - 5 );
-                    Wall_XZ( TICK + SPACE, SIZE_Y - 2 * TICK, SIZE_X - 2 * TICK      - 2 * SPACE, SIZE_Z - TICK - 5 );
-                }
-
-                translate( [ 0, 0, 7 ] )
-                {
-                    // Sides
-                    for ( y = [ 0, SIZE_Y - TICK ] )
-                        Wall_XZ( 0, y, SIZE_X, SIZE_Z - 7 - TICK );
-
-                    // Back
-                    Wall_YZ( SIZE_X - TICK,          TICK            , 11 - SPACE, 11 );
-                    Wall_YZ( SIZE_X - TICK, SIZE_Y - TICK - 3 + SPACE,  3 - SPACE, 11 );
-
-                    // Front
-                    Wall_YZ( 0, TICK, SIZE_Y - 2 * TICK, 4 );
-                }
-
-                translate( [ 0, 0, 11 ] )
-                {
-                    // Front
-                    Cube( 0, TICK + 10, TICK + 2, SIZE_Y - 2 * TICK - 20, TICK );
-                    for ( y = [ 10, 22 ] )
-                        Wall_XZ( 0, y, 14, SIZE_Z - TICK - 11 );
-
-                    for ( y = [ TICK, 24 ] )
-                        Cube( 0, y, 8, 8, SIZE_Z - TICK - 11 );
-
-                    // Columns
-                    translate( [ 43, SIZE_Y / 2, 0 ] ) Cylinder_Z( 12, 2, 30 );
-
-                    for ( y = [ 7, 27 ] )
-                        translate( [ 13, y, 0 ] ) Cylinder_Z( 12, 2, 30 );
-                }
-
-                translate( [ 0, 0, 18 ] )
-                {
-                    Cube( SIZE_X - 8, TICK, 8, SIZE_Y - 2 * TICK, 5 ); // Back
-                    Wall_YZ( 14, 10, 12, 5 ); // Front
-                }
+                translate( [ TICK + SPACE, TICK + SPACE, BOTTOM_Z - 3 ] )
+                    cube( [ SIZE_X - 2 * TICK - 2 * SPACE, SIZE_Y - 2 * TICK - 2 * SPACE, 3 ] );
             }
 
-            translate( [ - EPS, 12, SIZE_Z - TICK - EPS ] ) cube( [ 14, 10, 2 * EPS + TICK ] );
+            translate( [ USB_X, - EPS, BOARD_Z ] )
+                cube( [ USB_SIZE_X + 22, 2 * EPS + TICK, 7 ] );
+
+            translate( [ VOID_X, VOID_Y, 5 - EPS ] )
+                cube( [ VOID_SIZE_X, VOID_SIZE_Y, 18 ] );
+
+            translate( [ VOID_X, VOID_Y + VOID_SIZE_Y - EPS, 5 - EPS ] )
+                cube( [ VOID_SIZE_X - 5, EPS + 9, 18 ] );
+
+            translate( [ 9, SIZE_Y - 7, 5 - EPS ] )
+                cube( [ 36, 5, 18 ] );
+
+            translate( [ 4, 33, 5 - EPS ] )
+                cube( [ 7, 6, 18 ] );
+
+            translate( [ 35, 29, 5 - EPS ] )
+                cube( [ 20, 12, 18 ] );
+
+            translate( [ CAN_X, CAN_Y, BOARD_Z ] )
+                CAN_BUS_Top();
+
+            translate( [ ESP_X, ESP_Y, BOARD_Z ] )
+                ESP_32_POE_ISO_Top();
 
             Holes_Top();
+
+            if ( 2 == CFG_MOUNT )
+            {
+                translate( [ SIZE_X - 6 - EPS, SIZE_Y - 9, SIZE_Z / 2 + 1.5 ] )
+                    M3_Shank_X( 2 * EPS + 6 );
+
+                translate( [ SIZE_X - 9, SIZE_Y - 9, SIZE_Z / 2 + 1.5 ] )
+                    M3_Insert_X();
+            }
         }
+
+        if ( 2 == CFG_MOUNT )
+            Mount_DIN();
     }
 }
 
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
-module Cube( aX, aY, aSizeX, aSizeY, aSizeZ )
-{
-    translate( [ aX, aY, 0 ] )
-        cube( [ aSizeX, aSizeY, aSizeZ ] );
-}
-
 module Holes_Bottom()
 {
-    for ( y = [ 4, SIZE_Y - 4 ] )
+    for ( y = [ 5, SIZE_Y - 5 ] )
     {
-        translate( [ 4, y, - EPS ] )
+        translate( [ 5, y, - EPS ] )
         {
             M3_Shank_Z( 2 * EPS + 7 );
-            M3_Insert_ZR();
+            M3_Hex_ZR();
         }
     }
 
-    translate( [ SIZE_X - 4, 10, - EPS ] )
+    for ( y = [ 10, SIZE_Y - 5 ] )
     {
-        M3_Shank_Z( 2 * EPS + 7 );
-        M3_Insert_ZR();
+        translate( [ SIZE_X - 5, y, - EPS ] )
+        {
+            M3_Shank_Z( 2 * EPS + 7 );
+            M3_Hex_ZR();
+        }
     }
 }
 
 module Holes_Top()
 {
-    for ( y = [ 4, SIZE_Y - 4 ] )
+    for ( y = [ 5, SIZE_Y - 5 ] )
     {
-        translate( [ 4, y, 5 - EPS    ] ) M3_Shank_Z( 2 * EPS + SIZE_Z - 5 );
-        translate( [ 4, y, SIZE_Z - 4 ] ) M3_Head_Z( 4 + EPS );
+        translate( [ 5, y, 5 - EPS    ] ) M3_Shank_Z( 2 * EPS + SIZE_Z - 5 );
+        translate( [ 5, y, SIZE_Z - 4 ] ) M3_Head_Z( 4 + EPS );
     }
 
-    translate( [ SIZE_X - 4, 10, 7 - EPS    ] ) M3_Shank_Z( 2 * EPS + SIZE_Z - 7 );
-    translate( [ SIZE_X - 4, 10, SIZE_Z - 4 ] ) M3_Head_Z( 4 + EPS );
+    for ( y = [ 10, SIZE_Y - 5 ] )
+    {
+        translate( [ SIZE_X - 5, y, 5 - EPS    ] ) M3_Shank_Z( 2 * EPS + SIZE_Z - 7 );
+        translate( [ SIZE_X - 5, y, SIZE_Z - 4 ] ) M3_Head_Z( 4 + EPS );
+    }
 }
 
 module Mount()
 {
-    Wall_XY( 20, - 15, 30, 15 );
+    for ( y = [ - 14, SIZE_Y ] )
+        Wall_XY( 20, y, SIZE_X - 40, 14 );
 
-    for ( x = [ 20, 50, SIZE_X - 20 ] )
-    {
-        translate( [ x, 0, 0 ] )
-            Cylinder_Z( TICK, 15, 50 );
+    for ( y = [ 0, SIZE_Y ] )
+    {    
+        for ( x = [ 20, SIZE_X - 20 ] )
+        {
+            translate( [ x, y, 0 ] )
+                Cylinder_Z( TICK, 14, 50 );
+        }
     }
+}
 
-    Wall_XY( 20, SIZE_Y, SIZE_X - 40, 15 );
-    
-    for ( x = [ 20, SIZE_X - 20 ] )
+module Mount_DIN()
+{
+    difference()
     {
-        translate( [ x, SIZE_Y, 0 ] )
-            Cylinder_Z( TICK, 15, 50 );
+        union()
+        {
+            translate( [ SIZE_X, 35, BOTTOM_Z ] )
+                cube( [ 1, 6, TOP_Z ] );
+
+            translate( [ SIZE_X + 1, 35, 3 ] )
+                cube( [ 3, SIZE_Y - 35 + DIN_Y, SIZE_Z - 3 ] );
+
+            translate( [ SIZE_X - 1, SIZE_Y + DIN_T, 3 ] )
+                cube( [ 2, DIN_Y - DIN_T, SIZE_Z - 3 ] );
+
+            translate( [ SIZE_X - 44, SIZE_Y, BOTTOM_Z ] )
+                cube( [ 10, DIN_Y, TOP_Z ] );
+
+            translate( [ SIZE_X - 44, SIZE_Y + DIN_T, 3 ] )
+                cube( [ 12, DIN_Y - DIN_T, SIZE_Z - 3 ] );
+        }
+
+        union()
+        {
+            translate( [ SIZE_X - 1 - 3, SIZE_Y + DIN_T + 2, 3 - EPS ] )
+            {
+                rotate( [ 0, 0, - 40 ] )
+                    cube( [ 3, 10, 2 * EPS + SIZE_Z - 3 ] );
+            }
+
+            translate( [ SIZE_X - 33.5, SIZE_Y + 0.1, 3 - EPS ] )
+            {
+                rotate( [ 0, 0, 20 ] )
+                    cube( [ 3, DIN_T, 2 * EPS + SIZE_Z - 3 ] );
+            }
+
+            translate( [ SIZE_X + 1 - EPS, SIZE_Y - 9, SIZE_Z / 2 + 1.5 ] )
+                M3_Shank_X( 2 * EPS + 3 );
+        }
+
     }
 }
 
 module Mount_Holes()
 {
-    for ( x = [ 20, SIZE_X - 20 ] )
+    for ( x = [ 20, 44 ] )
     {
-        for ( y = [ - 7, SIZE_Y + 7 ] )
+        for ( y = [ - 6, SIZE_Y + 6 ] )
         {
             translate( [ x - 5, y, - EPS ] )
                 Screw8_ShankSlot_ZX( 2 * EPS + TICK, 10 );
         }
     }
 
-    for ( y = [ - 7, SIZE_Y + 7 ] )
+    for ( y = [ - 6, SIZE_Y + 6 ] )
     {
-        translate( [ SIZE_X / 2 - 18, y, - EPS ] )
+        translate( [ SIZE_X - 33, y, - EPS ] )
             Screw8_ShankSlot_ZX( 2 * EPS + TICK, 16 );
 
-        translate( [ SIZE_X / 2 - 10, y, - EPS ] )
+        translate( [ SIZE_X - 25, y, - EPS ] )
             Screw8_Head_Z( 2 * EPS + TICK );
     }
 }
@@ -229,24 +271,37 @@ module Wall_XY( aX, aY, aSizeX, aSizeY )
         cube( [ aSizeX, aSizeY, TICK ] );
 }
 
-module Wall_XZ( aX, aY, aSizeX, aSizeZ )
-{
-    translate( [ aX, aY, 0 ] )
-        cube( [ aSizeX, TICK, aSizeZ ] );
-}
-
-module Wall_YZ( aX, aY, aSizeY, aSizeZ )
-{
-    translate( [ aX, aY, 0 ] )
-        cube( [ TICK, aSizeY, aSizeZ ] );
-}
-
 EPS = 0.1;
 
-SIZE_X = 115;
-SIZE_Y =  34;
-SIZE_Z =  25;
+BOARD_Z = 4;
+
+BOTTOM_Z = 8;
+
+DIN_T = 1.5;
+DIN_Y = 6;
+
+TOP_Z = 15;
+
+CAN_X =  2;
+CAN_Y = 35;
+
+ESP_X = 9;
+ESP_Y = 3;
+
+SIZE_X = 110.5;
+SIZE_Y =  64;
+SIZE_Z =  BOTTOM_Z + TOP_Z;
+
+USB_SIZE_X = 13;
+
+USB_X = 60;
 
 SPACE = 0.1;
 
 TICK = 2;
+
+VOID_SIZE_X = 60;
+VOID_SIZE_Y = 17;
+
+VOID_X = 47;
+VOID_Y = 34;
