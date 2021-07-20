@@ -44,7 +44,7 @@ static State sState = STATE_INIT;
 // Static function declarations
 /////////////////////////////////////////////////////////////////////////////
 
-static EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, bool aWait);
+static EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, unsigned int aWait_ms);
 
 static void          Receive_Frame(uint8_t aByte);
 static void          Receive_Init (uint8_t aByte);
@@ -52,7 +52,7 @@ static EthCAN_Result Receive_Sync (uint8_t aByte, bool aDataExpected);
 
 static void Send(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte);
 
-static EthCAN_Result SendAndReceive(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte);
+static EthCAN_Result SendAndReceive(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte, unsigned int aWait_ms);
 
 // Functions
 /////////////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ void CAN_Config()
 
 void CAN_Loop()
 {
-    Receive(NULL, 0, false);
+    Receive(NULL, 0, 0);
 }
 
 void CAN_Setup()
@@ -95,7 +95,7 @@ void CAN_GetInfo(EthCAN_Info * aInfo)
 {
     FW_Info lInfo;
 
-    aInfo->mFirmware1_Result = SendAndReceive(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo));
+    aInfo->mFirmware1_Result = SendAndReceive(EthCAN_REQUEST_INFO_GET, NULL, 0, &lInfo, sizeof(lInfo), 100);
     if (EthCAN_OK == aInfo->mFirmware1_Result)
     {
         for (unsigned int i = 0; i < EthCAN_VERSION_SIZE_byte; i ++)
@@ -149,26 +149,24 @@ EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 // Static functions
 /////////////////////////////////////////////////////////////////////////////
 
-EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, bool aWait)
+EthCAN_Result Receive(uint8_t * aOut, unsigned int aOutSize_byte, unsigned int aWait_ms)
 {
     unsigned int lOutSize_byte = 0;
-    unsigned int lRetry = 0;
+    unsigned int lWait_ms = aWait_ms;
 
     for (;;)
     {
         if (!Serial2.available())
         {
-            if (aWait && (10 < lRetry))
+            if (0 < lWait_ms)
             {
-                lRetry ++;
-                delay(5);
+                lWait_ms --;
+                delay(1);
                 continue;
             }
 
             break;
         }
-
-        lRetry = 0;
 
         uint8_t lByte = Serial2.read();
         EthCAN_Result lResult;
@@ -278,9 +276,9 @@ void Send(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte)
     }
 }
 
-EthCAN_Result SendAndReceive(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte)
+EthCAN_Result SendAndReceive(EthCAN_RequestCode aCode, const void * aIn, unsigned int aInSize_byte, void * aOut, unsigned int aOutSize_byte, unsigned int aWait_ms)
 {
     Send(aCode, aIn, aInSize_byte);
 
-    return Receive(reinterpret_cast<uint8_t *>(aOut), aOutSize_byte, true);
+    return Receive(reinterpret_cast<uint8_t *>(aOut), aOutSize_byte, aWait_ms);
 }
