@@ -6,9 +6,9 @@
 
 use <C:/_VC/Base3D/Metric/M4.scad>
 
-// Mount_Ronin_Bottom();
+Mount_Ronin_Bottom();
 
-Mount_Ronin_Cap();
+// Mount_Ronin_Cap();
 
 // Public
 // //////////////////////////////////////////////////////////////////////////
@@ -37,14 +37,17 @@ module Mount_Ronin_Bottom()
         translate( [ lConX + 0.5, lConY + 0.5, RAIL_SIZE_Z + CON_SIZE_Z - EPS ] )
             cube( [ CON_SIZE_X - 1, CON_SIZE_Y - 1, 2 * EPS + SIZE_Z - RAIL_SIZE_Z - CON_SIZE_Z ] );
 
-        translate( [ lConX - 1, lConY + 2, RAIL_SIZE_Z + CON_SIZE_Z - EPS ] )
-            cube( [ CON_SIZE_X + 2, CON_SIZE_Y - 4, 2 * EPS + SIZE_Z - RAIL_SIZE_Z - CON_SIZE_Z ] );
+        translate( [ lConX - 1, lConY + 1, RAIL_SIZE_Z + CON_SIZE_Z - EPS ] )
+            cube( [ CON_SIZE_X + 2, CON_SIZE_Y - 2, 2 * EPS + SIZE_Z - RAIL_SIZE_Z - CON_SIZE_Z ] );
 
         for ( y = [ TICK, SIZE_Y - TICK - CANAL_SIZE_Y ] )
         {
             translate( [ TICK, y, SIZE_Z - CANAL_SIZE_Z ] )
                 cube( [ EPS + Mount_Ronin_Size_X() - TICK, CANAL_SIZE_Y, EPS + CANAL_SIZE_Z ] );
         }
+
+        translate( [ Mount_Ronin_Size_X() - 5, TICK, RAIL_SIZE_Z + TICK ] )
+            cube( [ EPS + 5, SIZE_Y - 2 * TICK, EPS + SIZE_Z - RAIL_SIZE_Z - TICK ] );
     }
 }
 
@@ -85,8 +88,8 @@ CANAL_SIZE_Z = 4;
 // Connector
 CON_CENTER_X = 16.5;
 CON_SIZE_X   = 2 * 2.54;
-CON_SIZE_Y   = 5 * 2.54;
-CON_SIZE_Z   = 4;
+CON_SIZE_Y   = 4 * 2.54;
+CON_SIZE_Z   = 3.5;
 
 CAP_SIZE_Z = 8;
 

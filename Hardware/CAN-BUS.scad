@@ -95,8 +95,8 @@ module CAN_BUS_Bottom()
 
 module CAN_BUS_Top()
 {
-    translate( [ 13, 1, 0 ] )
-        cube( [ SIZE_X - 14, SIZE_Y - 2, 17.5 ] );
+    // translate( [ 13, 1, 0 ] )
+    //    cube( [ SIZE_X - 14, SIZE_Y - 2, 17.5 ] );
 
     translate( [ 11 - EPS, CENTER_Y - 7.5, 0 ] )
         cube( [ 2 * EPS + 2, 16.5, 3 ] );
@@ -105,16 +105,16 @@ module CAN_BUS_Top()
     translate( [ - 3 - EPS, CENTER_Y - 4.5, 0 ] )
         cube( [ 14 + EPS, 14, 20 + EPS ] );
 
-    translate( [ - SPACE, - SPACE, 0 ] )
-        cube( [ 2 * SPACE + SIZE_X, 2 * SPACE + SIZE_Y, TICK ] );
+    // translate( [ - SPACE, - SPACE, 0 ] )
+    //    cube( [ 2 * SPACE + SIZE_X, 2 * SPACE + SIZE_Y, TICK ] );
 
-    translate( [ SIZE_X, CENTER_Y, 0 ] )
-        Cylinder_Z( TICK, SCREW_R + SPACE, 30 );
+    // translate( [ SIZE_X, CENTER_Y, 0 ] )
+    //    Cylinder_Z( TICK, SCREW_R + SPACE, 30 );
 
     for ( y = [ 0, SIZE_Y ] )
     {
         translate( [ SCREW_X, y, 0 ] )
-            Cylinder_Z( TICK, SCREW_R + SPACE, 30 );
+            Cylinder_Z( 2 * TICK, SCREW_R + 0.5, 30 );
     }
 }
 

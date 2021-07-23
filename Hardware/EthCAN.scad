@@ -26,9 +26,9 @@ if ( 0 != CFG_BOARDS )
     translate( [ ESP_X, ESP_Y, BOARD_Z ] ) ESP_32_POE_ISO();
 }
 
-Bottom();
+// Bottom();
 
-// Top();
+Top();
 
 // Public
 /////////////////////////////////////////////////////////////////////////////
@@ -77,8 +77,17 @@ module Bottom()
         if ( 1 == CFG_MOUNT ) Mount_Holes();
     }
 
+    translate( [ CAN_X, CAN_Y, 1 + CAN_BUS_Base_Z() ] )
+        CAN_BUS_Base();
+
     translate( [ 55, 35, 1 + DCtoDC_Base_Z() ] )
         DCtoDC_Base();
+
+    for ( x = [ 20, 60 ] )
+    {
+        translate( [ x, 0, 1 ] )
+            cube( [ 2, SIZE_Y, 0.5 ] );
+    }
 
     if ( 3 == CFG_MOUNT )
     {
@@ -109,20 +118,20 @@ module Top()
             translate( [ USB_X, - EPS, BOARD_Z ] )
                 cube( [ USB_SIZE_X + 22, 2 * EPS + TICK, 7 ] );
 
-            translate( [ VOID_X, VOID_Y, 5 - EPS ] )
-                cube( [ VOID_SIZE_X, VOID_SIZE_Y, 18 ] );
+            translate( [ VOID_X + 3, VOID_Y, 5 - EPS ] )
+                cube( [ VOID_SIZE_X - 3, VOID_SIZE_Y, 17.5 ] );
 
-            translate( [ VOID_X, VOID_Y + VOID_SIZE_Y - EPS, 5 - EPS ] )
-                cube( [ VOID_SIZE_X - 5, EPS + 9, 18 ] );
+            translate( [ VOID_X + 3, VOID_Y + VOID_SIZE_Y - EPS, 5 - EPS ] )
+                cube( [ VOID_SIZE_X - 9, EPS + 9, 17.5 ] );
 
             translate( [ 9, SIZE_Y - 7, 5 - EPS ] )
-                cube( [ 36, 5, 18 ] );
+                cube( [ 36, 5, 17.5 ] );
 
-            translate( [ 4, 33, 5 - EPS ] )
-                cube( [ 7, 6, 18 ] );
+            // translate( [ 4, 33, 5 - EPS ] )
+            //    cube( [ 7, 6, 18 ] );
 
-            translate( [ 35, 29, 5 - EPS ] )
-                cube( [ 20, 12, 18 ] );
+            translate( [ 14, 29, 5 - EPS ] )
+                cube( [ 74, 12, 17.5 ] );
 
             translate( [ CAN_X, CAN_Y, BOARD_Z ] )
                 CAN_BUS_Top();
@@ -300,8 +309,8 @@ SPACE = 0.1;
 
 TICK = 2;
 
-VOID_SIZE_X = 60;
+VOID_SIZE_X = 96;
 VOID_SIZE_Y = 17;
 
-VOID_X = 47;
+VOID_X = 11;
 VOID_Y = 34;

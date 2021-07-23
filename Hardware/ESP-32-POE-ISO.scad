@@ -71,13 +71,13 @@ module ESP_32_POE_ISO_Top()
         cube( [ 6 + SIZE_X + 4, 2 * SPACE + SIZE_Y, TICK ] );
 
     translate( [ ESP_X, 1, TICK - EPS ] )
-        cube( [ 6 + EPS, SIZE_Y - 2, 13 ] );
+        cube( [ 6 + EPS, SIZE_Y - 2, 12 ] );
 
     translate( [ 0, 1, TICK - EPS ] )
         cube( [ SIZE_X - 1, SIZE_Y - 2, 17 ] );
 
-    translate( [ ESP_X - 1, 4, 0 ] )
-        cube( [ 25.5, 20, TICK + 9 ] );
+    // translate( [ ESP_X - 1, 4, 0 ] )
+    //    cube( [ 25.5, 20, TICK + 9 ] );
 
     translate( [ ETH_X, ETH_Y - SPACE, 0 ] )
         cube( [ ETH_SIZE_X + EPS, 2 * SPACE + ETH_SIZE_Y, TICK + ETH_SIZE_Z + SPACE ] );
@@ -86,10 +86,10 @@ module ESP_32_POE_ISO_Top()
         cube( [ 36, 9, TICK + 4 ] );
 
     translate( [ POWER_X - 1, - 1, 0 ] )
-        cube( [ 8, 12, TICK + 14 ] );
+        cube( [ 8, 12, TICK + 12 ] );
 
-    translate( [ BOX_X - 1, 8, 0 ] )
-        cube( [ 28, 21, TICK + 17 ] );
+    // translate( [ BOX_X - 1, 8, 0 ] )
+    //    cube( [ 28, 21, TICK + 17 ] );
 
     for ( y = [ 0, SIZE_Y - 1 - EPS ] )
     {
