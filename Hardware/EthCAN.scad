@@ -127,11 +127,8 @@ module Top()
             translate( [ 9, SIZE_Y - 7, 5 - EPS ] )
                 cube( [ 36, 5, 17.5 ] );
 
-            // translate( [ 4, 33, 5 - EPS ] )
-            //    cube( [ 7, 6, 18 ] );
-
             translate( [ 14, 29, 5 - EPS ] )
-                cube( [ 74, 12, 17.5 ] );
+                cube( [ 74, 12, 16.5 ] );
 
             translate( [ CAN_X, CAN_Y, BOARD_Z ] )
                 CAN_BUS_Top();
