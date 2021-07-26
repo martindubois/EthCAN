@@ -105,11 +105,8 @@ module CAN_BUS_Top()
     translate( [ - 3 - EPS, CENTER_Y - 4.5, 0 ] )
         cube( [ 14 + EPS, 14, 20 + EPS ] );
 
-    // translate( [ - SPACE, - SPACE, 0 ] )
-    //    cube( [ 2 * SPACE + SIZE_X, 2 * SPACE + SIZE_Y, TICK ] );
-
-    // translate( [ SIZE_X, CENTER_Y, 0 ] )
-    //    Cylinder_Z( TICK, SCREW_R + SPACE, 30 );
+    translate( [ - SPACE, - SPACE, 0 ] )
+        cube( [ 2 * SPACE + SIZE_X, 2 * SPACE + SIZE_Y, TICK ] );
 
     for ( y = [ 0, SIZE_Y ] )
     {
