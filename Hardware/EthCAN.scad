@@ -26,9 +26,9 @@ if ( 0 != CFG_BOARDS )
     translate( [ ESP_X, ESP_Y, BOARD_Z ] ) ESP_32_POE_ISO();
 }
 
-// Bottom();
+Bottom();
 
-Top();
+// Top();
 
 // Public
 /////////////////////////////////////////////////////////////////////////////
@@ -39,29 +39,38 @@ module Bottom()
     {
         union()
         {
-            if ( 1 == CFG_MOUNT )
-                Mount();
+            difference()
+            {
+                union()
+                {
+                    if ( 1 == CFG_MOUNT )
+                        Mount();
 
-            cube( [ SIZE_X, SIZE_Y, BOTTOM_Z ] );
+                    cube( [ SIZE_X, SIZE_Y, BOTTOM_Z ] );
+                }
+
+                translate( [ TICK, TICK, BOARD_Z + 1 ] )
+                    cube( [ SIZE_X - 2 * TICK, SIZE_Y - 2 * TICK, BOTTOM_Z - TICK - 2 - 1 + EPS ] );
+
+                translate( [ USB_X, - EPS, BOARD_Z - 1 ] )
+                    cube( [ USB_SIZE_X, 2 * EPS + TICK + 0.5, 9 ] );
+
+                translate( [ VOID_X, VOID_Y, 1 ] )
+                    cube( [ VOID_SIZE_X, VOID_SIZE_Y + 3, BOTTOM_Z - 1 + EPS ] );
+
+                translate( [ VOID_X, VOID_Y + VOID_SIZE_Y - EPS, 1 ] )
+                    cube( [ VOID_SIZE_X - 7, EPS + 9, BOTTOM_Z - 1 + EPS ] );
+
+                translate( [ CAN_X, CAN_Y, BOARD_Z ] )
+                    CAN_BUS_Bottom();
+
+                translate( [ ESP_X, ESP_Y, BOARD_Z ] )
+                    ESP_32_POE_ISO_Bottom();
+            }
+
+            translate( [ CAN_X, CAN_Y, 1 + CAN_BUS_Base_Z() ] )
+                CAN_BUS_Base();
         }
-
-        translate( [ TICK, TICK, BOARD_Z + 1 ] )
-            cube( [ SIZE_X - 2 * TICK, SIZE_Y - 2 * TICK, BOTTOM_Z - TICK - 2 - 1 + EPS ] );
-
-        translate( [ USB_X, - EPS, BOARD_Z - 1 ] )
-            cube( [ USB_SIZE_X, 2 * EPS + TICK + 0.5, 9 ] );
-
-        translate( [ VOID_X, VOID_Y, 1 ] )
-            cube( [ VOID_SIZE_X, VOID_SIZE_Y + 3, BOTTOM_Z - 1 + EPS ] );
-
-        translate( [ VOID_X, VOID_Y + VOID_SIZE_Y - EPS, 1 ] )
-            cube( [ VOID_SIZE_X - 7, EPS + 9, BOTTOM_Z - 1 + EPS ] );
-
-        translate( [ CAN_X, CAN_Y, BOARD_Z ] )
-            CAN_BUS_Bottom();
-
-        translate( [ ESP_X, ESP_Y, BOARD_Z ] )
-            ESP_32_POE_ISO_Bottom();
 
         Holes_Bottom();
 
@@ -77,9 +86,6 @@ module Bottom()
         if ( 1 == CFG_MOUNT ) Mount_Holes();
     }
 
-    translate( [ CAN_X, CAN_Y, 1 + CAN_BUS_Base_Z() ] )
-        CAN_BUS_Base();
-
     translate( [ 55, 35, 1 + DCtoDC_Base_Z() ] )
         DCtoDC_Base();
 
@@ -91,7 +97,7 @@ module Bottom()
 
     if ( 3 == CFG_MOUNT )
     {
-        translate( [ - Mount_Ronin_Size_X(), 36, 0 ] )
+        translate( [ - Mount_Ronin_Size_X(), 31, 0 ] )
         {
             Mount_Ronin_Bottom();
 
