@@ -12,8 +12,10 @@ echo Excuting  CreatePackages.sh  ...
 
 # ===== Version =============================================================
 
+OS=`uname`
+
 # KmsVersion "PACKAGE_VERSION=" "\n" 13
-PACKAGE_VERSION=1.0-10
+PACKAGE_VERSION=1.0-11
 
 # KmsVersion "VERSION=" "\n" 2
 VERSION=1.0
@@ -48,15 +50,28 @@ cp Scripts/Import.sh                                  Packages/$PACKAGE_NAME/usr
 cp Scripts/Import.sh.txt                              Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 cp Scripts/Import.txt                                 Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 
-mkdir Packages/$PACKAGE_NAME/DEBIAN
+if [ "Darwin" = "$OS" ]
+then
+    productbuild --root Packages/$PACKAGE_NAME/usr/local /Applications Packages/$PACKAGE_NAME.pkg
 
-cp Scripts/control Packages/$PACKAGE_NAME/DEBIAN/control
+    if [ 0 != $? ] ; then
+        echo ERROR  productbuild --root Packages/$PACKAGE_NAME/usr/local /Applications Packages/$PACKAGE_NAME.pkg  failed
+        exit 10
+    fi
+fi
 
-dpkg-deb --build Packages/$PACKAGE_NAME
+if [ "Linux" = "$OS" ]
+then
+    mkdir Packages/$PACKAGE_NAME/DEBIAN
 
-if [ 0 != $? ] ; then
-    echo ERROR  dpkg-deb --build Packages/$PACKAGE_NAME  failed
-    exit 10
+    cp Scripts/control Packages/$PACKAGE_NAME/DEBIAN/control
+
+    dpkg-deb --build Packages/$PACKAGE_NAME
+
+    if [ 0 != $? ] ; then
+        echo ERROR  dpkg-deb --build Packages/$PACKAGE_NAME  failed
+        exit 10
+    fi
 fi
 
 rm -r Packages/$PACKAGE_NAME
