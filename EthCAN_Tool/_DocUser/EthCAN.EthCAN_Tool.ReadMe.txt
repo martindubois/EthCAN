@@ -4,7 +4,9 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt
 
-1.0.11 Darwin
+1.0.12 Darwin amd64
+
+1.0.11 Darwin amd64
 
 1.0.7 Linux arm64
 

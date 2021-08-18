@@ -42,7 +42,15 @@ fi
 
 if [ ! -d $KMS_BASE ]
 then
-    KMS_BASE=/usr/local/KmsBase-3.0
+    if [ "Darwin" = "$OS" ]
+    then
+        KMS_BASE=/Applications/KmsBase-3.0
+    fi
+
+    if [ "Linux" = "$OS" ]
+    then
+        KMS_BASE=/usr/local/KmsBase-3.0
+    fi
 fi
 
 # ===== Constants ============================================================

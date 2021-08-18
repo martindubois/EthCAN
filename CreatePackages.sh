@@ -15,7 +15,7 @@ echo Excuting  CreatePackages.sh  ...
 OS=`uname`
 
 # KmsVersion "PACKAGE_VERSION=" "\n" 13
-PACKAGE_VERSION=1.0-11
+PACKAGE_VERSION=1.0-12
 
 # KmsVersion "VERSION=" "\n" 2
 VERSION=1.0
@@ -33,6 +33,7 @@ mkdir Packages/$PACKAGE_NAME/usr/local
 mkdir Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 mkdir Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/Binaries
 mkdir Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/Includes
+mkdir Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/Includes/EthCAN
 mkdir Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/libraries
 
 cp _DocUser/EthCAN.ReadMe.txt                         Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
@@ -45,6 +46,7 @@ cp Firmware1/_DocUser/EthCAN.Firmware1.ReadMe.txt     Packages/$PACKAGE_NAME/usr
 cp Import/KmsBase.KmsLib.ReadMe.txt                   Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 cp Import/Libraries/KmsLib.a                          Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/Libraries
 cp Includes/*.h                                       Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/Includes
+cp Includes/EthCAN/*.h                                Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/Includes/EthCAN
 cp Libraries/EthCAN_Lib.a                             Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION/libraries
 cp Scripts/Import.sh                                  Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
 cp Scripts/Import.sh.txt                              Packages/$PACKAGE_NAME/usr/local/EthCAN-$VERSION
@@ -52,10 +54,10 @@ cp Scripts/Import.txt                                 Packages/$PACKAGE_NAME/usr
 
 if [ "Darwin" = "$OS" ]
 then
-    productbuild --root Packages/$PACKAGE_NAME/usr/local /Applications Packages/$PACKAGE_NAME.pkg
+    productbuild --identifier "com.kms-quebec.ethcan" --root Packages/$PACKAGE_NAME/usr/local /Applications Packages/$PACKAGE_NAME.pkg
 
     if [ 0 != $? ] ; then
-        echo ERROR  productbuild --root Packages/$PACKAGE_NAME/usr/local /Applications Packages/$PACKAGE_NAME.pkg  failed
+        echo ERROR  productbuild --identifier "com.kms-quebec.ethcan" --root Packages/$PACKAGE_NAME/usr/local /Applications Packages/$PACKAGE_NAME.pkg  failed
         exit 10
     fi
 fi

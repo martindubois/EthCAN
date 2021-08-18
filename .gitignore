@@ -11,6 +11,10 @@
 
 /File_Base_Test.bin
 
+# Darwin
+
+.DS_Store
+
 # Linux
 
 /Binaries/
