@@ -14,6 +14,7 @@
 #include "Buffer.h"
 #include "CAN.h"
 #include "Cmd.h"
+#include "LED.h"
 
 // Constants
 /////////////////////////////////////////////////////////////////////////////
@@ -35,7 +36,7 @@ void setup()
 
     MSG_INFO("EthCAN - Firmware1 - ", VERSION_STR);
 
-    pinMode(LED_POWER, OUTPUT);
+    LED_Begin();
 
     Buffer_Begin();
 
@@ -55,9 +56,10 @@ void setup()
         MSG_WARNING("Retrying CAN initialisation... ");
 
         delay(100);
+        LED_Toggle(LED_POWER);
     }
 
-    digitalWrite(LED_POWER, HIGH);
+    LED_On(LED_POWER);
 }
 
 void loop()

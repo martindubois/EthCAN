@@ -39,29 +39,38 @@ module Bottom()
     {
         union()
         {
-            if ( 1 == CFG_MOUNT )
-                Mount();
+            difference()
+            {
+                union()
+                {
+                    if ( 1 == CFG_MOUNT )
+                        Mount();
 
-            cube( [ SIZE_X, SIZE_Y, BOTTOM_Z ] );
+                    cube( [ SIZE_X, SIZE_Y, BOTTOM_Z ] );
+                }
+
+                translate( [ TICK, TICK, BOARD_Z + 1 ] )
+                    cube( [ SIZE_X - 2 * TICK, SIZE_Y - 2 * TICK, BOTTOM_Z - TICK - 2 - 1 + EPS ] );
+
+                translate( [ USB_X, - EPS, BOARD_Z - 1 ] )
+                    cube( [ USB_SIZE_X, 2 * EPS + TICK + 0.5, 9 ] );
+
+                translate( [ VOID_X, VOID_Y, 1 ] )
+                    cube( [ VOID_SIZE_X, VOID_SIZE_Y + 3, BOTTOM_Z - 1 + EPS ] );
+
+                translate( [ VOID_X, VOID_Y + VOID_SIZE_Y - EPS, 1 ] )
+                    cube( [ VOID_SIZE_X - 7, EPS + 9, BOTTOM_Z - 1 + EPS ] );
+
+                translate( [ CAN_X, CAN_Y, BOARD_Z ] )
+                    CAN_BUS_Bottom();
+
+                translate( [ ESP_X, ESP_Y, BOARD_Z ] )
+                    ESP_32_POE_ISO_Bottom();
+            }
+
+            translate( [ CAN_X, CAN_Y, 1 + CAN_BUS_Base_Z() ] )
+                CAN_BUS_Base();
         }
-
-        translate( [ TICK, TICK, BOARD_Z + 1 ] )
-            cube( [ SIZE_X - 2 * TICK, SIZE_Y - 2 * TICK, BOTTOM_Z - TICK - 2 - 1 + EPS ] );
-
-        translate( [ USB_X, - EPS, BOARD_Z - 1 ] )
-            cube( [ USB_SIZE_X, 2 * EPS + TICK + 0.5, 9 ] );
-
-        translate( [ VOID_X, VOID_Y, 1 ] )
-            cube( [ VOID_SIZE_X, VOID_SIZE_Y + 3, BOTTOM_Z - 1 + EPS ] );
-
-        translate( [ VOID_X, VOID_Y + VOID_SIZE_Y - EPS, 1 ] )
-            cube( [ VOID_SIZE_X - 7, EPS + 9, BOTTOM_Z - 1 + EPS ] );
-
-        translate( [ CAN_X, CAN_Y, BOARD_Z ] )
-            CAN_BUS_Bottom();
-
-        translate( [ ESP_X, ESP_Y, BOARD_Z ] )
-            ESP_32_POE_ISO_Bottom();
 
         Holes_Bottom();
 
@@ -80,9 +89,15 @@ module Bottom()
     translate( [ 55, 35, 1 + DCtoDC_Base_Z() ] )
         DCtoDC_Base();
 
+    for ( x = [ 20, 60 ] )
+    {
+        translate( [ x, 0, 1 ] )
+            cube( [ 2, SIZE_Y, 0.5 ] );
+    }
+
     if ( 3 == CFG_MOUNT )
     {
-        translate( [ - Mount_Ronin_Size_X(), 36, 0 ] )
+        translate( [ - Mount_Ronin_Size_X(), 31, 0 ] )
         {
             Mount_Ronin_Bottom();
 
@@ -109,20 +124,17 @@ module Top()
             translate( [ USB_X, - EPS, BOARD_Z ] )
                 cube( [ USB_SIZE_X + 22, 2 * EPS + TICK, 7 ] );
 
-            translate( [ VOID_X, VOID_Y, 5 - EPS ] )
-                cube( [ VOID_SIZE_X, VOID_SIZE_Y, 18 ] );
+            translate( [ VOID_X + 3, VOID_Y, 5 - EPS ] )
+                cube( [ VOID_SIZE_X - 3, VOID_SIZE_Y, 17.5 ] );
 
-            translate( [ VOID_X, VOID_Y + VOID_SIZE_Y - EPS, 5 - EPS ] )
-                cube( [ VOID_SIZE_X - 5, EPS + 9, 18 ] );
+            translate( [ VOID_X + 3, VOID_Y + VOID_SIZE_Y - EPS, 5 - EPS ] )
+                cube( [ VOID_SIZE_X - 9, EPS + 9, 17.5 ] );
 
             translate( [ 9, SIZE_Y - 7, 5 - EPS ] )
-                cube( [ 36, 5, 18 ] );
+                cube( [ 36, 5, 17.5 ] );
 
-            translate( [ 4, 33, 5 - EPS ] )
-                cube( [ 7, 6, 18 ] );
-
-            translate( [ 35, 29, 5 - EPS ] )
-                cube( [ 20, 12, 18 ] );
+            translate( [ 14, 29, 5 - EPS ] )
+                cube( [ 74, 12, 16.5 ] );
 
             translate( [ CAN_X, CAN_Y, BOARD_Z ] )
                 CAN_BUS_Top();
@@ -300,8 +312,8 @@ SPACE = 0.1;
 
 TICK = 2;
 
-VOID_SIZE_X = 60;
+VOID_SIZE_X = 96;
 VOID_SIZE_Y = 17;
 
-VOID_X = 47;
+VOID_X = 11;
 VOID_Y = 34;

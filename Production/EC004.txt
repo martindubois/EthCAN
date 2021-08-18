@@ -1,5 +1,5 @@
 
-// Ateur     KMS - Martin Dubois, ing.
+// Auteur    KMS - Martin Dubois, ing.
 // Copyright (C) 2021 KMS
 // Produit   EthCAN
 // Fichier   Production/EC004.txt
@@ -12,30 +12,29 @@ Date et heure       20 ______ - ______ - ______               ______ : ______
 Production          ______ unites
 
 ====== Consumables ==========================================================
-[ ] 0.5 EC011 Cable du Serial CAN bus module
-[ ]   1 EC012 Connecteur fem. .100 2x2 angle droit
-[ ]     EC013 Shrink tube - Petit
-[ ]     EC014 Etain
+[ ] 1     EC005 Socket Flat Cable IDC 10P 2.54 mm
+[ ] 6 cm  EC006 Cable plat .100 à 5 conducteurs
+[ ]       EC014 Etain
 
-====== Tools ================================================================
+====== Outils ===============================================================
 - Ciseau
 - Fer a souder
-- Heat gun
+- Pince a sertir pour cable plat
 
 ====== Procedure ============================================================
-[ ] Inserer les morceau shrink tube (EC013) sur les 4 fils du cable (EC011)
-[ ] Retirer l'isolation du bout (~ 5 mm) des 4 fils du cable (EC011)
-[ ] Mettre de l'etain (EC014) sur le bout des 4 fils du cable (EC011)
-[ ] Mettre de l'etain (EC014) sur les 4 pines du connecteur (EC012)
-[ ] Souder le cable (EC011) et le connecteur (EC012)
-        Side view   +--- Black
-                    | +- Red
-                    | |
-        
-        Top view    +--- Yellow
-                    +--- Black
-[ ] Placer les 4 shrink tube (EC013) en place
-[ ] Chaufer les 4 shrink tube (EC013)
+[ ] Separer les conducteurs du cable plat (EC006) sur 2 cm a une des
+    extreminte
+[ ] Denuder 3 mm de fil a chaque extremite des conducteurs separes
+[ ] Etamer les extremites denudes
+[ ] Assembler le câble plat (EC006) et le connecteur (EC005)
+[ ] Sertir le connecteur au bout du cable plat
+
+Connnecteur             Serial CAN bus module
+1 - 3.3 V ------------- 3 - VCC
+2 - GND --------------- 1 - GND
+3 - TX ---------------- 4 - RX
+4 - RX ---------------- 5 - TX
+5 - GPIO 16 ----------- 6 - DTR
 
 [ ] Ajuster l'inventaire
 
