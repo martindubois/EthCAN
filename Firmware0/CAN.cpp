@@ -122,6 +122,18 @@ void CAN_GetInfo(EthCAN_Info * aInfo)
     }
 }
 
+void CAN_Reset()
+{
+    pinMode(16, OUTPUT);
+    digitalWrite(16, LOW);
+    delay(1000);
+    digitalWrite(16, HIGH);
+    pinMode(16, INPUT);
+
+    delay(1000);
+    CAN_Config();
+}
+
 EthCAN_Result CAN_Send(const EthCAN_Header * aIn)
 {
     if (CAN_HEADER_SIZE_byte > aIn->mDataSize_byte)

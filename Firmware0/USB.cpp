@@ -240,11 +240,14 @@ void OnReset(const EthCAN_Header * aIn)
 {
     BEGIN_USB
     {
+        lHeader.mFlags |= EthCAN_FLAG_BUSY;
+
         Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
     }
     END_USB
 
-    ESP.restart();
+    CAN_Reset();
+    // ESP.restart();
 }
 
 void OnSend(const EthCAN_Header * aIn)

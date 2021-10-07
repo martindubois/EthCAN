@@ -4,6 +4,9 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      Firmware0/_DocUser/EthCAN.Firmware0.ReadMe.txt
 
+1.0.13
+- EthCAN_REQUEST_RESET reset the CAN hardware and reconfigure it
+
 1.0.11
 - Wait longer for the Firmware0's info.
 

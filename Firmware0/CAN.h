@@ -18,6 +18,7 @@ extern "C"
 
 extern void CAN_Config();
 extern void CAN_Loop();
+extern void CAN_Reset();
 extern void CAN_Setup();
 
 extern void CAN_GetInfo(EthCAN_Info * aInfo);

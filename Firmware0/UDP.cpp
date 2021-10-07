@@ -218,7 +218,8 @@ void OnReset(const EthCAN_Header * aIn)
     }
     END_UDP
 
-    ESP.restart();
+    CAN_Reset();
+    // ESP.restart();
 }
 
 void OnSend(const EthCAN_Header * aIn)

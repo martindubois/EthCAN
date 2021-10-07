@@ -19,7 +19,6 @@ Version             ______ . ______ . ______ . ______ - _____________________
 [ ] Tool "GIT"
     - Index modified file and commit them using
       "{Major.Minor.Build}[_Type]_Firmware0" as message
-    - Add the tag {Major.Minor.Build}[_Type]_Firmware0"
     - Push the repository to the servers
 
 Time and duration   ______ : ______             ______ heures, ______ minutes
