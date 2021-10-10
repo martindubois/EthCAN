@@ -1,0 +1,38 @@
+
+// Auteur    KMS - Martin Dubois, ing.
+// Copyright (C) 2021 KMS
+// Produit   EthCAN
+// Fichier   Production/EC009.txt
+// Descript. Serial CAN bus module - Term. - Avec cable
+
+Nom                 _________________________________________________________
+
+Date et heure       20 ______ - ______ - ______               ______ : ______
+
+Production          ______ unites
+
+====== Consumables ==========================================================
+[ ] 1  EC003 Serial CAN bus module - Term
+[ ] 1  EC004 Cable interne
+[ ]    EC014 Etain
+
+====== Outils ===============================================================
+- Fer a souder
+
+====== Procedure ============================================================
+[ ] Souder le cable interne au Serial CAN bus module
+
+Cable   Serial CAN bus module - Term.
+1 --+      
+2 --|-- 1 GND
+    |   2 NC
+    +-- 3 VCC
+3 ----- 4 RX
+4 ----- 5 TX
+5 ----- 6 DTR
+
+[ ] Ajuster l'inventaire
+
+Heure et duree      ______ : ______           ______ heures et ______ minutes
+
+Signature           _________________________________________________________
