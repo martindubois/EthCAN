@@ -50,6 +50,7 @@ public:
     virtual bool IsConnectedEth() const;
     virtual bool IsConnectedUSB() const;
 
+    virtual EthCAN_Result Receiver_Config();
     virtual EthCAN_Result Receiver_Start(Receiver aFunction, void* aContext);
     virtual EthCAN_Result Receiver_Stop();
 

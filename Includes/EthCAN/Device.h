@@ -118,6 +118,10 @@ namespace EthCAN
         /// \retval EthCAN_OK
         virtual EthCAN_Result Send(const EthCAN_Frame& aIn, uint8_t aFlags = 0) = 0;
 
+        /// \brief Restart the receiver
+        /// \retval EthCAN_OK
+        virtual EthCAN_Result Receiver_Config() = 0;
+
     // Internal
 
         bool Loop();

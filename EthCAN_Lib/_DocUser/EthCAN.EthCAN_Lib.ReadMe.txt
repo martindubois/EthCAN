@@ -4,6 +4,8 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
+- EthCAN::Device::Receiver_Config
+
 1.0.12 Darwin amd64
 
 1.0.11 Darwin amd64
