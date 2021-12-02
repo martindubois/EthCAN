@@ -11,11 +11,11 @@
 
 #define VERSION_MAJOR         (1)
 #define VERSION_MINOR         (0)
-#define VERSION_BUILD         (13)
+#define VERSION_BUILD         (14)
 #define VERSION_COMPATIBILITY (0)
 
-#define VERSION_RC   1,0,13,0
-#define VERSION_STR  "1.0.13.0"
-#define VERSION_STR0 "1.0.13.0\0"
+#define VERSION_RC   1,0,14,0
+#define VERSION_STR  "1.0.14.0"
+#define VERSION_STR0 "1.0.14.0\0"
 
 #define VERSION_TYPE ""

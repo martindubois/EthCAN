@@ -779,38 +779,49 @@ unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn
         throw EthCAN_ERROR_BUSY;
     }
 
-    Busy_Wait();
-
-    Request_Send(aCode, aFlags, aIn, aInSize_byte);
-
     unsigned int lResult_byte = 0;
 
-    if (0 == (aFlags & EthCAN_FLAG_NO_RESPONSE))
+    try
     {
-        if (IsConnectedEth())
+        Busy_Wait();
+
+        Request_Send(aCode, aFlags, aIn, aInSize_byte);
+
+        if (0 == (aFlags & EthCAN_FLAG_NO_RESPONSE))
         {
-            Eth_Receive();
+            if (IsConnectedEth())
+            {
+                Eth_Receive();
+            }
+            else
+            {
+                assert(NULL != mSerial);
+
+                mSerial->GetThread()->Sem_Wait(2000);
+            }
+
+            // TODO Device
+            //      Verify mReq_Result
+
+            lResult_byte = mReq_OutSize_byte;
         }
-        else
-        {
-            assert(NULL != mSerial);
-
-            mSerial->GetThread()->Sem_Wait(2000);
-        }
-
-        // TODO Device
-        //      Verify mReq_Result
-
-        lResult_byte = mReq_OutSize_byte;
+    }
+    catch (...)
+    {
+        Request_End();
+        throw;
     }
 
-    mZone0.Enter();
-    {
-        mReq_Code = EthCAN_REQUEST_INVALID;
-    }
-    mZone0.Leave();
+    Request_End();
 
     return lResult_byte;
+}
+
+void Device_Impl::Request_End()
+{
+    assert(EthCAN_REQUEST_INVALID != mReq_Code);
+
+    mReq_Code = EthCAN_REQUEST_INVALID;
 }
 
 void Device_Impl::Request_Init(EthCAN_Header* aHeader, uint8_t aCode, uint8_t aFlags, unsigned int aDataSize_byte)

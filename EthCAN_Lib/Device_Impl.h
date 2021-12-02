@@ -85,6 +85,7 @@ private:
 
     unsigned int Request(uint8_t aCode, uint8_t aFlags, const void* aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte);
 
+    void Request_End();
     void Request_Init(EthCAN_Header * aHeader, uint8_t aCode, uint8_t aFlags, unsigned int aDataSize_byte);
     void Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, unsigned int aInSize_byte);
 
