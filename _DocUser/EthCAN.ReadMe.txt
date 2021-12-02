@@ -4,6 +4,8 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      _DocUser/EthCAN.ReadMe.txt
 
+1.0.13 Darwin amd64 2021-12-02
+
 1.0.12 Darwin amd64
 - Add mising C++ header to Darwin and Linux package
 - Add a valid identifier to Darwin package
