@@ -17,6 +17,8 @@
 
 #define EthCAN_PACKET_SIZE_MAX_byte (256)
 
+#define EthCAN_TCP_PORT (3489)
+
 #define EthCAN_UDP_PORT (3489)
 
 #define EthCAN_USB_SPEED_bps (115200)

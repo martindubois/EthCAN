@@ -15,6 +15,7 @@
 // ===== Firmware0 ==========================================================
 #include "CAN.h"
 #include "Info.h"
+#include "TCP.h"
 #include "UDP.h"
 #include "USB.h"
 
@@ -164,6 +165,13 @@ void Config_OnFrame(const EthCAN_Frame & aFrame)
     {
         USB_OnFrame(lHeader, aFrame);
         Info_Count_Fx_Frame(aFrame.mDataSize_byte);
+    }
+    else if (EthCAN_FLAG_SERVER_TCP == (gConfig.mServer_Flags & EthCAN_FLAG_SERVER_TCP))
+    {
+        if (TCP_OnFrame(lHeader, aFrame))
+        {
+            Info_Count_Fx_Frame(aFrame.mDataSize_byte);
+        }
     }
     else
     {

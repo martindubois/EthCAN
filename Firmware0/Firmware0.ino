@@ -19,6 +19,7 @@
 #include "CAN.h"
 #include "Config.h"
 #include "Info.h"
+#include "TCP.h"
 #include "UDP.h"
 #include "USB.h"
 
@@ -78,6 +79,7 @@ void setup()
     Info_Init(gConfig.mName);
 
     CAN_Setup();
+    TCP_Setup();
     UDP_Setup();
 }
 
@@ -85,6 +87,7 @@ void loop()
 {
     CAN_Loop();
     Config_Loop();
+    TCP_Loop();
     UDP_Loop();
     USB_Loop();
 }

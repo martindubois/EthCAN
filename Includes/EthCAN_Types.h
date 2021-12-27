@@ -29,6 +29,7 @@
 #define EthCAN_FLAG_STORE_ALL (0x0f)
 
 #define EthCAN_FLAG_SERVER_USB (0x01)
+#define EthCAN_FLAG_SERVER_TCP (0x02)
 
 #define EthCAN_FLAG_WIFI_AP (0x01)
 
