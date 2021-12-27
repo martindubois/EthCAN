@@ -1,0 +1,27 @@
+
+// Auteur    KMS - Martin Dubois, ing.
+// Copyright (C) 2021 KMS
+// Produit   EthCAN
+// Fichier   Production/EC010.txt
+// Descript. Serial CAN bus module - Term. - Avec cable - Prog
+
+Nom                 _________________________________________________________
+
+Date et heure       20 ______ - ______ - ______               ______ : ______
+
+Production          ______ unites
+
+====== Consumables ==========================================================
+[ ] 1  EC009 Serial CAN bus module - Term. - Avec cable
+
+====== Outils ===============================================================
+- Programmeur
+
+====== Procedure ============================================================
+[ ] Programmer le Firmware 2
+
+[ ] Ajuster l'inventaire
+
+Heure et duree      ______ : ______           ______ heures et ______ minutes
+
+Signature           _________________________________________________________

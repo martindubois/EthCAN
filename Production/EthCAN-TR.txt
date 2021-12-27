@@ -1,0 +1,59 @@
+
+// Auteur    KMS - Martin Dubois, ing.
+// Copyright (C) 2021 KMS
+// Produit   EthCAN
+// Fichier   Production/EthCAN-TN.txt
+
+Nom                 _________________________________________________________
+
+Date et heure       20 ______ - ______ - ______               ______ : ______
+
+Production          ______ unites
+
+====== Consumables ==========================================================
+[ ]  1  EC000  Boite - Dessous - Ronin
+[ ]  1  EC001  Boite - Dessus
+[ ]  1  EC010  Serial CAN bus module - Term. - Avec cable - Prog.
+[ ]  1  EC011  Cable Ronin
+[ ]  1  EC016  ESP32-PoE-ISO - Prog.
+[ ]  1  EC017  Cap Ronin
+[ ]  1  EC018  Etiquette transparente
+[ ]  4  EC019  M3 hex. nut
+[ ]  4  EC020  M3 cap screw 18 mm
+[ ]  2  EC021  M4 Cap screw 20 mm
+
+====== Tools ================================================================
+- Cable USB A a micro-B
+- Cle hexagonal
+- Imprimante couleur
+
+====== Files ================================================================
+EthCAN_Label.docx
+
+====== Software =============================================================
+EthCAN
+
+====== Procedure ============================================================
+[ ] Viser le Serial CAN bus module (EC010) au dessous du boitier (EC001)
+[ ] Placer le Cable Ronin (EC011) et le connecter au Serial CAN bus module
+    (EC010) - Les 2 fil doivent etre croises.
+[ ] Connecter le Serial CAN bus module (EC010) au ESP32-POE-ISO (EC016)
+[ ] Placer le ESP32-PoE-ISO (EC002) dans la boite (EC000)
+[ ] Assembler les deux parties de la boite (EC000 et EC001)
+[ ] Placer les 4 hex. nuts (EC019) et les 4 cap screw (EC020)
+[ ] Placer le Cap Ronin (EC017) et les 2 cap screw (EC021)
+[ ] Connecter le EthCAN-TR au reseau
+[ ] Connecter le EthCAN-TR a l'ordinateur en utilisant le cable USB
+[ ] Outil "EthCAN_Tool"
+        Production
+[ ] Copier le fichier EthCAN_Label.docx vers K:\Product\EthCAN\Labels en le
+    renommant en utilisant la date (yyyy-mm-dd.docx)
+[ ] Copier les deux adresses Ethernet sur l'etiquette dans le nouveau fichier
+[ ] Imprimer l'etiquette
+[ ] Coler l'etiquette sur le EthCAN-TR
+
+[ ] Ajuster l'inventaire
+
+Heure et duree      ______ : ______           ______ heures et ______ minutes
+
+Signature           _________________________________________________________

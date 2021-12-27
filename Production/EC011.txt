@@ -1,0 +1,51 @@
+
+// Auteur    KMS - Martin Dubois, ing.
+// Copyright (C) 2021 KMS
+// Produit   EthCAN
+// Fichier   Production/EC011.txt
+// Descript. Cable Ronin
+
+Nom                 _________________________________________________________
+
+Date et heure       20 ______ - ______ - ______               ______ : ______
+
+Production          ______ unites
+
+====== Consumables ==========================================================
+[ ] 1  EC007  Spring-loaded connector 8P 2.54 mm
+[ ] 1  EC012  Resitance 100 K Ohm 0.25 W
+[ ]    EC013  Shrink tube - Petit
+[ ]    EC014  Etain
+[ ]    EC015  Fil calibre 22
+
+====== Outils ===============================================================
+- Fer a sourder
+- Pince a Denuder
+- Pince coupante
+- Pince a long nez
+
+====== Procedure ============================================================
+[ ] Couper 2 bout de fil de 3.5 cm chacun
+[ ] Denuder 3 mm au chaque bout des deux fil
+[ ] Etamer un des bout des deux fil
+[ ] Plier la resistance en u
+[ ] Couper les deux bout de la resistance pour les mettre egaux
+[ ] Souder les fil et la resistance au connecteurs
+
+Quand le connecteur est place sur la table avec les pin a ressord dessous,
+il faut effectuer les soudures comme montre ici.
+
+ +---+
+ |   |
+ |   R
+ |   |
+(R) (R) (x) (x)
+(x) (F) (F) (x)
+     |   |
+     |   |
+
+[ ] Ajuster l'inventaire
+
+Heure et duree      ______ : ______           ______ heures et ______ minutes
+
+Signature           _________________________________________________________

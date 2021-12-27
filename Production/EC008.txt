@@ -1,0 +1,28 @@
+
+// Auteur    KMS - Martin Dubois, ing.
+// Copyright (C) 2021 KMS
+// Produit   EthCAN
+// Fichier   Production/EC008.txt
+// Descript. Serial CAN bus module - Term.
+
+Nom                 _________________________________________________________
+
+Date et heure       20 ______ - ______ - ______               ______ : ______
+
+Production          ______ unites
+
+====== Consumables ==========================================================
+[ ] 1  EC003 Serial CAN bus module
+[ ]    EC014 Etain
+
+====== Outils ===============================================================
+- Fer a souder
+
+====== Procedure ============================================================
+[ ] Souder les deux sites indentifie "120 Ohm"
+
+[ ] Ajuster l'inventaire
+
+Heure et duree      ______ : ______           ______ heures et ______ minutes
+
+Signature           _________________________________________________________

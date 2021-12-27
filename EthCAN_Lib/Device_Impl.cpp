@@ -265,17 +265,8 @@ bool Device_Impl::IsConnectedUSB() const
     return (NULL != mSerial);
 }
 
-EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
+EthCAN_Result Device_Impl::Receiver_Config()
 {
-    if (NULL == aReceiver) { return EthCAN_ERROR_FUNCTION; }
-    if (NULL != mReceiver) { return EthCAN_ERROR_RUNNING; }
-
-    assert(NULL == mContext);
-    assert(NULL == mSocket_Server);
-    assert(NULL == mThread);
-
-    mLostCount = 0;
-
     EthCAN_Config lConfig;
 
     EthCAN_Result lResult = Config_Get(&lConfig);
@@ -288,22 +279,26 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
                 assert(0 != mInfo.mIPv4_Address);
                 assert(0 != mInfo.mIPv4_NetMask);
 
-                mSocket_Server = new UDPSocket();
-                assert(NULL != mSocket_Server);
+                if (NULL == mSocket_Server)
+                {
+                    lResult = EthCAN_ERROR_NOT_RUNNING;
+                }
+                else
+                {
+                    lConfig.mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
+                    lConfig.mServer_IPv4 = UDPSocket::GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
+                    lConfig.mServer_Port = mSocket_Server->GetPort();
+                    assert(0 != lConfig.mServer_IPv4);
+                    assert(0 != lConfig.mServer_Port);
 
-                lConfig.mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
-                lConfig.mServer_IPv4 = UDPSocket::GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
-                lConfig.mServer_Port = mSocket_Server->GetPort();
-                assert(0 != lConfig.mServer_IPv4);
-                assert(0 != lConfig.mServer_Port);
+                    // We send a dummy request to the device in order to indicate
+                    // to firewall this UDP communication is OK.
+                    EthCAN_Header lHeader;
 
-                // We send a dummy request to the device in order to indicate
-                // to firewall this UDP communication is OK.
-                EthCAN_Header lHeader;
+                    Request_Init(&lHeader, EthCAN_REQUEST_DO_NOTHING, EthCAN_FLAG_NO_RESPONSE, 0);
 
-                Request_Init(&lHeader, EthCAN_REQUEST_DO_NOTHING, EthCAN_FLAG_NO_RESPONSE, 0);
-
-                mSocket_Server->Send(&lHeader, sizeof(lHeader), mInfo.mIPv4_Address);
+                    mSocket_Server->Send(&lHeader, sizeof(lHeader), mInfo.mIPv4_Address);
+                }
             }
             else
             {
@@ -314,29 +309,67 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
                 lConfig.mServer_Port = 0;
             }
 
-            lResult = Config_Set(&lConfig);
             if (EthCAN_OK == lResult)
             {
-                mContext = aContext;
-                mReceiver = aReceiver;
-            }
-
-            if (IsConnectedEth())
-            {
-                mThread = new Thread(this, MSG_LOOP_ITERATION);
-                assert(NULL != mThread);
+                lResult = Config_Set(&lConfig);
             }
         }
         catch (EthCAN_Result eResult)
         {
-            TRACE_ERROR(stderr, "Device_Impl::Receiver_Start - Exception");
+            TRACE_ERROR(stderr, "Device_Impl::Receiver_Config - Exception");
             lResult = eResult;
         }
     }
 
+    return lResult;
+}
+
+EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
+{
+    if (NULL == aReceiver) { return EthCAN_ERROR_FUNCTION; }
+    if (NULL != mReceiver) { return EthCAN_ERROR_RUNNING; }
+
+    assert(NULL == mContext);
+    assert(NULL == mSocket_Server);
+    assert(NULL == mThread);
+
+    mLostCount = 0;
+
+    EthCAN_Result lResult = EthCAN_RESULT_INVALID;
+
+    try
+    {
+        if (IsConnectedEth())
+        {
+            assert(0 != mInfo.mIPv4_Address);
+            assert(0 != mInfo.mIPv4_NetMask);
+
+            mSocket_Server = new UDPSocket();
+            assert(NULL != mSocket_Server);
+        }
+
+        lResult = Receiver_Config();
+        if (EthCAN_OK == lResult)
+        {
+            mContext = aContext;
+            mReceiver = aReceiver;
+        }
+
+        if (IsConnectedEth())
+        {
+            mThread = new Thread(this, MSG_LOOP_ITERATION);
+            assert(NULL != mThread);
+        }
+    }
+    catch (EthCAN_Result eResult)
+    {
+        TRACE_ERROR(stderr, "Device_Impl::Receiver_Start - Exception");
+        lResult = eResult;
+    }
+ 
     if (EthCAN_OK != lResult)
     {
-        TRACE_ERROR(stderr, "Device_Impl::Receiver_Start");
+        TRACE_ERROR(stderr, "Device_Impl::Receiver_Start - Error");
 
         if (NULL != mSocket_Server)
         {
@@ -746,38 +779,49 @@ unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn
         throw EthCAN_ERROR_BUSY;
     }
 
-    Busy_Wait();
-
-    Request_Send(aCode, aFlags, aIn, aInSize_byte);
-
     unsigned int lResult_byte = 0;
 
-    if (0 == (aFlags & EthCAN_FLAG_NO_RESPONSE))
+    try
     {
-        if (IsConnectedEth())
+        Busy_Wait();
+
+        Request_Send(aCode, aFlags, aIn, aInSize_byte);
+
+        if (0 == (aFlags & EthCAN_FLAG_NO_RESPONSE))
         {
-            Eth_Receive();
+            if (IsConnectedEth())
+            {
+                Eth_Receive();
+            }
+            else
+            {
+                assert(NULL != mSerial);
+
+                mSerial->GetThread()->Sem_Wait(2000);
+            }
+
+            // TODO Device
+            //      Verify mReq_Result
+
+            lResult_byte = mReq_OutSize_byte;
         }
-        else
-        {
-            assert(NULL != mSerial);
-
-            mSerial->GetThread()->Sem_Wait(2000);
-        }
-
-        // TODO Device
-        //      Verify mReq_Result
-
-        lResult_byte = mReq_OutSize_byte;
+    }
+    catch (...)
+    {
+        Request_End();
+        throw;
     }
 
-    mZone0.Enter();
-    {
-        mReq_Code = EthCAN_REQUEST_INVALID;
-    }
-    mZone0.Leave();
+    Request_End();
 
     return lResult_byte;
+}
+
+void Device_Impl::Request_End()
+{
+    assert(EthCAN_REQUEST_INVALID != mReq_Code);
+
+    mReq_Code = EthCAN_REQUEST_INVALID;
 }
 
 void Device_Impl::Request_Init(EthCAN_Header* aHeader, uint8_t aCode, uint8_t aFlags, unsigned int aDataSize_byte)

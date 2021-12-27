@@ -50,6 +50,7 @@ public:
     virtual bool IsConnectedEth() const;
     virtual bool IsConnectedUSB() const;
 
+    virtual EthCAN_Result Receiver_Config();
     virtual EthCAN_Result Receiver_Start(Receiver aFunction, void* aContext);
     virtual EthCAN_Result Receiver_Stop();
 
@@ -84,6 +85,7 @@ private:
 
     unsigned int Request(uint8_t aCode, uint8_t aFlags, const void* aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte);
 
+    void Request_End();
     void Request_Init(EthCAN_Header * aHeader, uint8_t aCode, uint8_t aFlags, unsigned int aDataSize_byte);
     void Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, unsigned int aInSize_byte);
 
