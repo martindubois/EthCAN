@@ -24,25 +24,34 @@
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="Object.cpp" />
+    <ClCompile Include="Protocol.cpp" />
+    <ClCompile Include="Protocol_TCP.cpp" />
+    <ClCompile Include="Protocol_UDP.cpp" />
+    <ClCompile Include="Protocol_USB.cpp" />
     <ClCompile Include="Serial.cpp" />
     <ClCompile Include="System.cpp" />
     <ClCompile Include="System_Impl.cpp" />
     <ClCompile Include="Thread.cpp" />
-    <ClCompile Include="UDPSocket.cpp" />
+    <ClCompile Include="Socket.cpp" />
+    <ClCompile Include="W_Gate.cpp" />
     <ClCompile Include="W_Serial.cpp" />
     <ClCompile Include="W_System_Impl.cpp" />
     <ClCompile Include="W_Thread.cpp" />
-    <ClCompile Include="W_UDPSocket.cpp" />
+    <ClCompile Include="W_Socket.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Component.h" />
     <ClInclude Include="Device_Impl.h" />
     <ClInclude Include="OS.h" />
     <ClInclude Include="IMessageReceiver.h" />
+    <ClInclude Include="Protocol.h" />
+    <ClInclude Include="Protocol_TCP.h" />
+    <ClInclude Include="Protocol_UDP.h" />
+    <ClInclude Include="Protocol_USB.h" />
     <ClInclude Include="Serial.h" />
     <ClInclude Include="System_Impl.h" />
     <ClInclude Include="Thread.h" />
-    <ClInclude Include="UDPSocket.h" />
+    <ClInclude Include="Socket.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

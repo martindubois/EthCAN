@@ -1,5 +1,5 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/System_Impl.h
@@ -14,7 +14,7 @@
 
 class Device_Impl;
 class Serial;
-class UDPSocket;
+class Socket;
 
 class System_Impl : public EthCAN::System, public IMessageReceiver
 {
@@ -51,7 +51,7 @@ protected:
 private:
 
     void Detect_Eth();
-    void Detect_Receive(UDPSocket* aSocket);
+    void Detect_Receive(Socket* aSocket);
     void Detect_USB();
 
     Device_Impl* Device_Add();

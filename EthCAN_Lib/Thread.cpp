@@ -1,15 +1,15 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Thread.cpp
 
-// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P. Eng.
 
 #include "Component.h"
 
 // ===== EthCAN_Lib =========================================================
-#include "UDPSocket.h"
+#include "Socket.h"
 
 #include "Thread.h"
 
@@ -61,7 +61,7 @@ int Thread::Run()
 {
     assert(NULL != mReceiver);
 
-    UDPSocket::Thread_Init();
+    Socket::Thread_Init();
 
     try
     {
@@ -100,7 +100,7 @@ int Thread::Run()
         return __LINE__;
     }
 
-    UDPSocket::Thread_Uninit();
+    Socket::Thread_Uninit();
 
     return 0;
 }

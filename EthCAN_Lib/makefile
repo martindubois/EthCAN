@@ -1,5 +1,5 @@
 
-# Author    KMS - Martin Dubois, P.Eng.
+# Author    KMS - Martin Dubois, P. Eng.
 # Copyright (C) 2021 KMS
 # Product   EthCAN
 # File      EthCAN_Lib/makefile
@@ -26,7 +26,7 @@ SOURCES =				\
 	System_Impl.cpp 	\
 	System.cpp			\
 	Thread.cpp			\
-	UDPSocket.cpp
+	Socket.cpp
 
 # ===== Rules / Regles =======================================================
 
@@ -54,7 +54,7 @@ Device_Impl.o: ../Import/Includes/WindowsToLinux.h
 Device_Impl.o: ../Includes/EthCAN_Result.h ../Includes/EthCAN_Protocol.h
 Device_Impl.o: ../Includes/EthCAN/Display.h ../Includes/EthCAN_Types.h
 Device_Impl.o: ../Includes/EthCAN/System.h ../Includes/EthCAN/Object.h OS.h
-Device_Impl.o: Serial.h IMessageReceiver.h Thread.h UDPSocket.h Device_Impl.h
+Device_Impl.o: Serial.h IMessageReceiver.h Thread.h Socket.h Device_Impl.h
 Device_Impl.o: ../Includes/EthCAN/Device.h
 Device.o: Component.h ../Import/Includes/KmsBase.h
 Device.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
@@ -85,7 +85,7 @@ L_Thread.o: ../Includes/EthCAN_Result.h Thread.h IMessageReceiver.h
 L_UDPSocket.o: Component.h ../Import/Includes/KmsBase.h
 L_UDPSocket.o: ../Import/Includes/SafeAPI.h
 L_UDPSocket.o: ../Import/Includes/WindowsToLinux.h
-L_UDPSocket.o: ../Includes/EthCAN_Result.h UDPSocket.h
+L_UDPSocket.o: ../Includes/EthCAN_Result.h Socket.h
 Object.o: Component.h ../Import/Includes/KmsBase.h
 Object.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
 Object.o: ../Includes/EthCAN_Result.h ../Includes/EthCAN/Object.h
@@ -99,7 +99,7 @@ System_Impl.o: ../Import/Includes/WindowsToLinux.h
 System_Impl.o: ../Includes/EthCAN_Result.h Device_Impl.h
 System_Impl.o: ../Includes/EthCAN_Protocol.h ../Includes/EthCAN/Device.h
 System_Impl.o: ../Includes/EthCAN_Types.h ../Includes/EthCAN/Object.h
-System_Impl.o: IMessageReceiver.h Serial.h Thread.h UDPSocket.h System_Impl.h
+System_Impl.o: IMessageReceiver.h Serial.h Thread.h Socket.h System_Impl.h
 System_Impl.o: ../Includes/EthCAN/System.h
 System.o: Component.h ../Import/Includes/KmsBase.h
 System.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
@@ -109,8 +109,8 @@ System.o: ../Includes/EthCAN/System.h ../Includes/EthCAN_Protocol.h
 System.o: ../Common/Version.h System_Impl.h IMessageReceiver.h
 Thread.o: Component.h ../Import/Includes/KmsBase.h
 Thread.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
-Thread.o: ../Includes/EthCAN_Result.h UDPSocket.h Thread.h IMessageReceiver.h
-UDPSocket.o: Component.h ../Import/Includes/KmsBase.h
-UDPSocket.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
-UDPSocket.o: ../Includes/EthCAN_Result.h ../Includes/EthCAN_Protocol.h
-UDPSocket.o: UDPSocket.h
+Thread.o: ../Includes/EthCAN_Result.h Socket.h Thread.h IMessageReceiver.h
+Socket.o: Component.h ../Import/Includes/KmsBase.h
+Socket.o: ../Import/Includes/SafeAPI.h ../Import/Includes/WindowsToLinux.h
+Socket.o: ../Includes/EthCAN_Result.h ../Includes/EthCAN_Protocol.h
+Socket.o: Socket.h

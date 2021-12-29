@@ -1,18 +1,18 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/System.cpp
 
-// TEST COVERAGE 2021-03-21 KMS - Martin Dubois, P.Eng.
+// TEST COVERAGE 2021-03-21 KMS - Martin Dubois, P. Eng.
 
 #include "Component.h"
 
 // ===== EthCAN_Lib =========================================================
 #include "Device_Impl.h"
 #include "Serial.h"
+#include "Socket.h"
 #include "Thread.h"
-#include "UDPSocket.h"
 
 #include "System_Impl.h"
 
@@ -221,7 +221,7 @@ System_Impl::~System_Impl()
 
 void System_Impl::Detect_Eth()
 {
-    UDPSocket lSocket;
+    Socket lSocket;
 
     EthCAN_Header lHeader;
 
@@ -235,7 +235,7 @@ void System_Impl::Detect_Eth()
     }
 }
 
-void System_Impl::Detect_Receive(UDPSocket* aSocket)
+void System_Impl::Detect_Receive(Socket* aSocket)
 {
     assert(NULL != aSocket);
 

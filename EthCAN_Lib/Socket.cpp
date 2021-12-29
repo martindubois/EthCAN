@@ -1,8 +1,8 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
-// File      EthCAN_Lib/UDPSocket.cpp
+// File      EthCAN_Lib/Socket.cpp
 
 // TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
 
@@ -15,7 +15,7 @@ extern "C"
 }
 
 // ===== EthCAN_Lib =========================================================
-#include "UDPSocket.h"
+#include "Socket.h"
 
 // Macros
 /////////////////////////////////////////////////////////////////////////
@@ -35,19 +35,37 @@ extern "C"
 // Public
 /////////////////////////////////////////////////////////////////////////////
 
-UDPSocket::UDPSocket() : mSocket(INVALID_SOCKET), mTimeout_ms(0)
+Socket::Socket() : mSocket(INVALID_SOCKET), mTimeout_ms(0)
 {
     mFlags.mBroadcast_Enabled = false;
 
-    Init();
+    Init(SOCK_DGRAM, IPPROTO_UDP);
 }
 
-UDPSocket::~UDPSocket()
+Socket::Socket(uint32_t aIPv4) : mSocket(INVALID_SOCKET), mTimeout_ms(0)
+{
+    mFlags.mBroadcast_Enabled = false;
+
+    Init(SOCK_STREAM, IPPROTO_TCP);
+    
+    sockaddr_in lAddr;
+
+    memset(&lAddr, 0, sizeof(lAddr));
+
+    lAddr.sin_addr.S_un.S_addr = aIPv4;
+    lAddr.sin_family = AF_INET;
+    lAddr.sin_port = htons(EthCAN_TCP_PORT);
+
+    int lRet = connect(mSocket, reinterpret_cast<sockaddr *>(&lAddr), sizeof(lAddr));
+    assert(0 == lRet);
+}
+
+Socket::~Socket()
 {
     Uninit();
 }
 
-void UDPSocket::Broadcast(const void* aData, unsigned int aSize_byte)
+void Socket::Broadcast(const void* aData, unsigned int aSize_byte)
 {
     assert(NULL != aData);
     assert(0 < aSize_byte);
@@ -60,17 +78,61 @@ void UDPSocket::Broadcast(const void* aData, unsigned int aSize_byte)
     Send(aData, aSize_byte, INADDR_BROADCAST);
 }
 
-uint16_t UDPSocket::GetPort() const
+uint16_t Socket::GetPort() const
 {
     assert(0 != mPort);
 
     return mPort;
 }
 
-unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned int aTimeout_ms, uint32_t* aFrom)
+unsigned int Socket::Receive(void* aData, unsigned int aSize_byte, unsigned int aTimeout_ms)
 {
     assert(NULL != aData);
     assert(0 < aSize_byte);
+
+    assert(INVALID_SOCKET != mSocket);
+
+    if (mTimeout_ms != aTimeout_ms)
+    {
+        Timeout_Set(aTimeout_ms);
+    }
+
+    unsigned int lResult_byte;
+
+    int lRet = recv(mSocket, reinterpret_cast<char*>(aData), aSize_byte, 0);
+    if (0 == lRet)
+    {
+        TRACE_ERROR(stderr, "Socket::Receive - EthCAN_ERROR_SOCKET_RECEIVE");
+        throw EthCAN_ERROR_SOCKET_RECEIVE;
+    }
+
+    if (SOCKET_ERROR == lRet)
+    {
+        if (!Timeout_Verify())
+        {
+            TRACE_ERROR(stderr, "Socket::Receive - EthCAN_ERROR_SOCKET");
+            throw EthCAN_ERROR_SOCKET;
+        }
+
+        lResult_byte = 0;
+    }
+    else
+    {
+        assert(0 < lRet);
+
+        lResult_byte = lRet;
+
+        assert(aSize_byte >= lResult_byte);
+    }
+
+    return lResult_byte;
+}
+
+unsigned int Socket::Receive(void* aData, unsigned int aSize_byte, unsigned int aTimeout_ms, uint32_t* aFrom)
+{
+    assert(NULL != aData);
+    assert(0 < aSize_byte);
+    assert(NULL != aFrom);
 
     assert(INVALID_SOCKET != mSocket);
 
@@ -90,7 +152,7 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
         int lRet = recvfrom(mSocket, reinterpret_cast<char*>(aData), aSize_byte, 0, reinterpret_cast<sockaddr*>(&lFrom), &lFromSize_byte);
         if (0 == lRet)
         {
-            TRACE_ERROR(stderr, "UDPSocket::Receive - EthCAN_ERROR_SOCKET_RECEIVE");
+            TRACE_ERROR(stderr, "Socket::Receive - EthCAN_ERROR_SOCKET_RECEIVE");
             throw EthCAN_ERROR_SOCKET_RECEIVE;
         }
 
@@ -98,7 +160,7 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
         {
             if (!Timeout_Verify())
             {
-                TRACE_ERROR(stderr, "UDPSocket::Receive - EthCAN_ERROR_SOCKET");
+                TRACE_ERROR(stderr, "Socket::Receive - EthCAN_ERROR_SOCKET");
                 throw EthCAN_ERROR_SOCKET;
             }
 
@@ -124,13 +186,27 @@ unsigned int UDPSocket::Receive(void* aData, unsigned int aSize_byte, unsigned i
 
         // QUESTION  UDP.Retry
         //           Is the retry loop needed ?
-        TRACE_WARNING(stderr, "WARNING  UDPSocket::Receive - Retry");
+        TRACE_WARNING(stderr, "WARNING  Socket::Receive - Retry");
     }
 
     return lResult_byte;
 }
 
-void UDPSocket::Send(const void* aData, unsigned int aSize_byte, uint32_t aTo)
+void Socket::Send(const void* aData, unsigned int aSize_byte)
+{
+    assert(NULL != aData);
+    assert(0 < aSize_byte);
+
+    assert(INVALID_SOCKET != mSocket);
+
+    int lRet = send(mSocket, reinterpret_cast<const char*>(aData), aSize_byte, 0);
+    if (aSize_byte != lRet)
+    {
+        throw EthCAN_ERROR_SOCKET_SEND;
+    }
+}
+
+void Socket::Send(const void* aData, unsigned int aSize_byte, uint32_t aTo)
 {
     assert(NULL != aData);
     assert(0 < aSize_byte);
@@ -149,7 +225,7 @@ void UDPSocket::Send(const void* aData, unsigned int aSize_byte, uint32_t aTo)
     int lRet = sendto(mSocket, reinterpret_cast<const char*>(aData), aSize_byte, 0, reinterpret_cast<sockaddr*>(&lTo), sizeof(lTo));
     if (aSize_byte != lRet)
     {
-        TRACE_ERROR(stderr, "UDPSocket::Send - EthCAN_ERROR_SOCKET_SEND");
+        TRACE_ERROR(stderr, "Socket::Send - EthCAN_ERROR_SOCKET_SEND");
         throw EthCAN_ERROR_SOCKET_SEND;
     }
 }

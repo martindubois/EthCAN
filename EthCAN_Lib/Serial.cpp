@@ -1,10 +1,10 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Serial.cpp
 
-// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P. Eng.
 
 #include "Component.h"
 
@@ -65,6 +65,19 @@ void Serial::Receiver_Start(IMessageReceiver* aReceiver, unsigned int aMessage)
     {
         mMessage = aMessage;
         mReceiver = aReceiver;
+    }
+    mThread->mZone0.Leave();
+}
+
+void Serial::Receiver_Stop()
+{
+    assert(NULL != mThread);
+
+    mThread->mZone0.Enter();
+    {
+        assert(NULL != mReceiver);
+
+        mReceiver = NULL;
     }
     mThread->mZone0.Leave();
 }

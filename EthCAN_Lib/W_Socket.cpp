@@ -1,5 +1,5 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/W_UDPSocket.cpp
@@ -12,12 +12,12 @@
 #include <iphlpapi.h>
 
 // ===== EthCAN_Lib =========================================================
-#include "UDPSocket.h"
+#include "Socket.h"
 
 // Public
 /////////////////////////////////////////////////////////////////////////////
 
-uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
+uint32_t Socket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
 {
     assert(0 != aAddress);
     assert(0 != aNetMask);
@@ -28,7 +28,7 @@ uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
 
     if ((ERROR_SUCCESS != GetIpAddrTable(lTable, &lSize_byte, FALSE)) || (0 >= lTable->dwNumEntries))
     {
-        TRACE_ERROR(stderr, "UDPSocket::GetIPv4 - EthCAN_ERROR_NETWORK");
+        TRACE_ERROR(stderr, "Socket::GetIPv4 - EthCAN_ERROR_NETWORK");
         throw EthCAN_ERROR_NETWORK;
     }
 
@@ -40,11 +40,11 @@ uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
         }
     }
 
-    TRACE_WARNING(stderr, "UDPSocket::GetIPv4 - Using default address");
+    TRACE_WARNING(stderr, "Socket::GetIPv4 - Using default address");
     return lTable->table[0].dwAddr;
 }
 
-void UDPSocket::Thread_Init()
+void Socket::Thread_Init()
 {
     WORD    lVersion = MAKEWORD(2, 2);
     WSADATA lData;
@@ -53,7 +53,7 @@ void UDPSocket::Thread_Init()
     assert(0 == lRet);
 }
 
-void UDPSocket::Thread_Uninit()
+void Socket::Thread_Uninit()
 {
     int lRet = WSACleanup();
     assert(0 == lRet);
@@ -62,18 +62,18 @@ void UDPSocket::Thread_Uninit()
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
-void UDPSocket::Broadcast_Enable()
+void Socket::Broadcast_Enable()
 {
     BOOL lBool = true;
 
     if (0 != setsockopt(mSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char *>(&lBool), sizeof(lBool)))
     {
-        TRACE_ERROR(stderr, "UDPSocket::Broadcast_Enable - EthCAN_ERROR_SOCKET_OPTION");
+        TRACE_ERROR(stderr, "Socket::Broadcast_Enable - EthCAN_ERROR_SOCKET_OPTION");
         throw EthCAN_ERROR_SOCKET_OPTION;
     }
 }
 
-void UDPSocket::Close()
+void Socket::Close()
 {
     assert(INVALID_SOCKET != mSocket);
 
@@ -81,16 +81,16 @@ void UDPSocket::Close()
     assert(0 == lRet);
 }
 
-void UDPSocket::Init()
+void Socket::Init(int aType, int aProtocol)
 {
     assert(INVALID_SOCKET == mSocket);
 
     Thread_Init();
 
-    mSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    mSocket = socket(AF_INET, aType, aProtocol);
     if (INVALID_SOCKET == mSocket)
     {
-        TRACE_ERROR(stderr, "UDPSocket::Init - EthCAN_ERROR_SOCKET");
+        TRACE_ERROR(stderr, "Socket::Init - EthCAN_ERROR_SOCKET");
         throw EthCAN_ERROR_SOCKET;
     }
 
@@ -104,7 +104,7 @@ void UDPSocket::Init()
     {
         Close();
 
-        TRACE_ERROR(stderr, "UDPSocket::Init - EthCAN_ERROR_SOCKET_BIND");
+        TRACE_ERROR(stderr, "Socket::Init - EthCAN_ERROR_SOCKET_BIND");
         throw EthCAN_ERROR_SOCKET_BIND;
     }
 
@@ -115,7 +115,7 @@ void UDPSocket::Init()
     {
         Close();
 
-        TRACE_ERROR(stderr, "UDPSocket::Init - EthCAN_ERROR_NAME");
+        TRACE_ERROR(stderr, "Socket::Init - EthCAN_ERROR_NAME");
         throw EthCAN_ERROR_SOCKET_NAME;
     }
 
@@ -124,7 +124,7 @@ void UDPSocket::Init()
     mPort = ntohs(lAddr.sin_port);
 }
 
-void UDPSocket::Timeout_Set(unsigned int aTimeout_ms)
+void Socket::Timeout_Set(unsigned int aTimeout_ms)
 {
     assert(INVALID_SOCKET != mSocket);
 
@@ -132,25 +132,25 @@ void UDPSocket::Timeout_Set(unsigned int aTimeout_ms)
 
     if (0 != setsockopt(mSocket, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<char*>(&lTimeout_ms), sizeof(lTimeout_ms)))
     {
-        TRACE_ERROR(stderr, "UDPSocket::Timeout_Set - EthCAN_ERROR_OPTION");
+        TRACE_ERROR(stderr, "Socket::Timeout_Set - EthCAN_ERROR_OPTION");
         throw EthCAN_ERROR_SOCKET_OPTION;
     }
 
     mTimeout_ms = aTimeout_ms;
 }
 
-bool UDPSocket::Timeout_Verify()
+bool Socket::Timeout_Verify()
 {
     switch (WSAGetLastError())
     {
     case WSAETIMEDOUT: return true;
     }
 
-    TRACE_ERROR(stderr, "UDPSocket::Timeout_Verify - false");
+    TRACE_ERROR(stderr, "Socket::Timeout_Verify - false");
     return false;
 }
 
-void UDPSocket::Uninit()
+void Socket::Uninit()
 {
     Close();
 
