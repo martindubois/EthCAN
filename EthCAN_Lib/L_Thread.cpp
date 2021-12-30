@@ -19,8 +19,14 @@ static void * Run_Link(void * aContext);
 
 void Thread::Sem_Signal()
 {
-    int lRet = pthread_cond_signal(&mCond);
-    assert(0 == lRet);
+    mZone0.Enter();
+    {
+        mCount ++;
+
+        int lRet = pthread_cond_signal(&mCond);
+        assert(0 == lRet);
+    }
+    mZone0.Leave();
 }
 
 void Thread::Sem_Wait(unsigned int aTimeout_ms)
@@ -38,6 +44,8 @@ void Thread::Sem_Wait(unsigned int aTimeout_ms)
         {
             lRet = pthread_cond_timedwait(&mCond, mZone0.GetInternal(), &lAbsTime);
         }
+
+        mCount --;
     }
     mZone0.Leave();
 

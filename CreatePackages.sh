@@ -15,7 +15,7 @@ echo Excuting  CreatePackages.sh  ...
 OS=`uname`
 
 # KmsVersion "PACKAGE_VERSION=" "\n" 13
-PACKAGE_VERSION=1.1-0
+PACKAGE_VERSION=1.1-1
 
 # KmsVersion "VERSION=" "\n" 2
 VERSION=1.1
