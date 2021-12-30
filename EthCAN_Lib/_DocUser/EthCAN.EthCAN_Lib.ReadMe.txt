@@ -4,6 +4,7 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
+1.1.0 Darwin amd64 2021-12-30
 - EthCAN::Device
     - ProtocolId
     - Protocol_Get
