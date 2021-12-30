@@ -1,10 +1,10 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Display.cpp
 
-// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P. Eng.
 
 #include "Component.h"
 
@@ -301,7 +301,7 @@ namespace EthCAN
         case EthCAN_ERROR_DATA_SIZE              : return "EthCAN_ERROR_DATA_SIZE";
         case EthCAN_ERROR_DATA_UNEXPECTED        : return "EthCAN_ERROR_DATA_UNEXPECTED";
         case EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER : return "EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER";
-        case EthCAN_ERROR_EXCEPTION              : return "EthCAN_ERROR_EXCEPTION";
+        case EthCAN_ERROR_ENUM                   : return "EthCAN_ERROR_ENUM";
         case EthCAN_ERROR_FILE_NAME              : return "EthCAN_ERROR_FILE_NAME";
         case EthCAN_ERROR_FUNCTION               : return "EthCAN_ERROR_FUNCTION";
         case EthCAN_ERROR_INPUT_BUFFER           : return "EthCAN_ERROR_INPUT_BUFFER";
@@ -309,11 +309,9 @@ namespace EthCAN
         case EthCAN_ERROR_INPUT_FILE_OPEN        : return "EthCAN_ERROR_INPUT_FILE_OPEN";
         case EthCAN_ERROR_INPUT_STREAM           : return "EthCAN_ERROR_INPUT_STREAM";
         case EthCAN_ERROR_INPUT_STREAM_READ      : return "EthCAN_ERROR_INPUT_STREAM_READ";
-        case EthCAN_ERROR_IPv4_ADDRESS           : return "EthCAN_ERROR_IPv4_ADDRESS";
-        case EthCAN_ERROR_IPv4_MASK              : return "EthCAN_ERROR_IPv4_MASK";
         case EthCAN_ERROR_NETWORK                : return "EthCAN_ERROR_NETWORK";
-        case EthCAN_ERROR_NOT_CONNECTED          : return "EthCAN_ERROR_NOT_CONNECTED";
         case EthCAN_ERROR_NOT_CONNECTED_ETH      : return "EthCAN_ERROR_NOT_CONNECTED_ETH";
+        case EthCAN_ERROR_NOT_CONNECTED_USB      : return "EthCAN_ERROR_NOT_CONNECTED_USB";
         case EthCAN_ERROR_NOT_RUNNING            : return "EthCAN_ERROR_NOT_RUNNING";
         case EthCAN_ERROR_OUTPUT_BUFFER          : return "EthCAN_ERROR_OUTPUT_BUFFER";
         case EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL: return "EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL";
@@ -321,12 +319,11 @@ namespace EthCAN
         case EthCAN_ERROR_OUTPUT_FILE_OPEN       : return "EthCAN_ERROR_OUTPUT_FILE_OPEN";
         case EthCAN_ERROR_OUTPUT_STREAM          : return "EthCAN_ERROR_OUTPUT_STREAM";
         case EthCAN_ERROR_OUTPUT_STREAM_WRITE    : return "EthCAN_ERROR_OUTPUT_STREAM_WRITE";
-        case EthCAN_ERROR_PENDING                : return "EthCAN_ERROR_PENDING";
+        case EthCAN_ERROR_RECEIVER_RUNNING       : return "EthCAN_ERROR_RUNNING";
         case EthCAN_ERROR_REFERENCE              : return "EthCAN_ERROR_REFERENCE";
         case EthCAN_ERROR_RESPONSE_SIZE          : return "EthCAN_ERROR_RESPONSE_SIZE";
         case EthCAN_ERROR_RUNNING                : return "EthCAN_ERROR_RUNNING";
         case EthCAN_ERROR_SEMAPHORE              : return "EthCAN_ERROR_SEMAPHORE";
-        case EthCAN_ERROR_SERIAL                 : return "EthCAN_ERROR_SERIAL";
         case EthCAN_ERROR_SERIAL_CONFIG          : return "EthCAN_ERROR_SERIAL_CONFIG";
         case EthCAN_ERROR_SERIAL_OPEN            : return "EthCAN_ERROR_SERIAL_OPEN";
         case EthCAN_ERROR_SERIAL_RECEIVE         : return "EthCAN_ERROR_SERIAL_RECEIVE";
