@@ -90,14 +90,14 @@ void Socket::Close()
     assert(0 == lRet);
 }
 
-void Socket::Init()
+void Socket::Init(int aType, int aProtocol)
 {
     assert(INVALID_SOCKET == mSocket);
 
-    mSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    mSocket = socket(AF_INET, aType, aProtocol);
     if (INVALID_SOCKET == mSocket)
     {
-        fprintf(stderr, "ERROR  Socket::Init - EthCAN_ERROR_SOCKET\n");
+        fprintf(stderr, "ERROR  Socket::Init - EthCAN_ERROR_SOCKET ( Protocol = %d, Type = %d )\n", aProtocol, aType);
         throw EthCAN_ERROR_SOCKET;
     }
 

@@ -361,12 +361,10 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
 
     try
     {
-        switch (mProtocolId)
+        if (PROTOCOL_UDP == mProtocolId)
         {
-        case PROTOCOL_UDP:
             mUDP_Server = new Socket;
             assert(NULL != mUDP_Server);
-            break;
         }
 
         lResult = Receiver_Config();
@@ -376,9 +374,9 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
             mReceiver = aReceiver;
         }
 
-        switch (mProtocolId)
+        if (PROTOCOL_UDP == mProtocolId)
         {
-        case PROTOCOL_UDP: Thread_Create(); break;
+            Thread_Create();
         }
     }
     catch (EthCAN_Result eResult)
@@ -421,12 +419,10 @@ EthCAN_Result Device_Impl::Receiver_Stop()
 
     try
     {
-        switch (mProtocolId)
+        if (PROTOCOL_UDP == mProtocolId)
         {
-        case PROTOCOL_UDP:
             Thread_Delete();
             UDP_Server_Delete();
-            break;
         }
     }
     catch (EthCAN_Result eResult)
@@ -813,9 +809,9 @@ void Device_Impl::Protocol_Delete()
     assert(NULL != mProtocol);
     assert(PROTOCOL_QTY > mProtocolId);
 
-    switch (mProtocolId)
+    if (PROTOCOL_TCP == mProtocolId)
     {
-    case PROTOCOL_TCP: Thread_Delete(); break;
+        Thread_Delete();
     }
 
     delete mProtocol;

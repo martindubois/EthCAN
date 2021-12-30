@@ -4,7 +4,7 @@
 // Product   EthCAN
 // File      EthCAN_Lib/Socket.cpp
 
-// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P. Eng.
 
 #include "Component.h"
 
@@ -52,7 +52,7 @@ Socket::Socket(uint32_t aIPv4) : mSocket(INVALID_SOCKET), mTimeout_ms(0)
 
     memset(&lAddr, 0, sizeof(lAddr));
 
-    lAddr.sin_addr.S_un.S_addr = aIPv4;
+    lAddr.sin_addr.FIELD_ADDR_32 = aIPv4;
     lAddr.sin_family = AF_INET;
     lAddr.sin_port = htons(EthCAN_TCP_PORT);
 

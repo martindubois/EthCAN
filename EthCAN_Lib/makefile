@@ -18,10 +18,14 @@ SOURCES =				\
 	L_Gate.cpp          \
 	L_OS.cpp            \
 	L_Serial.cpp		\
+	L_Socket.cpp		\
 	L_System_Impl.cpp	\
 	L_Thread.cpp		\
-	L_UDPSocket.cpp		\
 	Object.cpp			\
+	Protocol.cpp        \
+	Protocol_TCP.cpp    \
+	Protocol_UDP.cpp    \
+	Protocol_USB.cpp    \
 	Serial.cpp      	\
 	System_Impl.cpp 	\
 	System.cpp			\
