@@ -1,5 +1,5 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Device_Impl.h
@@ -18,9 +18,10 @@ extern "C"
 #include "Gate.h"
 #include "IMessageReceiver.h"
 
+class Protocol;
 class Serial;
+class Socket;
 class Thread;
-class UDPSocket;
 
 class Device_Impl : public EthCAN::Device, public IMessageReceiver
 {
@@ -50,6 +51,9 @@ public:
     virtual bool IsConnectedEth() const;
     virtual bool IsConnectedUSB() const;
 
+    virtual ProtocolId    Protocol_Get() const;
+    virtual EthCAN_Result Protocol_Set(ProtocolId aId);
+
     virtual EthCAN_Result Receiver_Config();
     virtual EthCAN_Result Receiver_Start(Receiver aFunction, void* aContext);
     virtual EthCAN_Result Receiver_Stop();
@@ -76,18 +80,26 @@ private:
 
     void Config_Verify(const EthCAN_Config& aIn);
 
-    void Eth_Receive();
-
+    bool OnData(const void* aData, unsigned int aSize_byte);
     bool OnLoopIteration();
     bool OnRequest (const EthCAN_Header* aHeader, unsigned int aSize_byte);
     bool OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_byte);
-    bool OnSerialData(const void* aData, unsigned int aSize_byte);
+
+    void Protocol_Create();
+    void Protocol_Delete();
 
     unsigned int Request(uint8_t aCode, uint8_t aFlags, const void* aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte);
 
     void Request_End();
     void Request_Init(EthCAN_Header * aHeader, uint8_t aCode, uint8_t aFlags, unsigned int aDataSize_byte);
     void Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, unsigned int aInSize_byte);
+
+    void Thread_Create();
+    void Thread_Delete();
+
+    void UDP_Beep();
+    void UDP_Receive();
+    void UDP_Server_Delete();
 
     uint64_t mBusyUntil_ms;
 
@@ -98,16 +110,21 @@ private:
 
     EthCAN_Info mInfo;
 
+    bool mIsConnectedEth;
+
     unsigned int mLostCount;
+
+    Protocol* mProtocol;
+
+    ProtocolId mProtocolId;
 
     Receiver mReceiver;
 
-    Serial* mSerial;
-
-    UDPSocket* mSocket_Client;
-    UDPSocket* mSocket_Server;
-
     Thread* mThread;
+
+    Socket* mUDP_Server;
+
+    Serial* mUSB_Serial;
 
     // ======================================================================
     Gate mZone0;

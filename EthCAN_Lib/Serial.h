@@ -1,5 +1,5 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Serial.h
@@ -29,6 +29,7 @@ public:
     Thread* GetThread();
 
     void Receiver_Start(IMessageReceiver* aReceiver, unsigned int aMessage);
+    void Receiver_Stop();
 
     void Send(const void* aIn, unsigned int aSize_byte);
 

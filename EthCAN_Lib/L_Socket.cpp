@@ -1,5 +1,5 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/L_UDPSocket.cpp
@@ -10,13 +10,16 @@
 #include <errno.h>
 #include <ifaddrs.h>
 
+// ===== System =============================================================
+#include <netinet/tcp.h>
+
 // ===== EthCAN_Lib =========================================================
-#include "UDPSocket.h"
+#include "Socket.h"
 
 // Public
 /////////////////////////////////////////////////////////////////////////////
 
-uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
+uint32_t Socket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
 {
     assert(0 != aAddress);
     assert(0 != aNetMask);
@@ -26,7 +29,7 @@ uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
     int lRet = getifaddrs(&lAddrs);
     if (0 != lRet)
     {
-        TRACE_ERROR(stderr, "UDPSocket::GetIPv4 - EthCAN_ERROR_NETWORK");
+        TRACE_ERROR(stderr, "Socket::GetIPv4 - EthCAN_ERROR_NETWORK");
         throw EthCAN_ERROR_NETWORK;
     }
 
@@ -61,18 +64,18 @@ uint32_t UDPSocket::GetIPv4(uint32_t aAddress, uint32_t aNetMask)
     return lResult;
 }
 
-void UDPSocket::Thread_Init()
+void Socket::Thread_Init()
 {
 }
 
-void UDPSocket::Thread_Uninit()
+void Socket::Thread_Uninit()
 {
 }
 
 // Private
 /////////////////////////////////////////////////////////////////////////////
 
-void UDPSocket::Broadcast_Enable()
+void Socket::Broadcast_Enable()
 {
     int lVal = 1;
 
@@ -82,7 +85,7 @@ void UDPSocket::Broadcast_Enable()
     }
 }
 
-void UDPSocket::Close()
+void Socket::Close()
 {
     assert(INVALID_SOCKET != mSocket);
 
@@ -90,14 +93,14 @@ void UDPSocket::Close()
     assert(0 == lRet);
 }
 
-void UDPSocket::Init()
+void Socket::Init(int aType, int aProtocol)
 {
     assert(INVALID_SOCKET == mSocket);
 
-    mSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    mSocket = socket(AF_INET, aType, aProtocol);
     if (INVALID_SOCKET == mSocket)
     {
-        fprintf(stderr, "ERROR  UDPSocket::Init - EthCAN_ERROR_SOCKET\n");
+        fprintf(stderr, "ERROR  Socket::Init - EthCAN_ERROR_SOCKET ( Protocol = %d, Type = %d )\n", aProtocol, aType);
         throw EthCAN_ERROR_SOCKET;
     }
 
@@ -127,9 +130,20 @@ void UDPSocket::Init()
     assert(0 != lAddr.sin_port);
 
     mPort = ntohs(lAddr.sin_port);
+
+    if (SOCK_STREAM == aType)
+    {
+        int lValue = 1;
+
+        int lRet = setsockopt(mSocket, SOL_SOCKET, SO_KEEPALIVE, &lValue, sizeof(lValue));
+        assert(0 == lRet);
+
+        lRet = setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, &lValue, sizeof(lValue));
+        assert(0 == lRet);
+    }
 }
 
-void UDPSocket::Timeout_Set(unsigned int aTimeout_ms)
+void Socket::Timeout_Set(unsigned int aTimeout_ms)
 {
     assert(INVALID_SOCKET != mSocket);
 
@@ -146,12 +160,12 @@ void UDPSocket::Timeout_Set(unsigned int aTimeout_ms)
     mTimeout_ms = aTimeout_ms;
 }
 
-bool UDPSocket::Timeout_Verify()
+bool Socket::Timeout_Verify()
 {
     return EAGAIN == errno;
 }
 
-void UDPSocket::Uninit()
+void Socket::Uninit()
 {
     Close();
 }

@@ -46,7 +46,7 @@ KMS_TEST_LIST_BEGIN
     KMS_TEST_LIST_ENTRY(Display_Base , "Display - Base"  , 0, 0)
     KMS_TEST_LIST_ENTRY(File_Base    , "File - Base"     , 0, 0)
     KMS_TEST_LIST_ENTRY(System_Base  , "System - Base"   , 0, 0)
-    KMS_TEST_LIST_ENTRY(System_SetupA, "System - Setup B", 1, KMS_TEST_FLAG_INTERACTION_NEEDED)
+    KMS_TEST_LIST_ENTRY(System_SetupA, "System - Setup A", 1, KMS_TEST_FLAG_INTERACTION_NEEDED)
     KMS_TEST_LIST_ENTRY(System_SetupB, "System - Setup B", 2, KMS_TEST_FLAG_INTERACTION_NEEDED)
     KMS_TEST_LIST_ENTRY(System_SetupC, "System - Setup C", 3, KMS_TEST_FLAG_INTERACTION_NEEDED)
     KMS_TEST_LIST_END

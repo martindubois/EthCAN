@@ -1,8 +1,14 @@
 
-Author    KMS - Martin Dubois, P.Eng.
+Author    KMS - Martin Dubois, P. Eng.
 Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
+
+1.1.2 Darwin amd64 2021-12-31
+- EthCAN::Device
+    - ProtocolId
+    - Protocol_Get
+    - Protocol_Set
 
 1.0.14 Darwin amd64 2021-12-02
 - EthCAN::Device
@@ -18,4 +24,4 @@ File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
 1.0.6 Linux amd64
 
-1.0.5 Windows
+1.0.5 Windows amd64

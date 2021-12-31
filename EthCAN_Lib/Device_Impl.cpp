@@ -1,10 +1,12 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Device_Impl.cpp
 
-// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+// CODE REVIEW 2021-12-29 KMS - Martin Dubois, P. Eng.
+
+// TEST COVERAGE 2021-12-29 KMS - Martin Dubois, P. Eng.
 
 #include "Component.h"
 
@@ -19,9 +21,12 @@ extern "C"
 
 // ===== EthCAN_Lib =========================================================
 #include "OS.h"
+#include "Protocol_TCP.h"
+#include "Protocol_UDP.h"
+#include "Protocol_USB.h"
 #include "Serial.h"
+#include "Socket.h"
 #include "Thread.h"
-#include "UDPSocket.h"
 
 #include "Device_Impl.h"
 
@@ -31,6 +36,11 @@ extern "C"
 #define MSG_LOOP_ITERATION (1)
 #define MSG_SERIAL_DATA    (2)
 
+// Static function declarations
+// //////////////////////////////////////////////////////////////////////////
+
+static void ClearServerConfig(EthCAN_Config* aConfig);
+
 // Public
 /////////////////////////////////////////////////////////////////////////////
 
@@ -39,12 +49,14 @@ Device_Impl::Device_Impl()
     , mContext(NULL)
     , mId_Client(0)
     , mId_Server(0)
+    , mIsConnectedEth(false)
+    , mProtocol(NULL)
+    , mProtocolId(PROTOCOL_INVALID)
     , mReceiver(NULL)
     , mReq_Code(EthCAN_REQUEST_INVALID)
-    , mSerial(NULL)
-    , mSocket_Client(NULL)
-    , mSocket_Server(NULL)
     , mThread(NULL)
+    , mUDP_Server(NULL)
+    , mUSB_Serial(NULL)
 {
     memset(&mInfo, 0, sizeof(mInfo));
 }
@@ -70,30 +82,31 @@ bool Device_Impl::Is(const char* aName) const
 
 void Device_Impl::SetInfo(const EthCAN_Info& aInfo, Serial* aSerial)
 {
-    assert(NULL != &aInfo);
+    if (NULL != mProtocol)
+    {
+        Protocol_Delete();
+    }
 
     if (NULL == aSerial)
     {
-        if (NULL == mSocket_Client)
-        {
-            mSocket_Client = new UDPSocket();
-            assert(NULL != mSocket_Client);
-        }
+        mIsConnectedEth = true;
+        mProtocolId = PROTOCOL_UDP;
     }
     else
     {
-        mSerial = aSerial;
-
-        mSerial->Receiver_Start(this, MSG_SERIAL_DATA);
+        mProtocolId = PROTOCOL_USB;
+        mUSB_Serial = aSerial;
     }
+
+    Protocol_Create();
 
     mInfo = aInfo;
 }
 
 // ===== EthCAN::Device =====================================================
 
-#define BEGIN                                      \
-    EthCAN_Result lResult = EthCAN_RESULT_INVALID; \
+#define BEGIN                          \
+    EthCAN_Result lResult = EthCAN_OK; \
     try
 
 #define END                       \
@@ -112,10 +125,6 @@ EthCAN_Result Device_Impl::Config_Erase(uint8_t aFlags)
             TRACE_ERROR(stderr, "Device_Impl::Config_Erase - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
-        else
-        {
-            lResult = EthCAN_OK;
-        }
     }
     END
 }
@@ -131,10 +140,6 @@ EthCAN_Result Device_Impl::Config_Get(EthCAN_Config* aOut)
             TRACE_ERROR(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
-        else
-        {
-            lResult = EthCAN_OK;
-        }
     }
     END
 }
@@ -147,10 +152,6 @@ EthCAN_Result Device_Impl::Config_Reset(uint8_t aFlags)
         {
             TRACE_ERROR(stderr, "Device_Impl::Config_Reset - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
-        }
-        else
-        {
-            lResult = EthCAN_OK;
         }
     }
     END
@@ -169,10 +170,6 @@ EthCAN_Result Device_Impl::Config_Set(EthCAN_Config* aInOut, uint8_t aFlags)
             TRACE_ERROR(stderr, "Device_Impl::Config_Set - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
-        else
-        {
-            lResult = EthCAN_OK;
-        }
     }
     END
 }
@@ -186,23 +183,26 @@ EthCAN_Result Device_Impl::Config_Store(uint8_t aFlags)
             TRACE_ERROR(stderr, "Device_Impl::Config_Store - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
-        else
-        {
-            lResult = EthCAN_OK;
-        }
     }
     END
 }
 
 uint32_t Device_Impl::GetHostAddress() const
 {
-    return UDPSocket::GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
+    if (!IsConnectedEth())
+    {
+        return EthCAN_ERROR_NOT_CONNECTED_ETH;
+    }
+
+    return Socket::GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
 }
 
 EthCAN_Result Device_Impl::GetInfoLine(char* aOut, unsigned int aSize_byte) const
 {
+    assert(NULL != mProtocol);
+
     if (NULL == aOut   ) { return EthCAN_ERROR_OUTPUT_BUFFER; }
-    if (55 > aSize_byte) { return EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL; }
+    if (60 > aSize_byte) { return EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL; }
 
     const char* lCon;
     if (IsConnectedEth())
@@ -225,10 +225,11 @@ EthCAN_Result Device_Impl::GetInfoLine(char* aOut, unsigned int aSize_byte) cons
 
     EthCAN::GetName_EthAddress(lEth , sizeof(lEth ), mInfo.mEth_Address);
 
-    sprintf_s(aOut SIZE_INFO(aSize_byte), "%s %s %3u.%3u.%3u.%3u %s",
+    sprintf_s(aOut SIZE_INFO(aSize_byte), "%s %s %3u.%3u.%3u.%3u %s %s",
         lCon, lEth,
         mInfo.mIPv4_Address & 0xff, mInfo.mIPv4_Address >> 8 & 0xff, mInfo.mIPv4_Address >> 16 & 0xff, mInfo.mIPv4_Address >> 24 & 0xff,
-        mInfo.mName);
+        mInfo.mName,
+        mProtocol->GetName());
 
     return EthCAN_OK;
 }
@@ -244,25 +245,53 @@ EthCAN_Result Device_Impl::GetInfo(EthCAN_Info* aInfo)
             TRACE_ERROR(stderr, "Device_Impl::Config_Get - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
-        else
-        {
-            // TODO Security
-            //      Validate the received information match the already known information.
 
-            lResult = EthCAN_OK;
-        }
+        // TODO Security
+        //      Validate the received information match the already known information.
     }
     END
 }
 
-bool Device_Impl::IsConnectedEth() const
+bool Device_Impl::IsConnectedEth() const { return mIsConnectedEth; }
+bool Device_Impl::IsConnectedUSB() const { return NULL != mUSB_Serial; }
+
+EthCAN::Device::ProtocolId Device_Impl::Protocol_Get() const
 {
-    return (NULL != mSocket_Client);
+    assert(PROTOCOL_QTY > mProtocolId);
+
+    return mProtocolId;
 }
 
-bool Device_Impl::IsConnectedUSB() const
+EthCAN_Result Device_Impl::Protocol_Set(ProtocolId aId)
 {
-    return (NULL != mSerial);
+    if (NULL != mReceiver) { return EthCAN_ERROR_RECEIVER_RUNNING; }
+
+    assert(PROTOCOL_QTY > mProtocolId);
+
+    if (mProtocolId != aId)
+    {
+        switch (aId)
+        {
+        case PROTOCOL_UDP:
+        case PROTOCOL_TCP:
+            if (!IsConnectedEth()) { return EthCAN_ERROR_NOT_CONNECTED_ETH; }
+            break;
+
+        case PROTOCOL_USB:
+            if (!IsConnectedUSB()) { return EthCAN_ERROR_NOT_CONNECTED_USB; }
+            break;
+
+        default: return EthCAN_ERROR_ENUM;
+        }
+
+        Protocol_Delete();
+
+        mProtocolId = aId;
+
+        Protocol_Create();
+    }
+
+    return EthCAN_OK;
 }
 
 EthCAN_Result Device_Impl::Receiver_Config()
@@ -272,41 +301,35 @@ EthCAN_Result Device_Impl::Receiver_Config()
     EthCAN_Result lResult = Config_Get(&lConfig);
     if (EthCAN_OK == lResult)
     {
+        ClearServerConfig(&lConfig);
+
         try
         {
-            if (IsConnectedEth())
+            switch (mProtocolId)
             {
+            case PROTOCOL_UDP:
                 assert(0 != mInfo.mIPv4_Address);
                 assert(0 != mInfo.mIPv4_NetMask);
 
-                if (NULL == mSocket_Server)
+                if (NULL == mUDP_Server)
                 {
                     lResult = EthCAN_ERROR_NOT_RUNNING;
                 }
                 else
                 {
-                    lConfig.mServer_Flags &= ~EthCAN_FLAG_SERVER_USB;
-                    lConfig.mServer_IPv4 = UDPSocket::GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
-                    lConfig.mServer_Port = mSocket_Server->GetPort();
+                    lConfig.mServer_IPv4 = Socket::GetIPv4(mInfo.mIPv4_Address, mInfo.mIPv4_NetMask);
+                    lConfig.mServer_Port = mUDP_Server->GetPort();
                     assert(0 != lConfig.mServer_IPv4);
                     assert(0 != lConfig.mServer_Port);
 
-                    // We send a dummy request to the device in order to indicate
-                    // to firewall this UDP communication is OK.
-                    EthCAN_Header lHeader;
-
-                    Request_Init(&lHeader, EthCAN_REQUEST_DO_NOTHING, EthCAN_FLAG_NO_RESPONSE, 0);
-
-                    mSocket_Server->Send(&lHeader, sizeof(lHeader), mInfo.mIPv4_Address);
+                    UDP_Beep();
                 }
-            }
-            else
-            {
-                assert(IsConnectedUSB());
+                break;
 
-                lConfig.mServer_Flags |= EthCAN_FLAG_SERVER_USB;
-                lConfig.mServer_IPv4 = 0;
-                lConfig.mServer_Port = 0;
+            case PROTOCOL_USB: lConfig.mServer_Flags |= EthCAN_FLAG_SERVER_USB; break;
+            case PROTOCOL_TCP: lConfig.mServer_Flags |= EthCAN_FLAG_SERVER_TCP; break;
+
+            default: assert(false);
             }
 
             if (EthCAN_OK == lResult)
@@ -316,7 +339,7 @@ EthCAN_Result Device_Impl::Receiver_Config()
         }
         catch (EthCAN_Result eResult)
         {
-            TRACE_ERROR(stderr, "Device_Impl::Receiver_Config - Exception");
+            fprintf(stderr, "Device_Impl::Receiver_Config - Exception - %u\n", eResult);
             lResult = eResult;
         }
     }
@@ -330,8 +353,7 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
     if (NULL != mReceiver) { return EthCAN_ERROR_RUNNING; }
 
     assert(NULL == mContext);
-    assert(NULL == mSocket_Server);
-    assert(NULL == mThread);
+    assert(PROTOCOL_QTY > mProtocolId);
 
     mLostCount = 0;
 
@@ -339,13 +361,10 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
 
     try
     {
-        if (IsConnectedEth())
+        if (PROTOCOL_UDP == mProtocolId)
         {
-            assert(0 != mInfo.mIPv4_Address);
-            assert(0 != mInfo.mIPv4_NetMask);
-
-            mSocket_Server = new UDPSocket();
-            assert(NULL != mSocket_Server);
+            mUDP_Server = new Socket;
+            assert(NULL != mUDP_Server);
         }
 
         lResult = Receiver_Config();
@@ -355,26 +374,24 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
             mReceiver = aReceiver;
         }
 
-        if (IsConnectedEth())
+        if (PROTOCOL_UDP == mProtocolId)
         {
-            mThread = new Thread(this, MSG_LOOP_ITERATION);
-            assert(NULL != mThread);
+            Thread_Create();
         }
     }
     catch (EthCAN_Result eResult)
     {
-        TRACE_ERROR(stderr, "Device_Impl::Receiver_Start - Exception");
+        fprintf(stderr, "Device_Impl::Receiver_Start - Exception - %u\n", eResult);
         lResult = eResult;
     }
  
     if (EthCAN_OK != lResult)
     {
-        TRACE_ERROR(stderr, "Device_Impl::Receiver_Start - Error");
+        fprintf(stderr, "Device_Impl::Receiver_Start - Error - %u\n", lResult);
 
-        if (NULL != mSocket_Server)
+        if (NULL != mUDP_Server)
         {
-            delete mSocket_Server;
-            mSocket_Server = NULL;
+            UDP_Server_Delete();
         }
 
         mContext = NULL;
@@ -386,6 +403,8 @@ EthCAN_Result Device_Impl::Receiver_Start(Receiver aReceiver, void* aContext)
 
 EthCAN_Result Device_Impl::Receiver_Stop()
 {
+    assert(PROTOCOL_QTY > mProtocolId);
+
     if (NULL == mReceiver) { return EthCAN_ERROR_NOT_RUNNING; }
 
     EthCAN_Config lConfig;
@@ -393,33 +412,27 @@ EthCAN_Result Device_Impl::Receiver_Stop()
     EthCAN_Result lResult = Config_Get(&lConfig);
     if (EthCAN_OK == lResult)
     {
-        lConfig.mServer_IPv4 = 0;
-        lConfig.mServer_Port = 0;
-        lConfig.mServer_Flags &= ~ EthCAN_FLAG_SERVER_USB;
+        ClearServerConfig(&lConfig);
 
         lResult = Config_Set(&lConfig);
     }
 
     try
     {
-        if (NULL != mThread)
+        if (PROTOCOL_UDP == mProtocolId)
         {
-            assert(NULL != mSocket_Server);
-
-            delete mThread;
-            delete mSocket_Server;
+            Thread_Delete();
+            UDP_Server_Delete();
         }
     }
     catch (EthCAN_Result eResult)
     {
-        TRACE_ERROR(stderr, "Device_Impl::Receiver_Stop - Exception");
+        fprintf(stderr, "Device_Impl::Receiver_Stop - Exception - %u\n", eResult);
         lResult = eResult;
     }
 
     mContext = NULL;
     mReceiver = NULL;
-    mSocket_Server = NULL;
-    mThread = NULL;
 
     return lResult;
 }
@@ -431,8 +444,6 @@ EthCAN_Result Device_Impl::Reset(uint8_t aFlags)
         unsigned int lSize_byte = Request(EthCAN_REQUEST_RESET, aFlags, NULL, 0, NULL, 0);
         assert(0 == lSize_byte);
         (void)lSize_byte;
-
-        lResult = EthCAN_OK;
     }
     END
 }
@@ -448,8 +459,6 @@ EthCAN_Result Device_Impl::Send(const EthCAN_Frame& aIn, uint8_t aFlags)
         unsigned int lSize_byte = Request(EthCAN_REQUEST_SEND, aFlags, &aIn, sizeof(aIn), NULL, 0);
         assert(0 == lSize_byte);
         (void)lSize_byte;
-
-        lResult = EthCAN_OK;
     }
     END
 }
@@ -458,6 +467,8 @@ EthCAN_Result Device_Impl::Send(const EthCAN_Frame& aIn, uint8_t aFlags)
 
 void Device_Impl::Debug(FILE* aOut) const
 {
+    assert(NULL != mProtocol);
+
     FILE* lOut = (NULL == aOut) ? stdout : aOut;
 
     fprintf(lOut, "    Information\n");
@@ -467,14 +478,14 @@ void Device_Impl::Debug(FILE* aOut) const
     fprintf(lOut, "    Last ID Client  : %u\n", mId_Client);
     fprintf(lOut, "    Last ID Server  : %u\n", mId_Server);
     fprintf(lOut, "    Lost Count      : %u\n", mLostCount);
+    fprintf(lOut, "    Protocol ID     : %s\n", mProtocol->GetName());
     fprintf(lOut, "    Receiver        : %s\n", NULL == mReceiver ? "Stopped" : "Started");
     fprintf(lOut, "    Req. Code       : "); EthCAN::Display(lOut, static_cast<EthCAN_RequestCode>(mReq_Code));
     fprintf(lOut, "    Req. Out Size   : %u bytes\n", mReq_OutSize_byte);
     fprintf(lOut, "    Req. Result     : %s\n", EthCAN::GetName(mReq_Result));
-    fprintf(lOut, "    Serial          : %s\n", NULL == mSerial ? "Not connected" : "Connected");
-    fprintf(lOut, "    Socket Client   : %s\n", NULL == mSocket_Client ? "Not connected" : "Connected");
-    fprintf(lOut, "    Socket Server   : %s\n", NULL == mSocket_Server ? "Not connected" : "Connected");
     fprintf(lOut, "    Thread          : %s\n", NULL == mThread ? "Not started" : "Started");
+    fprintf(lOut, "    UDP Server      : %s\n", NULL == mUDP_Server ? "Not connected" : "Connected");
+    fprintf(lOut, "    USB Serial      : %s\n", NULL == mUSB_Serial ? "Not connected" : "Connected");
 
     Object::Debug(lOut);
 }
@@ -488,7 +499,7 @@ bool Device_Impl::OnMessage(void * aSource, unsigned int aMessage, const void* a
     switch (aMessage)
     {
     case MSG_LOOP_ITERATION: lResult = OnLoopIteration(); break;
-    case MSG_SERIAL_DATA   : lResult = OnSerialData(aData, aSize_byte); break;
+    case MSG_SERIAL_DATA   : lResult = OnData(aData, aSize_byte); break;
 
     default: assert(false);
     }
@@ -507,18 +518,18 @@ Device_Impl::~Device_Impl()
     if (NULL != mReceiver)
     {
         Receiver_Stop();
-
         assert(NULL == mReceiver);
     }
 
-    if (NULL != mSerial)
+    if (NULL != mProtocol)
     {
-        delete mSerial;
+        Protocol_Delete();
+        assert(NULL == mProtocol);
     }
 
-    if (NULL != mSocket_Client)
+    if (NULL != mUSB_Serial)
     {
-        delete mSocket_Client;
+        delete mUSB_Serial;
     }
 }
 
@@ -591,50 +602,77 @@ void Device_Impl::Config_Verify(const EthCAN_Config& aIn)
     //      aIn.mWiFi_Password
 }
 
-void Device_Impl::Eth_Receive()
+bool Device_Impl::OnData(const void* aData, unsigned int aSize_byte)
 {
-    assert(NULL != mSocket_Client);
+    assert(NULL != aData);
+    assert(sizeof(EthCAN_Header) <= aSize_byte);
 
-    uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
+    assert(NULL != mProtocol);
 
-    unsigned int lSize_byte = sizeof(EthCAN_Header) + mReq_OutSize_byte;
-    assert(sizeof(lBuffer) >= lSize_byte);
+    const EthCAN_Header* lHeader = reinterpret_cast<const EthCAN_Header*>(aData);
 
-    for (;;)
+    if (EthCAN_RESULT_REQUEST == lHeader->mResult)
     {
-        unsigned int lReceived_byte = mSocket_Client->Receive(lBuffer, sizeof(lBuffer), 2000);
-        if (sizeof(EthCAN_Header) > lReceived_byte)
-        {
-            TRACE_ERROR(stderr, "Device_Impl::Eth_Receive - EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER");
-            throw EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER;
-        }
-
-        assert(sizeof(lBuffer) >= lReceived_byte);
-
-        if (OnResponse(reinterpret_cast<EthCAN_Header*>(lBuffer), lReceived_byte))
-        {
-            break;
-        }
-
-        TRACE_DEBUG(stderr, "Device_Impl::Eth_Receive - Not tested");
+        OnRequest(lHeader, aSize_byte);
     }
+    else
+    {
+        if (OnResponse(lHeader, aSize_byte))
+        {
+            mProtocol->Signal();
+        }
+    }
+
+    return true;
 }
 
 bool Device_Impl::OnLoopIteration()
 {
     assert(0 != mInfo.mIPv4_Address);
-    assert(NULL != mSocket_Server);
-
-    uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
-    uint32_t lFrom;
+    assert(NULL != mProtocol);
 
     bool lResult = true;
 
-    unsigned int lSize_byte = mSocket_Server->Receive(lBuffer, sizeof(lBuffer), 500, &lFrom);
-    if ((mInfo.mIPv4_Address == lFrom)
-        && (sizeof(EthCAN_Header) + sizeof(EthCAN_Frame)) == lSize_byte)
+    try
     {
-        lResult = OnRequest(reinterpret_cast<EthCAN_Header*>(lBuffer), lSize_byte);
+        uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
+        EthCAN_Header* lHeader = reinterpret_cast<EthCAN_Header*>(lBuffer);
+        unsigned int lSize_byte;
+
+        switch (mProtocolId)
+        {
+        case PROTOCOL_TCP:
+            lSize_byte = mProtocol->Receive(lBuffer, sizeof(EthCAN_Header), 500, NULL);
+            if (sizeof(EthCAN_Header) == lSize_byte)
+            {
+                if (lSize_byte < lHeader->mTotalSize_byte)
+                {
+                    lSize_byte += mProtocol->Receive(lBuffer + lSize_byte, lHeader->mTotalSize_byte - lSize_byte, 500, NULL);
+                }
+
+                lResult = OnData(lBuffer, lSize_byte);
+            }
+            break;
+
+        case PROTOCOL_UDP:
+            assert(NULL != mUDP_Server);
+
+            uint32_t lFrom;
+            lSize_byte = mUDP_Server->Receive(lBuffer, sizeof(lBuffer), 500, &lFrom);
+            if ((mInfo.mIPv4_Address == lFrom)
+                && (sizeof(EthCAN_Header) + sizeof(EthCAN_Frame)) == lSize_byte)
+            {
+                lResult = OnRequest(lHeader, lSize_byte);
+            }
+            break;
+
+        default: assert(false);
+        }
+    }
+    catch (EthCAN_Result eResult)
+    {
+        fprintf(stderr, "Device_Impl::OnLoopIteration - Exception - %u\n", eResult);
+        lResult = eResult;
     }
 
     return lResult;
@@ -660,7 +698,7 @@ bool Device_Impl::OnRequest(const EthCAN_Header* aHeader, unsigned int aSize_byt
             uint32_t lCount = aHeader->mId - mId_Server;
             if (1 < lCount)
             {
-                TRACE_WARNING(stderr, "Device_Impl::OnRequest - Lost request");
+                fprintf(stderr, "Device_Impl::OnRequest - Lost request (%u)\n", lCount);
                 mLostCount += lCount - 1;
             }
         }
@@ -690,7 +728,7 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
     {
         if (aHeader->mTotalSize_byte != aSize_byte)
         {
-            TRACE_ERROR(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_RESPONSE_SIZE");
+            fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_RESPONSE_SIZE (%u bytes)\n", aSize_byte);
             mReq_Result = EthCAN_ERROR_RESPONSE_SIZE;
         }
         else
@@ -701,14 +739,14 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
                 unsigned int lSize_byte = aSize_byte - sizeof(EthCAN_Header);
                 if (aHeader->mDataSize_byte != lSize_byte)
                 {
-                    TRACE_ERROR(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_SIZE");
+                    fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_SIZE (%u bytes)\n", lSize_byte);
                     mReq_Result = EthCAN_ERROR_DATA_SIZE;
                 }
                 else
                 {
                     if (mReq_OutSize_byte < lSize_byte)
                     {
-                        TRACE_ERROR(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_UNEXPECTED");
+                        fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_UNEXPECTED (%u bytes)\n", lSize_byte);
                         mReq_Result = EthCAN_ERROR_DATA_UNEXPECTED;
                     }
                     else
@@ -735,49 +773,75 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
     return lResult;
 }
 
-bool Device_Impl::OnSerialData(const void* aData, unsigned int aSize_byte)
+void Device_Impl::Protocol_Create()
 {
-    assert(NULL != aData);
-    assert(sizeof(EthCAN_Header) <= aSize_byte);
+    assert(NULL == mProtocol);
 
-    const EthCAN_Header* lHeader = reinterpret_cast<const EthCAN_Header *>(aData);
-
-    if (EthCAN_RESULT_REQUEST == lHeader->mResult)
+    switch (mProtocolId)
     {
-        OnRequest(lHeader, aSize_byte);
-    }
-    else
-    {
-        if (OnResponse(lHeader, aSize_byte))
-        {
-            mSerial->GetThread()->Sem_Signal();
-        }
+    case PROTOCOL_UDP:
+        mProtocol = new Protocol_UDP;
+        break;
+
+    case PROTOCOL_USB:
+        assert(NULL != mUSB_Serial);
+        mProtocol = new Protocol_USB(mUSB_Serial);
+        mUSB_Serial->Receiver_Start(this, MSG_SERIAL_DATA);
+        break;
+
+    case PROTOCOL_TCP:
+        mProtocol = new Protocol_TCP(mInfo.mIPv4_Address);
+
+        Thread_Create();
+        assert(NULL != mThread);
+
+        dynamic_cast<Protocol_TCP*>(mProtocol)->Init(mThread);
+        break;
+
+    default: assert(false);
     }
 
-    return true;
+    assert(NULL != mProtocol);
+}
+
+void Device_Impl::Protocol_Delete()
+{
+    assert(NULL != mProtocol);
+    assert(PROTOCOL_QTY > mProtocolId);
+
+    if (PROTOCOL_TCP == mProtocolId)
+    {
+        Thread_Delete();
+    }
+
+    delete mProtocol;
+    mProtocol = NULL;
 }
 
 unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn, unsigned int aInSize_byte, void* aOut, unsigned int aOutSize_byte)
 {
     assert(EthCAN_REQUEST_QTY > aCode);
 
+    assert(NULL != mProtocol);
+    assert(PROTOCOL_QTY > mProtocolId);
+
     mZone0.Enter();
 
-    if (EthCAN_REQUEST_INVALID == mReq_Code)
+    if (EthCAN_REQUEST_INVALID != mReq_Code)
     {
-        mReq_Code         = aCode;
-        mReq_Out          = aOut;
-        mReq_OutSize_byte = aOutSize_byte;
-        mReq_Result       = EthCAN_RESULT_REQUEST;
+        fprintf(stderr, "Device_Impl::Request - EthCAN_ERROR_BUSY - %u\n", mReq_Code);
 
-        mZone0.Leave();
-    }
-    else
-    {
         mZone0.Leave();
 
         throw EthCAN_ERROR_BUSY;
     }
+
+    mReq_Code         = aCode;
+    mReq_Out          = aOut;
+    mReq_OutSize_byte = aOutSize_byte;
+    mReq_Result       = EthCAN_RESULT_REQUEST;
+
+    mZone0.Leave();
 
     unsigned int lResult_byte = 0;
 
@@ -789,15 +853,11 @@ unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn
 
         if (0 == (aFlags & EthCAN_FLAG_NO_RESPONSE))
         {
-            if (IsConnectedEth())
+            switch (mProtocolId)
             {
-                Eth_Receive();
-            }
-            else
-            {
-                assert(NULL != mSerial);
+            case PROTOCOL_UDP: UDP_Receive(); break;
 
-                mSerial->GetThread()->Sem_Wait(2000);
+            default: mProtocol->Wait();
             }
 
             // TODO Device
@@ -806,8 +866,9 @@ unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn
             lResult_byte = mReq_OutSize_byte;
         }
     }
-    catch (...)
+    catch (EthCAN_Result eE)
     {
+        fprintf(stderr, "ERROR  Device_Impl::Request - Exception - %u\n", eE);
         Request_End();
         throw;
     }
@@ -848,6 +909,8 @@ void Device_Impl::Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, u
 {
     assert(EthCAN_REQUEST_QTY > aCode);
 
+    assert(NULL != mProtocol);
+
     mId_Client++;
 
     uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
@@ -866,21 +929,85 @@ void Device_Impl::Request_Send(uint8_t aCode, uint8_t aFlags, const void* aIn, u
         memcpy(lHeader + 1, aIn, aInSize_byte);
     }
 
-    if (IsConnectedEth())
-    {
-        assert(NULL != mSocket_Client);
+    mProtocol->Send(lBuffer, lSize_byte, mInfo.mIPv4_Address);
+}
 
-        mSocket_Client->Send(lBuffer, lSize_byte, mInfo.mIPv4_Address);
-    }
-    else if (IsConnectedUSB())
-    {
-        assert(NULL != mSerial);
+void Device_Impl::Thread_Create()
+{
+    assert(NULL == mThread);
 
-        mSerial->Send(lBuffer, lSize_byte);
-    }
-    else
+    mThread = new Thread(this, MSG_LOOP_ITERATION);
+    assert(NULL != mThread);
+}
+
+void Device_Impl::Thread_Delete()
+{
+    assert(NULL != mThread);
+
+    delete mThread;
+    mThread = NULL;
+}
+
+// This method sends a dummy request to the device in order to indicate to
+// firewall this UDP communication is OK.
+void Device_Impl::UDP_Beep()
+{
+    assert(NULL != mUDP_Server);
+
+    EthCAN_Header lHeader;
+
+    Request_Init(&lHeader, EthCAN_REQUEST_DO_NOTHING, EthCAN_FLAG_NO_RESPONSE, 0);
+
+    mUDP_Server->Send(&lHeader, sizeof(lHeader), mInfo.mIPv4_Address);
+}
+
+void Device_Impl::UDP_Receive()
+{
+    assert(NULL != mProtocol);
+
+    uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
+
+    unsigned int lSize_byte = sizeof(EthCAN_Header) + mReq_OutSize_byte;
+    assert(sizeof(lBuffer) >= lSize_byte);
+
+    for (;;)
     {
-        TRACE_ERROR(stderr, "Device_Impl::Request_Send - EthCAN_ERROR_NOT_CONNECTED");
-        throw EthCAN_ERROR_NOT_CONNECTED;
+        uint32_t lFrom;
+
+        unsigned int lReceived_byte = mProtocol->Receive(lBuffer, sizeof(lBuffer), 2000, &lFrom);
+        if (sizeof(EthCAN_Header) > lReceived_byte)
+        {
+            fprintf(stderr, "Device_Impl::UDP_Receive - EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER (%u bytes)\n", lReceived_byte);
+            throw EthCAN_ERROR_DEVICE_DOES_NOT_ANSWER;
+        }
+
+        assert(sizeof(lBuffer) >= lReceived_byte);
+
+        if (OnResponse(reinterpret_cast<EthCAN_Header*>(lBuffer), lReceived_byte))
+        {
+            break;
+        }
+
+        TRACE_DEBUG(stderr, "Device_Impl::UDP_Receive - Retry");
     }
+}
+
+void Device_Impl::UDP_Server_Delete()
+{
+    assert(NULL != mUDP_Server);
+
+    delete mUDP_Server;
+    mUDP_Server = NULL;
+}
+
+// Static functions
+// //////////////////////////////////////////////////////////////////////////
+
+void ClearServerConfig(EthCAN_Config* aConfig)
+{
+    assert(NULL != aConfig);
+
+    aConfig->mServer_Flags &= ~(EthCAN_FLAG_SERVER_USB | EthCAN_FLAG_SERVER_TCP);
+    aConfig->mServer_IPv4 = 0;
+    aConfig->mServer_Port = 0;
 }

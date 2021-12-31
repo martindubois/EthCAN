@@ -1,8 +1,8 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021 KMS
 // Product   EthCAN
-// File      EthCAN_Lib/UDPSocket.h
+// File      EthCAN_Lib/Socket.h
 
 #pragma once
 
@@ -22,7 +22,7 @@
 
 #endif
 
-class UDPSocket
+class Socket
 {
 
 public:
@@ -32,16 +32,19 @@ public:
     static void Thread_Init();
     static void Thread_Uninit();
 
-    UDPSocket();
+    Socket();
+    Socket(uint32_t aIPv4);
 
-    ~UDPSocket();
+    ~Socket();
 
     void Broadcast(const void* aData, unsigned int aSize_byte);
 
     uint16_t GetPort() const;
 
-    unsigned int Receive(void* aData, unsigned int aSize_byte, unsigned int aTimeout_ms, uint32_t* aFrom = NULL);
+    unsigned int Receive(void* aData, unsigned int aSize_byte, unsigned int aTimeout_ms);
+    unsigned int Receive(void* aData, unsigned int aSize_byte, unsigned int aTimeout_ms, uint32_t* aFrom);
 
+    void Send(const void* aData, unsigned int aSize_byte);
     void Send(const void* aData, unsigned int aSize_byte, uint32_t aTo);
 
 private:
@@ -50,7 +53,7 @@ private:
 
     void Close(); // L and W_UDPSocket.cpp
 
-    void Init(); // L and W_UDPSocket.cpp
+    void Init(int aType, int aProtocol); // L and W_UDPSocket.cpp
 
     void Timeout_Set(unsigned int aTimeout_ms); // L and W_UDPSocket.cpp
 

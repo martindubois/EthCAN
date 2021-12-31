@@ -1,5 +1,5 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // copyright (C) 2021 KMS
 // Product   EthCAN
 // File      EthCAN_Lib_Test/Device.cpp
@@ -36,6 +36,33 @@ static bool VerifyCounters(unsigned int aExpected_byte, unsigned int aExpected_f
 // Tests
 /////////////////////////////////////////////////////////////////////////////
 
+// TEST INFO EthCAN.Device
+//  Config_Get => EthCAN_OK.
+//  Config_Reset => EthCAN_OK.
+//  Config_Set => EthCAN_OK.
+//  Config_Store => EthCAN_OK.
+//  GetHostAddress => 0 or other.
+//  GetInfo => EthCAN_OK.
+//  IsConnectedEth => false or true.
+//  IsConenctedUSB => false or true.
+//  Protocol_Get => PROTOCOL_UDP or PROTOCOL_USB.
+//  Protocol_Set => EthCAN_OK.
+//  Receiver_Config => EthCAN_OK.
+//  Receiver_Start => EthCAN_OK.
+//  Receiver_Stop => EthCAN_OK.
+//  Reset => EthCAN_OK.
+//  Send => EthCAN_OK.
+
+// TEST INFO EthCAN.Device.Error
+//  Config_Get => EthCAN_ERROR_OUTPUT_BUFFER.
+//  Config_Set => EthCAN_ERROR_BUFFER and EthCAN_ERROR_CAN_RATE.
+//  GetInfo => EthCAN_ERROR_OUTPUT_BUFFER.
+//  GetInfoLine => EthCAN_ERROR_OUTPUT_BUFFER and EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL.
+//  Protocol_Set => EthCAN_ERROR_ENUM.
+//  Receiver_Config => EthCAN_ERROR_NOT_RUNNING.
+//  Receiver_Start => EthCAN_ERROR_FUNCTION and EthCAN_ERROR_NOT_RUNNING.
+//  Receiver_Stop => EthCAN_ERROR_NOT_RUNNING.
+//  Send => EthCAN_ERROR_INPUT_BUFFER.
 KMS_TEST_BEGIN(Device_SetupA)
 {
     EthCAN_Config lCfg;
@@ -43,6 +70,8 @@ KMS_TEST_BEGIN(Device_SetupA)
     EthCAN_Frame lFrame;
     EthCAN_Info lInfo;
     char lLine[128];
+    EthCAN::Device::ProtocolId lP;
+    EthCAN_Result lRet;
     EthCAN::System* lS0;
 
     memset(&lCfg  , 0, sizeof(lCfg));
@@ -63,36 +92,58 @@ KMS_TEST_BEGIN(Device_SetupA)
     // KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Erase());
 
     // Config_Get
-    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->Config_Get(NULL));
     KMS_TEST_COMPARE(EthCAN_OK                 , lD0->Config_Get(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->Config_Get(NULL));
 
     // Config_Reset
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Reset());
 
     // Config_Set
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Set(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_OK          , lD0->Config_Set(&lCfg));
+    KMS_TEST_COMPARE(EthCAN_ERROR_BUFFER, lD0->Config_Set(NULL));
+    lCfg.mCAN_Rate = EthCAN_RATE_QTY;
+    KMS_TEST_COMPARE(EthCAN_ERROR_CAN_RATE, lD0->Config_Set(&lCfg));
 
     // Config_Store
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Store());
 
-    // GetInfo
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfo(&lInfo));
-
     // GetHostAddress
+    lD0->GetHostAddress();
+
+    // GetInfo
+    KMS_TEST_COMPARE(EthCAN_OK                 , lD0->GetInfo(&lInfo));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER, lD0->GetInfo(NULL));
 
     // GetInfoLine
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfoLine(lLine, sizeof(lLine)));
+    KMS_TEST_COMPARE(EthCAN_OK                           , lD0->GetInfoLine(lLine, sizeof(lLine)));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER          , lD0->GetInfoLine(NULL, sizeof(lLine)));
+    KMS_TEST_COMPARE(EthCAN_ERROR_OUTPUT_BUFFER_TOO_SMALL, lD0->GetInfoLine(lLine, 0));
 
     // IsConnectedEth, IsConnectedUSB
     KMS_TEST_ASSERT(lD0->IsConnectedEth() || lD0->IsConnectedUSB());
+
+    // Protocol_Get
+    lP = lD0->Protocol_Get();
+    KMS_TEST_ASSERT((EthCAN::Device::PROTOCOL_UDP == lP) || (EthCAN::Device::PROTOCOL_USB == lP));
+
+    // Protocol_Set
+    KMS_TEST_COMPARE(EthCAN_OK        , lD0->Protocol_Set(lP));
+    KMS_TEST_COMPARE(EthCAN_ERROR_ENUM, lD0->Protocol_Set(static_cast<EthCAN::Device::ProtocolId>(3)));
+
+    // Receiver_Config
+    lRet = lD0->Receiver_Config();
+    KMS_TEST_ASSERT((EthCAN_OK == lRet) || (EthCAN_ERROR_NOT_RUNNING == lRet));
 
     // Receiver_Start
     KMS_TEST_COMPARE(EthCAN_ERROR_FUNCTION, lD0->Receiver_Start(NULL, NULL));
     KMS_TEST_COMPARE(EthCAN_OK            , lD0->Receiver_Start(Receiver, NULL));
     KMS_TEST_COMPARE(EthCAN_ERROR_RUNNING , lD0->Receiver_Start(Receiver, NULL));
 
+    // Receiver_Config - When the receiver is running
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Receiver_Config());
+
     // Receiver_Stop
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->Receiver_Stop());
+    KMS_TEST_COMPARE(EthCAN_OK               , lD0->Receiver_Stop());
     KMS_TEST_COMPARE(EthCAN_ERROR_NOT_RUNNING, lD0->Receiver_Stop());
 
     // Send
@@ -101,13 +152,25 @@ KMS_TEST_BEGIN(Device_SetupA)
     #endif
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Send(lFrame));
 
-    // Reset - After all other test
+    // Reset - When not other tests to execute
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Reset());
 
     lD0->Release();
     lS0->Release();
 }
 KMS_TEST_END
+
+// TEST INFO EthCAN.Device
+//  GetHostAddress => Other.
+//  IsConnectedEth => true.
+//  IsConnectedUSB => false.
+//  Protocol_Get => PROTOCOL_UDP and PROTOCOL_TCP.
+//  Protocol_Set => EthCAN_OK.
+//  Receiver_Config => EthCAN_OK.
+
+// TEST INFO EthCAN.Device.Error
+//  Protocol_Set => EthCAN_ERROR_NOT_CONNECTED_USB.
+//  Receiver_Config => EthCAN_ERROR_NOT_RUNNING.
 
 KMS_TEST_BEGIN(Device_SetupB)
 {
@@ -123,16 +186,46 @@ KMS_TEST_BEGIN(Device_SetupB)
     lD0 = lS0->Device_Get(0);
     KMS_TEST_ASSERT_RETURN(NULL != lD0);
 
+    // GetHostAddress
+    KMS_TEST_ASSERT(0 != lD0->GetHostAddress());
+
     // IsConnectedEth
     KMS_TEST_ASSERT(lD0->IsConnectedEth());
 
     // IsConnectedUSB
     KMS_TEST_ASSERT(!lD0->IsConnectedUSB());
 
+    // Protocol_Get
+    KMS_TEST_COMPARE(EthCAN::Device::PROTOCOL_UDP, lD0->Protocol_Get());
+
+    // Protocol_Set
+    KMS_TEST_COMPARE(EthCAN_OK                     , lD0->Protocol_Set(EthCAN::Device::PROTOCOL_TCP));
+    KMS_TEST_COMPARE(EthCAN_ERROR_NOT_CONNECTED_USB, lD0->Protocol_Set(EthCAN::Device::PROTOCOL_USB));
+
+    // Protocol_Get - When using TCP protocol
+    KMS_TEST_COMPARE(EthCAN::Device::PROTOCOL_TCP, lD0->Protocol_Get());
+
+    // Receiver_Config
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Receiver_Config());
+
+    // Receiver_Config - When using UDP protocol
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Protocol_Set(EthCAN::Device::PROTOCOL_UDP));
+    KMS_TEST_COMPARE(EthCAN_ERROR_NOT_RUNNING, lD0->Receiver_Config());
+
     lD0->Release();
     lS0->Release();
 }
 KMS_TEST_END
+
+// TEST INFO EthCAN.Device
+//  GetHostAddress => 0.
+//  IsConnectedEth => false.
+//  IsConnectedUSB => true.
+//  Protocol_Get => PROTOCOL_USB.
+//  Receiver_Config => EthCAN_OK.
+
+// TEST INFO EthCAN.Device.Error
+//  Protocol_Set -> EthCAN_ERROR_NOT_CONNECTED_ETH.
 
 KMS_TEST_BEGIN(Device_SetupC)
 {
@@ -148,11 +241,24 @@ KMS_TEST_BEGIN(Device_SetupC)
     lD0 = lS0->Device_Find_USB(0);
     KMS_TEST_ASSERT_RETURN(NULL != lD0);
 
+    // GetHostAddress
+    KMS_TEST_ASSERT(0 == lD0->GetHostAddress());
+
     // IsConnectedEth
     KMS_TEST_ASSERT(!lD0->IsConnectedEth());
 
     // IsConnectedUSB
     KMS_TEST_ASSERT(lD0->IsConnectedUSB());
+
+    // Protocol_Get
+    KMS_TEST_COMPARE(EthCAN::Device::PROTOCOL_USB, lD0->Protocol_Get());
+
+    // Protocol_Set
+    KMS_TEST_COMPARE(EthCAN_OK                     , lD0->Protocol_Set(EthCAN::Device::PROTOCOL_USB));
+    KMS_TEST_COMPARE(EthCAN_ERROR_NOT_CONNECTED_ETH, lD0->Protocol_Set(EthCAN::Device::PROTOCOL_TCP));
+
+    // Receiver_Config
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Receiver_Config());
 
     lD0->Release();
     lS0->Release();
@@ -269,6 +375,14 @@ KMS_TEST_BEGIN(Device_SetupD)
 }
 KMS_TEST_END
 
+// TEST INFO EthCAN.Device
+//  GetHostAddress => Other.
+//  GetInfoLine => EthCAN_OK
+//  IsConnectedEth => true.
+//  IsConnectedUSB => true.
+//  Protocol_Get => PROTOCOL_USB.
+//  Protocol_Set => EthCAN_OK.
+
 KMS_TEST_BEGIN(Device_SetupE)
 {
     EthCAN::Device* lD0;
@@ -284,10 +398,25 @@ KMS_TEST_BEGIN(Device_SetupE)
     lD0 = lS0->Device_Find_USB(0);
     KMS_TEST_ASSERT_RETURN(NULL != lD0);
 
+    // GetHostAddress
+    KMS_TEST_ASSERT(0 != lD0->GetHostAddress());
+
+    // GetInfoLine
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfoLine(lLine, sizeof(lLine)));
+
+    // IsConnectedEth
     KMS_TEST_ASSERT(lD0->IsConnectedEth());
+
+    // IsConnectedUSB
     KMS_TEST_ASSERT(lD0->IsConnectedUSB());
 
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->GetInfoLine(lLine, sizeof(lLine)));
+    // Protocol_Get
+    KMS_TEST_COMPARE(EthCAN::Device::PROTOCOL_USB, lD0->Protocol_Get());
+
+    // Protocol_Set
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Protocol_Set(EthCAN::Device::PROTOCOL_TCP));
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Protocol_Set(EthCAN::Device::PROTOCOL_UDP));
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Protocol_Set(EthCAN::Device::PROTOCOL_USB));
 
     lD0->Release();
     lS0->Release();
