@@ -174,7 +174,9 @@ typedef struct
     uint8_t  mLast_Error_Code  ; ///< Last error
     uint8_t  mLast_Request_Code; ///< Last request code
 
-    uint8_t mReserved4[6];
+    uint8_t mReserved4[4];
+
+    uint16_t mLoop; ///< Loop counter
 
 }
 EthCAN_Info;

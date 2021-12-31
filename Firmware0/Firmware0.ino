@@ -87,6 +87,7 @@ void loop()
 {
     CAN_Loop();
     Config_Loop();
+    Info_Loop();
     TCP_Loop();
     UDP_Loop();
     USB_Loop();

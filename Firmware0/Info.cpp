@@ -102,6 +102,11 @@ void Info_Init(const char * aName)
     sInfo.mLast_Request_Code = EthCAN_REQUEST_INVALID;
 }
 
+void Info_Loop()
+{
+    sInfo.mLoop ++;
+}
+
 void Info_Set_EthAddress(const uint8_t * aIn)
 {
     for (unsigned int i = 0; i < sizeof(sInfo.mEth_Address); i ++)
