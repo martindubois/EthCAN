@@ -122,6 +122,17 @@ void Socket::Init(int aType, int aProtocol)
     assert(0 != lAddr.sin_port);
 
     mPort = ntohs(lAddr.sin_port);
+
+    if (SOCK_STREAM == aType)
+    {
+        BOOL lValue = 1;
+
+        int lRet = setsockopt(mSocket, SOL_SOCKET, SO_KEEPALIVE, &lValue, sizeof(lValue));
+        assert(0 == lRet);
+
+        lRet = setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, &lValue, sizeof(lValue));
+        assert(0 == lRet);
+    }
 }
 
 void Socket::Timeout_Set(unsigned int aTimeout_ms)

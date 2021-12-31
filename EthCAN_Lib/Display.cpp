@@ -142,7 +142,7 @@ namespace EthCAN
         fprintf(lOut, "        Last\n");
         fprintf(lOut, "            Error Code    : "); Display(lOut, static_cast<EthCAN_Result>(aIn.mLast_Error_Code));
         fprintf(lOut, "            Error Line    : %u\n", aIn.mLast_Error_Line);
-        fprintf(lOut, "            Fessage id    : %u\n", aIn.mLast_Forward_Id);
+        fprintf(lOut, "            Forward id    : %u\n", aIn.mLast_Forward_Id);
         fprintf(lOut, "            Request Code  : "); Display(lOut, static_cast<EthCAN_RequestCode>(aIn.mLast_Request_Code));
         fprintf(lOut, "            Request Id    : %u\n", aIn.mLast_Request_Id);
         fprintf(lOut, "            Rx Id         : 0x%x\n", aIn.mLast_Rx_Id);
