@@ -58,7 +58,7 @@ void UDP_Loop()
         }
         else
         {
-            MSG_ERROR("UDP_Loop - UDP packet larger than the buffer", "");
+            UDP_Trace("ERROR  UDP_Loop - UDP packet larger than the buffer");
         }
     }
 }
@@ -76,6 +76,20 @@ void UDP_OnFrame(const EthCAN_Header & aHeader, const EthCAN_Frame & aFrame, uin
 void UDP_Setup()
 {
     sUDP.begin(EthCAN_UDP_PORT);
+}
+
+void UDP_Trace(const char * aIn)
+{
+    UDP_Trace(aIn, strlen(aIn));
+}
+
+void UDP_Trace(const void * aIn, unsigned int aSize_byte)
+{
+    sUDP.beginPacket(0xffffffff, EthCAN_UDP_PORT + 1);
+    {
+        sUDP.write(reinterpret_cast<const uint8_t *>(aIn), aSize_byte);
+    }
+    sUDP.endPacket();
 }
 
 // Static functions
@@ -100,8 +114,12 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
         case EthCAN_REQUEST_RESET       : OnReset      (lHeader); break;
         case EthCAN_REQUEST_SEND        : OnSend       (lHeader); break;
 
-        default: MSG_ERROR("OnPacket - Invalid request code : ", lHeader->mCode);
+        default: UDP_Trace("ERROR  OnPacket - Invalid request code");
         }
+    }
+    else
+    {
+        UDP_Trace("ERROR  OnPacket - Header_Validate() failed");
     }
 }
 
