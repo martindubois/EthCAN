@@ -1,6 +1,6 @@
 
 // Author    KMS - Martin Dubois, P. Eng.
-// Copyright (C) 2021 KMS
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Device_Impl.cpp
 
@@ -53,7 +53,9 @@ Device_Impl::Device_Impl()
     , mProtocol(NULL)
     , mProtocolId(PROTOCOL_INVALID)
     , mReceiver(NULL)
-    , mReq_Code(EthCAN_REQUEST_INVALID)
+    , mReq_Code        (EthCAN_REQUEST_INVALID)
+    , mReq_Out         (NULL)
+    , mReq_OutSize_byte(0)
     , mThread(NULL)
     , mUDP_Server(NULL)
     , mUSB_Serial(NULL)
@@ -225,7 +227,7 @@ EthCAN_Result Device_Impl::GetInfoLine(char* aOut, unsigned int aSize_byte) cons
 
     EthCAN::GetName_EthAddress(lEth , sizeof(lEth ), mInfo.mEth_Address);
 
-    sprintf_s(aOut SIZE_INFO(aSize_byte), "%s %s %3u.%3u.%3u.%3u %s %s",
+    sprintf_s(aOut SIZE_INFO(aSize_byte), "%s %s %3u.%3u.%3u.%3u %-17s %s",
         lCon, lEth,
         mInfo.mIPv4_Address & 0xff, mInfo.mIPv4_Address >> 8 & 0xff, mInfo.mIPv4_Address >> 16 & 0xff, mInfo.mIPv4_Address >> 24 & 0xff,
         mInfo.mName,
@@ -539,7 +541,7 @@ Device_Impl::~Device_Impl()
 // TODO Device
 //      Optimize busy time.
 
-void Device_Impl::Busy_Mark()
+void Device_Impl::Busy_Mark_Z0()
 {
     uint64_t lNow_ms = OS_GetTickCount();
 
@@ -719,56 +721,67 @@ bool Device_Impl::OnResponse(const EthCAN_Header* aHeader, unsigned int aSize_by
     assert(NULL != aHeader);
     assert(sizeof(EthCAN_Header) <= aSize_byte);
 
-    assert(EthCAN_REQUEST_QTY > mReq_Code);
+    bool lResult = false;
 
-    // TODO Device.Security
-
-    bool lResult = (aHeader->mCode == mReq_Code) && (aHeader->mId == mId_Client);
-    if (lResult)
+    mZone0.Enter();
     {
-        if (aHeader->mTotalSize_byte != aSize_byte)
+        if (EthCAN_REQUEST_QTY > mReq_Code)
         {
-            fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_RESPONSE_SIZE (%u bytes)\n", aSize_byte);
-            mReq_Result = EthCAN_ERROR_RESPONSE_SIZE;
-        }
-        else
-        {
-            mReq_Result = static_cast<EthCAN_Result>(aHeader->mResult);
-            if (EthCAN_OK == mReq_Result)
+            // TODO Device.Security
+
+            lResult = (aHeader->mCode == mReq_Code) && (aHeader->mId == mId_Client);
+            if (lResult)
             {
-                unsigned int lSize_byte = aSize_byte - sizeof(EthCAN_Header);
-                if (aHeader->mDataSize_byte != lSize_byte)
+                if (aHeader->mTotalSize_byte != aSize_byte)
                 {
-                    fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_SIZE (%u bytes)\n", lSize_byte);
-                    mReq_Result = EthCAN_ERROR_DATA_SIZE;
+                    fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_RESPONSE_SIZE (%u bytes)\n", aSize_byte);
+                    mReq_Result = EthCAN_ERROR_RESPONSE_SIZE;
                 }
                 else
                 {
-                    if (mReq_OutSize_byte < lSize_byte)
+                    mReq_Result = static_cast<EthCAN_Result>(aHeader->mResult);
+                    if (EthCAN_OK == mReq_Result)
                     {
-                        fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_UNEXPECTED (%u bytes)\n", lSize_byte);
-                        mReq_Result = EthCAN_ERROR_DATA_UNEXPECTED;
-                    }
-                    else
-                    {
-                        if (0 < lSize_byte)
+                        unsigned int lSize_byte = aSize_byte - sizeof(EthCAN_Header);
+                        if (aHeader->mDataSize_byte != lSize_byte)
                         {
-                            assert(NULL != mReq_Out);
-
-                            memcpy(mReq_Out, aHeader + 1, lSize_byte);
+                            fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_SIZE (%u bytes)\n", lSize_byte);
+                            mReq_Result = EthCAN_ERROR_DATA_SIZE;
                         }
-
-                        mReq_OutSize_byte = lSize_byte;
-
-                        if (EthCAN_FLAG_BUSY == (aHeader->mFlags & EthCAN_FLAG_BUSY))
+                        else
                         {
-                            Busy_Mark();
+                            if (mReq_OutSize_byte < lSize_byte)
+                            {
+                                fprintf(stderr, "Device_Impl::OnResponse - EthCAN_ERROR_DATA_UNEXPECTED (%u bytes)\n", lSize_byte);
+                                mReq_Result = EthCAN_ERROR_DATA_UNEXPECTED;
+                            }
+                            else
+                            {
+                                if (0 < lSize_byte)
+                                {
+                                    assert(NULL != mReq_Out);
+
+                                    memcpy(mReq_Out, aHeader + 1, lSize_byte);
+                                }
+
+                                mReq_OutSize_byte = lSize_byte;
+
+                                if (EthCAN_FLAG_BUSY == (aHeader->mFlags & EthCAN_FLAG_BUSY))
+                                {
+                                    Busy_Mark_Z0();
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+        else
+        {
+            fprintf(stderr, "Device_Impl::OnResponse - Ignored answer\n");
+        }
     }
+    mZone0.Leave();
 
     return lResult;
 }
@@ -836,6 +849,9 @@ unsigned int Device_Impl::Request(uint8_t aCode, uint8_t aFlags, const void* aIn
         throw EthCAN_ERROR_BUSY;
     }
 
+    assert(NULL == mReq_Out);
+    assert(0 == mReq_OutSize_byte);
+
     mReq_Code         = aCode;
     mReq_Out          = aOut;
     mReq_OutSize_byte = aOutSize_byte;
@@ -882,7 +898,13 @@ void Device_Impl::Request_End()
 {
     assert(EthCAN_REQUEST_INVALID != mReq_Code);
 
-    mReq_Code = EthCAN_REQUEST_INVALID;
+    mZone0.Enter();
+    {
+        mReq_Code         = EthCAN_REQUEST_INVALID;
+        mReq_Out          = NULL;
+        mReq_OutSize_byte = 0;
+    }
+    mZone0.Leave();
 }
 
 void Device_Impl::Request_Init(EthCAN_Header* aHeader, uint8_t aCode, uint8_t aFlags, unsigned int aDataSize_byte)
@@ -966,9 +988,6 @@ void Device_Impl::UDP_Receive()
     assert(NULL != mProtocol);
 
     uint8_t lBuffer[EthCAN_PACKET_SIZE_MAX_byte];
-
-    unsigned int lSize_byte = sizeof(EthCAN_Header) + mReq_OutSize_byte;
-    assert(sizeof(lBuffer) >= lSize_byte);
 
     for (;;)
     {

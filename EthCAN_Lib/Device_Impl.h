@@ -1,6 +1,6 @@
 
 // Author    KMS - Martin Dubois, P. Eng.
-// Copyright (C) 2021 KMS
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Device_Impl.h
 
@@ -75,7 +75,7 @@ protected:
 
 private:
 
-    void Busy_Mark();
+    void Busy_Mark_Z0();
     void Busy_Wait();
 
     void Config_Verify(const EthCAN_Config& aIn);
