@@ -4,6 +4,8 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt
 
+- Accept C escapde sequence in password
+
 1.1.2 Darwin amd64 2021-12-31
 
 1.0.14 Darwin amd64 2021-12-02

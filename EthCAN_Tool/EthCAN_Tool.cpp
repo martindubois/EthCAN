@@ -1,6 +1,6 @@
 
 // Author    KMS - Martin Dubois, P.Eng.
-// Copyright (C) 2021 KMS
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Tool/EthCAN_Tool.cpp
 
@@ -209,6 +209,8 @@ static void ReleaseDevice();
 
 static void Setup_IPv4(KmsLib::ToolBase* aToolBase, uint32_t aAddress, uint32_t aGateway, uint32_t aNetMask);
 
+static void Translate_Password(char* aInOut);
+
 // Static variables
 /////////////////////////////////////////////////////////////////////////////
 
@@ -390,6 +392,8 @@ void Config_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
         && aToolBase->Parse(&lArg, sConfig.mWiFi_Name    , sizeof(sConfig.mWiFi_Name    ), "")
         && aToolBase->Parse(&lArg, sConfig.mWiFi_Password, sizeof(sConfig.mWiFi_Password), ""))
     {
+        Translate_Password(sConfig.mWiFi_Password);
+
         sConfig.mWiFi_Flags = lFlags;
 
         KmsLib::ToolBase::Report(KmsLib::ToolBase::REPORT_OK, "Done");
@@ -695,6 +699,8 @@ void Setup_AccessPoint(KmsLib::ToolBase* aToolBase, const char* aArg)
     if (   Parse_Address_NetMask(aToolBase, &lArg, &lAddress, &lNetMask)
         && Parse_SSID_Password  (aToolBase, &lArg, lName, lPassword, "EthCAN", "EthCANPassword"))
     {
+        Translate_Password(lPassword);
+
         EthCAN_Result lRet = Setup_AccessPoint(sDevice, lAddress, lNetMask, lName, lPassword);
 
         DisplayResult(aToolBase, lRet);
@@ -757,6 +763,8 @@ void Setup_Link(KmsLib::ToolBase* aToolBase, const char* aArg)
         && aToolBase->Parse(&lArg, lName    , sizeof(lName    ), "")
         && aToolBase->Parse(&lArg, lPassword, sizeof(lPassword), ""))
     {
+        Translate_Password(lPassword);
+
         if (lIndex[0] == lIndex[1])
         {
             aToolBase->SetError(__LINE__, "Cannot link a device to itself\n");
@@ -803,6 +811,8 @@ void Setup_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
 
     if (Parse_SSID_Password(aToolBase, &lArg, lName, lPassword, "", ""))
     {
+        Translate_Password(lPassword);
+
         EthCAN_Config lConfig;
         unsigned int lStep = 1;
 
@@ -1077,4 +1087,62 @@ void Setup_IPv4(KmsLib::ToolBase* aToolBase, uint32_t aAddress, uint32_t aGatewa
     EthCAN_Result lRet = Setup_IPv4(sDevice, aAddress, aGateway, aNetMask);
 
     DisplayResult(aToolBase, lRet);
+}
+
+void Translate_Password(char* aInOut)
+{
+    const char* lIn  = aInOut;
+    char      * lOut = aInOut;
+
+    while (*lIn)
+    {
+        if ('\\' == *lIn)
+        {
+            char lStr[4];
+
+            lIn++;
+            switch (*lIn)
+            {
+            case '\\': *lOut = '\\'; break;
+            case 'n' : *lOut = '\n'; break;
+            case 'r' : *lOut = '\r'; break;
+            case 't' : *lOut = '\t'; break;
+
+            case 'x':
+                lStr[0] = lIn[1];
+                lStr[1] = lIn[2];
+                lStr[2] = '\0';
+                lIn += 2;
+                *lOut = static_cast<char>(strtoul(lStr, NULL, 16));
+                break;
+
+            default:
+                if ((0 <= (*lIn)) && (7 >= (*lIn)))
+                {
+                    lStr[0] = lIn[1];
+                    lStr[1] = lIn[2];
+                    lStr[2] = lIn[3];
+                    lStr[3] = '\0';
+                    lIn += 3;
+                    *lOut = static_cast<char>(strtoul(lStr, NULL, 8));
+                }
+                else
+                {
+                    fprintf(stderr, "Translate_Password - Invalid escape sequence\n");
+                    *lOut = '\\';
+                    lIn++;
+                    *lOut = *lIn;
+                }
+            }
+        }
+        else
+        {
+            *lOut = *lIn;
+        }
+
+        lIn++;
+        lOut++;
+    }
+
+    *lOut = '\0';
 }
