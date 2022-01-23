@@ -1,6 +1,6 @@
 
 // Author    KMS - Martin Dubois, P. Eng.
-// Copyright (C) 2021 KMS
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/W_UDPSocket.cpp
 
@@ -127,10 +127,10 @@ void Socket::Init(int aType, int aProtocol)
     {
         BOOL lValue = 1;
 
-        int lRet = setsockopt(mSocket, SOL_SOCKET, SO_KEEPALIVE, &lValue, sizeof(lValue));
+        int lRet = setsockopt(mSocket, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char *>(&lValue), sizeof(lValue));
         assert(0 == lRet);
 
-        lRet = setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, &lValue, sizeof(lValue));
+        lRet = setsockopt(mSocket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char *>(&lValue), sizeof(lValue));
         assert(0 == lRet);
     }
 }

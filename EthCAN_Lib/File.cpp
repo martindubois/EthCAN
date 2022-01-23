@@ -1,10 +1,10 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/File.cpp
 
-// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P.Eng.
+// TEST COVERAGE 2021-03-10 KMS - Martin Dubois, P. Eng.
 
 #include "Component.h"
 
@@ -72,7 +72,7 @@ namespace EthCAN
     {
         if (NULL == aFileName) { return EthCAN_ERROR_FILE_NAME; }
 
-        VERIFY_REFERENCE(an)
+        VERIFY_REFERENCE(aIn)
 
         FILE* lFile;
 

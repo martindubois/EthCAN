@@ -10,6 +10,8 @@ Date and time       20 ______ - ______ - ______               ______ : ______
 
 Operating system    [ ] OS X          [ ] Ubuntu 18.04         [ ] Windows 10
 
+Processor           [ ] amd64    [ ] arm     [ ] arm64    [ ] i386    [ ] x64
+
 [ ] File "Common/Version.h"
 
 Version             ______ . ______ . ______ . ______ - _____________________
@@ -34,7 +36,7 @@ Version             ______ . ______ . ______ . ______ - _____________________
 ===== Windows only ==========================================================
 [ ] Tool "PowerShell" - In the product folder
         .\RunDoxygen.cmd
-	.\UploadDocumentation.cmd
+        .\UploadDocumentation.cmd
 [ ] Connect the signing key to the computer
 [ ] Tool "PowerShell" - In the product folder
         .\Build.cmd
@@ -43,7 +45,8 @@ Version             ______ . ______ . ______ . ______ - _____________________
 [ ] Tool "GIT"
     - Index modified file and commit them using
       "{Major.Minor.Build}[_Type]_Darwin|Linux|Windows" as message
-    - Add the tag {Major.Minor.Build}[_Type]_Darwin|Linux|Windows"
+    - Add the tag
+      {Major.Minor.Build}[_Type]_Darwin|Linux|Windows_amd64|arm|arm64|i386|x64
     - Push the repository to the servers
 
 Time and duration   ______ : ______             ______ heures, ______ minutes

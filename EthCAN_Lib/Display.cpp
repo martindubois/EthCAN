@@ -1,6 +1,6 @@
 
 // Author    KMS - Martin Dubois, P. Eng.
-// Copyright (C) 2021 KMS
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/Display.cpp
 
@@ -35,7 +35,7 @@ namespace EthCAN
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
 
-        VERIFY_REFERENCE(aOut, aIn)
+        VERIFY_REFERENCE(lOut, aIn)
 
         unsigned int i;
 
@@ -77,7 +77,7 @@ namespace EthCAN
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
 
-        VERIFY_REFERENCE(aOut, aIn)
+        VERIFY_REFERENCE(lOut, aIn)
 
         unsigned int lDataSize_byte = EthCAN_FRAME_DATA_SIZE(aIn);
         fprintf(lOut, "%u bytes sent to ", lDataSize_byte);
@@ -101,7 +101,7 @@ namespace EthCAN
     {
         FILE* lOut = (NULL == aOut) ? stdout : aOut;
 
-        VERIFY_REFERENCE(aOut, aIn)
+        VERIFY_REFERENCE(lOut, aIn)
 
         fprintf(lOut, "        Ethernet address  : "); Display_EthAddress(lOut, aIn.mEth_Address);
         fprintf(lOut, "        Firmware 0        : "); Display_Version(lOut, aIn.mFirmware0_Version);
