@@ -47,6 +47,11 @@ namespace EthCAN
         /// \see Receiver_Start
         typedef bool (*Receiver)(Device* aDevice, void* aContext, const EthCAN_Frame& aFrame);
 
+        /// \brief Reset the CAN bus
+        /// \param aFlags See EthCAN_FLAG_NO_RESPONSE
+        /// \retval EthCAN_OK
+        virtual EthCAN_Result CAN_Reset(uint8_t aFlags = 0) = 0;
+
         /// \brief Reset the configuration
         /// \param aFlags See EthCAN_FLAG_NO_RESPONSE
         /// \retval EthCAN_OK
@@ -117,6 +122,10 @@ namespace EthCAN
         /// \retval PROTOCOL_TCP
         virtual ProtocolId Protocol_Get() const = 0;
 
+        /// \brief Reset the communication protocol
+        /// \retval EthCAN_OK
+        virtual EthCAN_Result Protocol_Reset() = 0;
+
         /// \brief Set the current protocol
         /// \param aId See ProtocolId
         /// \retval EthCAN_OK
@@ -145,7 +154,7 @@ namespace EthCAN
         /// \brief Reset the device
         /// \param aFlags See EthCAN_FLAG_NO_RESPONSE
         /// \retval EthCAN_OK
-        virtual EthCAN_Result Reset(uint8_t aFlags = 0) = 0;
+        virtual EthCAN_Result Device_Reset(uint8_t aFlags = 0) = 0;
 
         /// \brief Send data
         /// \param aIn    The data to send

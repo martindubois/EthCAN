@@ -1,6 +1,6 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Tool/Setup.h
 
@@ -422,7 +422,7 @@ EthCAN_Result StoreConfigAndReset(unsigned int* aStep, EthCAN::Device* aDevice, 
         {
             STEP_I("Reseting the EthCAN");
 
-            lResult = aDevice->Reset();
+            lResult = aDevice->Device_Reset();
         }
     }
     END_I;

@@ -4,6 +4,11 @@ Copyright (C) 2021 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
+- EthCAN::Device
+    - CAN_Reset
+    - Device_Reset
+    - Protocol_Reset
+
 1.1.4 Darwin i386 2022-01-23
 
 1.1.3 Windows x64 2022-01-23

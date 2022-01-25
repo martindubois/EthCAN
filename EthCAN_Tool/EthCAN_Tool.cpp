@@ -1,5 +1,5 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
+// Author    KMS - Martin Dubois, P. Eng.
 // Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Tool/EthCAN_Tool.cpp
@@ -523,7 +523,7 @@ void Device_Reset(KmsLib::ToolBase* aToolBase, const char* aArg)
 
     if (aToolBase->Parse(&lArg, &lFlags, 0, 0x80, true, 0))
     {
-        DisplayResult(aToolBase, sDevice->Reset(lFlags));
+        DisplayResult(aToolBase, sDevice->Device_Reset(lFlags));
     }
 }
 
@@ -834,7 +834,7 @@ void Setup_WiFi(KmsLib::ToolBase* aToolBase, const char* aArg)
                 if (EthCAN_OK == lRet)
                 {
                     printf("%u. Reseting the EthCAN...\n", lStep); lStep++;
-                    lRet = sDevice->Reset();
+                    lRet = sDevice->Device_Reset();
                 }
             }
         }

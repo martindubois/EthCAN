@@ -1,6 +1,6 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Tool/Firmware1_Tool.cpp
 
@@ -744,7 +744,7 @@ bool GetInfo(KmsLib::ToolBase* aToolBase, FW_Info* aInfo)
 
 bool Reset(KmsLib::ToolBase* aToolBase)
 {
-    return SendAndReceive(aToolBase, EthCAN_REQUEST_RESET, NULL, 0, NULL, 0);
+    return SendAndReceive(aToolBase, EthCAN_REQUEST_CAN_RESET, NULL, 0, NULL, 0);
 }
 
 bool Send(KmsLib::ToolBase* aToolBase, const EthCAN_Frame& aFrame)

@@ -171,14 +171,15 @@ namespace EthCAN
 
         switch (aIn)
         {
+        case EthCAN_REQUEST_CAN_RESET   : lIn = "EthCAN_REQUEST_CAN_RESET"   ; break;
         case EthCAN_REQUEST_CONFIG_ERASE: lIn = "EthCAN_REQUEST_CONFIG_ERASE"; break;
         case EthCAN_REQUEST_CONFIG_GET  : lIn = "EthCAN_REQUEST_CONFIG_GET"  ; break;
         case EthCAN_REQUEST_CONFIG_RESET: lIn = "EthCAN_REQUEST_CONFIG_RESET"; break;
         case EthCAN_REQUEST_CONFIG_SET  : lIn = "EthCAN_REQUEST_CONFIG_SET"  ; break;
         case EthCAN_REQUEST_CONFIG_STORE: lIn = "EthCAN_REQUEST_CONFIG_STORE"; break;
+        case EthCAN_REQUEST_DEVICE_RESET: lIn = "EthCAN_REQUEST_DEVICE_RESET"; break;
         case EthCAN_REQUEST_DO_NOTHING  : lIn = "EthCAN_REQUEST_DO_NOTHING"  ; break;
         case EthCAN_REQUEST_INFO_GET    : lIn = "EthCAN_REQUEST_INFO_GET"    ; break;
-        case EthCAN_REQUEST_RESET       : lIn = "EthCAN_REQUEST_RESET"       ; break;
         case EthCAN_REQUEST_SEND        : lIn = "EthCAN_REQUEST_SEND"        ; break;
 
         default:

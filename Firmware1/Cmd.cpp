@@ -1,10 +1,10 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      Firmware1/Cmd.cpp
 
-// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P. Eng.
 
 #include <Arduino.h>
 
@@ -65,7 +65,6 @@ static void SendResult(EthCAN_Result aResult);
 static void Config_Reset();
 static void Config_Set();
 static void Info_Get();
-static void Reset();
 static void Send();
 
 // Macro
@@ -115,8 +114,8 @@ void Loop_Rx()
             switch (sRequest)
             {
             case EthCAN_REQUEST_CONFIG_RESET: Config_Reset(); break;
+            case EthCAN_REQUEST_DEVICE_RESET: Device_Reset(); break;
             case EthCAN_REQUEST_INFO_GET    : Info_Get    (); break;
-            case EthCAN_REQUEST_RESET       : Reset       (); break;
 
             case EthCAN_REQUEST_CONFIG_SET: sExpected_byte = sizeof(FW_Config); break;
             case EthCAN_REQUEST_SEND      : sExpected_byte = CAN_HEADER_SIZE_byte; break;
@@ -226,13 +225,6 @@ void Info_Get()
     SendResult(EthCAN_OK);
 
     Serial.write(reinterpret_cast<uint8_t *>(&sInfo), sizeof(sInfo));
-}
-
-void Reset()
-{
-    SendResult(EthCAN_OK);
-
-    asm volatile ("  jmp 0");
 }
 
 void Send()

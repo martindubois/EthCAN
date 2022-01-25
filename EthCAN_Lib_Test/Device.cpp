@@ -1,6 +1,6 @@
 
 // Author    KMS - Martin Dubois, P. Eng.
-// copyright (C) 2021 KMS
+// copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Lib_Test/Device.cpp
 
@@ -88,6 +88,9 @@ KMS_TEST_BEGIN(Device_SetupA)
     lD0 = lS0->Device_Get(0);
     KMS_TEST_ASSERT_RETURN(NULL != lD0);
 
+    // CAN_Reset
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->CAN_Reset());
+
     // Config_Erase
     // KMS_TEST_COMPARE(EthCAN_OK, lD0->Config_Erase());
 
@@ -152,8 +155,8 @@ KMS_TEST_BEGIN(Device_SetupA)
     #endif
     KMS_TEST_COMPARE(EthCAN_OK, lD0->Send(lFrame));
 
-    // Reset - When not other tests to execute
-    KMS_TEST_COMPARE(EthCAN_OK, lD0->Reset());
+    // Device_Reset - When not other tests to execute
+    KMS_TEST_COMPARE(EthCAN_OK, lD0->Device_Reset());
 
     lD0->Release();
     lS0->Release();
@@ -289,7 +292,7 @@ KMS_TEST_BEGIN(Device_SetupD)
 
         lDevs[i] = lS0->Device_Get(i);
 
-        KMS_TEST_COMPARE(EthCAN_OK, lDevs[i]->Reset());
+        KMS_TEST_COMPARE(EthCAN_OK, lDevs[i]->Device_Reset());
     }
 
     printf(" 3. Configuring...\n");

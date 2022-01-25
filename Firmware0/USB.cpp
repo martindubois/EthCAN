@@ -1,10 +1,10 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCan
 // File      Firmware0/UDP.cpp
 
-// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P. Eng.
 
 #include <Arduino.h>
 
@@ -41,14 +41,15 @@ static const uint8_t SYNC = EthCAN_SYNC;
 
 static void OnPacket(const EthCAN_Header * aIn);
 
+static void OnCANReset   (const EthCAN_Header * aIn);
 static void OnConfigErase(const EthCAN_Header * aIn);
 static void OnConfigGet  (const EthCAN_Header * aIn);
 static void OnConfigReset(const EthCAN_Header * aIn);
 static void OnConfigSet  (const EthCAN_Header * aIn);
 static void OnConfigStore(const EthCAN_Header * aIn);
+static void OnDeviceReset(const EthCAN_Header * aIn);
 static void OnDoNothing  (const EthCAN_Header * aIn);
 static void OnInfoGet    (const EthCAN_Header * aIn);
-static void OnReset      (const EthCAN_Header * aIn);
 static void OnSend       (const EthCAN_Header * aIn);
 
 // Functions
@@ -117,14 +118,15 @@ void OnPacket(const EthCAN_Header * aIn)
 
         switch (aIn->mCode)
         {
+        case EthCAN_REQUEST_CAN_RESET   : OnCANReset   (aIn); break;
         case EthCAN_REQUEST_CONFIG_ERASE: OnConfigErase(aIn); break;
         case EthCAN_REQUEST_CONFIG_GET  : OnConfigGet  (aIn); break;
         case EthCAN_REQUEST_CONFIG_RESET: OnConfigReset(aIn); break;
         case EthCAN_REQUEST_CONFIG_SET  : OnConfigSet  (aIn); break;
         case EthCAN_REQUEST_CONFIG_STORE: OnConfigStore(aIn); break;
+        case EthCAN_REQUEST_DEVICE_RESET: OnDeviceReset(aIn); break;
         case EthCAN_REQUEST_DO_NOTHING  : OnDoNothing  (aIn); break;
         case EthCAN_REQUEST_INFO_GET    : OnInfoGet    (aIn); break;
-        case EthCAN_REQUEST_RESET       : OnReset      (aIn); break;
         case EthCAN_REQUEST_SEND        : OnSend       (aIn); break;
 
         default: MSG_ERROR("OnPacket - Invalid request code : ", aIn->mCode);
@@ -142,7 +144,20 @@ void OnPacket(const EthCAN_Header * aIn)
 #define END_USB \
     }
 
-void OnConfigErase(const EthCAN_Header * aIn)
+vvoid OnCANReset(const EthCAN_Header * aIn)
+{
+    BEGIN_USB
+    {
+        lHeader.mFlags |= EthCAN_FLAG_BUSY;
+
+        Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
+    }
+    END_USB
+
+    CAN_Reset();
+}
+
+oid OnConfigErase(const EthCAN_Header * aIn)
 {
     Config_Erase();
 
@@ -212,6 +227,19 @@ void OnConfigStore(const EthCAN_Header * aIn)
     END_USB
 }
 
+void OnDeviceReset(const EthCAN_Header * aIn)
+{
+    BEGIN_USB
+    {
+        lHeader.mFlags |= EthCAN_FLAG_BUSY;
+
+        Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
+    }
+    END_USB
+
+    ESP.restart();
+}
+
 void OnDoNothing(const EthCAN_Header * aIn)
 {
     BEGIN_USB
@@ -234,20 +262,6 @@ void OnInfoGet(const EthCAN_Header * aIn)
         Serial.write(lInfo, sizeof(EthCAN_Info));
     }
     END_USB
-}
-
-void OnReset(const EthCAN_Header * aIn)
-{
-    BEGIN_USB
-    {
-        lHeader.mFlags |= EthCAN_FLAG_BUSY;
-
-        Serial.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
-    }
-    END_USB
-
-    CAN_Reset();
-    // ESP.restart();
 }
 
 void OnSend(const EthCAN_Header * aIn)

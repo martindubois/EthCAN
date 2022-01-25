@@ -1,6 +1,6 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCan
 // File      Firmware0/TCP.cpp
 
@@ -26,14 +26,15 @@ static bool IsConnected();
 
 static void OnPacket(const void * aPacket, unsigned int aSize_byte);
 
+static void OnCANReset   (const EthCAN_Header * aIn);
 static void OnConfigErase(const EthCAN_Header * aIn);
 static void OnConfigGet  (const EthCAN_Header * aIn);
 static void OnConfigReset(const EthCAN_Header * aIn);
 static void OnConfigSet  (const EthCAN_Header * aIn);
 static void OnConfigStore(const EthCAN_Header * aIn);
+static void OnDeviceReset(const EthCAN_Header * aIn);
 static void OnDoNothing  (const EthCAN_Header * aIn);
 static void OnInfoGet    (const EthCAN_Header * aIn);
-static void OnReset      (const EthCAN_Header * aIn);
 static void OnSend       (const EthCAN_Header * aIn);
 
 // Static variables
@@ -117,14 +118,15 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
 
         switch (lHeader->mCode)
         {
+        case EthCAN_REQUEST_CAN_RESET   : OnCANReset   (lHeader); break;
         case EthCAN_REQUEST_CONFIG_ERASE: OnConfigErase(lHeader); break;
         case EthCAN_REQUEST_CONFIG_GET  : OnConfigGet  (lHeader); break;
         case EthCAN_REQUEST_CONFIG_RESET: OnConfigReset(lHeader); break;
         case EthCAN_REQUEST_CONFIG_SET  : OnConfigSet  (lHeader); break;
         case EthCAN_REQUEST_CONFIG_STORE: OnConfigStore(lHeader); break;
+        case EthCAN_REQUEST_DEVICE_RESET: OnDeviceReset(lHeader); break;
         case EthCAN_REQUEST_DO_NOTHING  : OnDoNothing  (lHeader); break;
         case EthCAN_REQUEST_INFO_GET    : OnInfoGet    (lHeader); break;
-        case EthCAN_REQUEST_RESET       : OnReset      (lHeader); break;
         case EthCAN_REQUEST_SEND        : OnSend       (lHeader); break;
 
         default: UDP_Trace("ERROR  OnPacket - Invalid request code");
@@ -145,6 +147,19 @@ void OnPacket(const void * aPacket, unsigned int aSize_byte)
 #define END_TCP          \
         sClient.flush(); \
     }
+
+void OnCANReset(const EthCAN_Header * aIn)
+{
+    BEGIN_TCP
+    {
+        lHeader.mFlags |= EthCAN_FLAG_BUSY;
+
+        sClient.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
+    }
+    END_TCP
+
+    CAN_Reset();
+}
 
 void OnConfigErase(const EthCAN_Header * aIn)
 {
@@ -216,6 +231,19 @@ void OnConfigStore(const EthCAN_Header * aIn)
     END_TCP
 }
 
+void OnDeviceReset(const EthCAN_Header * aIn)
+{
+    BEGIN_TCP
+    {
+        lHeader.mFlags |= EthCAN_FLAG_BUSY;
+
+        sClient.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
+    }
+    END_TCP
+
+    ESP.restart();
+}
+
 void OnDoNothing(const EthCAN_Header * aIn)
 {
     BEGIN_TCP
@@ -236,19 +264,6 @@ void OnInfoGet(const EthCAN_Header * aIn)
         sClient.write(Info_Get(), sizeof(EthCAN_Info));
     }
     END_TCP
-}
-
-void OnReset(const EthCAN_Header * aIn)
-{
-    BEGIN_TCP
-    {
-        lHeader.mFlags |= EthCAN_FLAG_BUSY;
-
-        sClient.write(reinterpret_cast<const uint8_t *>(&lHeader), sizeof(lHeader));
-    }
-    END_TCP
-
-    CAN_Reset();
 }
 
 void OnSend(const EthCAN_Header * aIn)

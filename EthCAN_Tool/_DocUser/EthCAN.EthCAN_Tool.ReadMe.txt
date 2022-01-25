@@ -7,7 +7,7 @@ File      EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt
 1.1.4 Darwin i386 2022-01-23
 
 1.1.3 Windows x64 2022-01-23
-- Accept C escapde sequence in password
+- Accept C escape sequence in password
 
 1.1.2 Darwin i386 2021-12-31
 

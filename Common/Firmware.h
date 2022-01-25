@@ -1,6 +1,6 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      Common/Firmware.h
 
@@ -69,12 +69,6 @@ typedef struct
     uint8_t mTxErrors;
 }
 FW_Info;
-
-// ===== EthCAN_REQUEST_RESET ===============================================
-// Input  uint8_t                      EthCAN_SYNC
-//        uint8_t (EthCAN_RequestCode) EthCAN_REQUEST_RESET
-// Output uint8_t                      EthCAN_SYNC
-//        uint8_t (EthCAN_Result)      EthCAN_OK
 
 // ===== EthCAN_REQUEST_SEND ================================================
 // Input  uint8_t                      EthCAN_SYNC

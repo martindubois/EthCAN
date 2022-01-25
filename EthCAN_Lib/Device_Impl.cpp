@@ -118,6 +118,17 @@ void Device_Impl::SetInfo(const EthCAN_Info& aInfo, Serial* aSerial)
     }                             \
     return lResult;
 
+EthCAN_Result Device_Impl::CAN_Reset(uint8_t aFlags)
+{
+    BEGIN
+    {
+        unsigned int lSize_byte = Request(EthCAN_REQUEST_CAN_RESET, aFlags, NULL, 0, NULL, 0);
+        assert(0 == lSize_byte);
+        (void)lSize_byte;
+    }
+    END
+}
+
 EthCAN_Result Device_Impl::Config_Erase(uint8_t aFlags)
 {
     BEGIN
@@ -185,6 +196,17 @@ EthCAN_Result Device_Impl::Config_Store(uint8_t aFlags)
             TRACE_ERROR(stderr, "Device_Impl::Config_Store - EthCAN_ERROR_DATA_SIZE");
             lResult = EthCAN_ERROR_DATA_SIZE;
         }
+    }
+    END
+}
+
+EthCAN_Result Device_Impl::Device_Reset(uint8_t aFlags)
+{
+    BEGIN
+    {
+        unsigned int lSize_byte = Request(EthCAN_REQUEST_DEVICE_RESET, aFlags, NULL, 0, NULL, 0);
+        assert(0 == lSize_byte);
+        (void)lSize_byte;
     }
     END
 }
@@ -262,6 +284,14 @@ EthCAN::Device::ProtocolId Device_Impl::Protocol_Get() const
     assert(PROTOCOL_QTY > mProtocolId);
 
     return mProtocolId;
+}
+
+EthCAN_Result Device_Impl::Protocol_Reset()
+{
+    Protocol_Delete();
+    Protocol_Create();
+
+    return EthCAN_OK;
 }
 
 EthCAN_Result Device_Impl::Protocol_Set(ProtocolId aId)
@@ -439,17 +469,6 @@ EthCAN_Result Device_Impl::Receiver_Stop()
     return lResult;
 }
 
-EthCAN_Result Device_Impl::Reset(uint8_t aFlags)
-{
-    BEGIN
-    {
-        unsigned int lSize_byte = Request(EthCAN_REQUEST_RESET, aFlags, NULL, 0, NULL, 0);
-        assert(0 == lSize_byte);
-        (void)lSize_byte;
-    }
-    END
-}
-
 EthCAN_Result Device_Impl::Send(const EthCAN_Frame& aIn, uint8_t aFlags)
 {
     #ifdef _KMS_WINDOWS_
@@ -547,12 +566,13 @@ void Device_Impl::Busy_Mark_Z0()
 
     switch (mReq_Code)
     {
+    case EthCAN_REQUEST_CAN_RESET:
     case EthCAN_REQUEST_CONFIG_RESET:
     case EthCAN_REQUEST_CONFIG_SET:
         mBusyUntil_ms = lNow_ms + 3000;
         break;
 
-    case EthCAN_REQUEST_RESET:
+    case EthCAN_REQUEST_DEVICE_RESET:
         mBusyUntil_ms = lNow_ms + (IsConnectedEth() ? 7000 : 3000);
         break;
 
@@ -674,7 +694,7 @@ bool Device_Impl::OnLoopIteration()
     catch (EthCAN_Result eResult)
     {
         fprintf(stderr, "Device_Impl::OnLoopIteration - Exception - %u\n", eResult);
-        lResult = eResult;
+        lResult = false;
     }
 
     return lResult;

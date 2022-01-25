@@ -1,15 +1,17 @@
 
 Author    KMS - Martin Dubois, P. Eng.
-Copyright (C) 2021 KMS
+Copyright (C) 2021-2022 KMS
 Product   EthCAN
 File      Firmware0/_DocUser/EthCAN.Firmware0.ReadMe.txt
+
+- EthCAN_REQUEST_DEVICE_RESET
 
 1.1.2
 - EthCAN_Info - Loop counter
 - TCP
 
 1.0.13
-- EthCAN_REQUEST_RESET reset the CAN hardware and reconfigure it
+- EthCAN_REQUEST_CAN_RESET reset the CAN hardware and reconfigure it
 
 1.0.11
 - Wait longer for the Firmware0's info

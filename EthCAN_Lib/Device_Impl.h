@@ -38,11 +38,15 @@ public:
 
     // ===== EthCAN::Device =================================================
 
+    virtual EthCAN_Result CAN_Reset(uint8_t aFlags = 0);
+
     virtual EthCAN_Result Config_Erase(uint8_t aFlags = 0);
     virtual EthCAN_Result Config_Get(EthCAN_Config* aOut);
     virtual EthCAN_Result Config_Reset(uint8_t aFlags = 0);
     virtual EthCAN_Result Config_Set(EthCAN_Config* aInOut, uint8_t aFlags = 0);
     virtual EthCAN_Result Config_Store(uint8_t aFlags = 0);
+
+    virtual EthCAN_Result Device_Reset(uint8_t aFlags = 0);
 
     virtual uint32_t      GetHostAddress() const;
     virtual EthCAN_Result GetInfo(EthCAN_Info* aOut);
@@ -52,13 +56,12 @@ public:
     virtual bool IsConnectedUSB() const;
 
     virtual ProtocolId    Protocol_Get() const;
+    virtual EthCAN_Result Protocol_Reset();
     virtual EthCAN_Result Protocol_Set(ProtocolId aId);
 
     virtual EthCAN_Result Receiver_Config();
     virtual EthCAN_Result Receiver_Start(Receiver aFunction, void* aContext);
     virtual EthCAN_Result Receiver_Stop();
-
-    virtual EthCAN_Result Reset(uint8_t aFlags = 0);
 
     virtual EthCAN_Result Send(const EthCAN_Frame& aIn, uint8_t aFlags = 0);
 
