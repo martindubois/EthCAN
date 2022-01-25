@@ -144,7 +144,7 @@ void OnPacket(const EthCAN_Header * aIn)
 #define END_USB \
     }
 
-vvoid OnCANReset(const EthCAN_Header * aIn)
+void OnCANReset(const EthCAN_Header * aIn)
 {
     BEGIN_USB
     {
@@ -157,7 +157,7 @@ vvoid OnCANReset(const EthCAN_Header * aIn)
     CAN_Reset();
 }
 
-oid OnConfigErase(const EthCAN_Header * aIn)
+void OnConfigErase(const EthCAN_Header * aIn)
 {
     Config_Erase();
 
