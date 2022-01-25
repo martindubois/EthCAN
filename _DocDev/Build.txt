@@ -22,11 +22,13 @@ Version             ______ . ______ . ______ . ______ - _____________________
 [ ] Disconnect all EthCAN from the computer or network
 
 ===== Darwin only ===========================================================
+[ ] File "User.mk" - Set in release mode
 [ ] Tool "Terminal" - In the product folder
         ./Build.sh
 [ ] Copy the exported file to the server
 
 ===== Linux only ============================================================
+[ ] File "User.mk" - Set in release mode
 [ ] File "Scripts/control"
 [ ] Tool "Terminal" - In the product folder
         ./RunDoxygen.sh
