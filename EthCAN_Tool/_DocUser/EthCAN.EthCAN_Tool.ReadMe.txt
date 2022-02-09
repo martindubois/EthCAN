@@ -1,8 +1,10 @@
 
 Author    KMS - Martin Dubois, P. Eng.
-Copyright (C) 2021 KMS
+Copyright (C) 2021-2022 KMS
 Product   EthCAN
 File      EthCAN_Tool/_DocUser/EthCAN.EthCAN_Tool.ReadMe.txt
+
+1.1.6 Darwin i386 2022-02-08
 
 1.1.5 Darwin i386 2022-01-25
 

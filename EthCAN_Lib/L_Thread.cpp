@@ -1,6 +1,6 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/L_Thread.cpp
 
