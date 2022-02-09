@@ -45,7 +45,10 @@ void Thread::Sem_Wait(unsigned int aTimeout_ms)
             lRet = pthread_cond_timedwait(&mCond, mZone0.GetInternal(), &lAbsTime);
         }
 
-        mCount --;
+        if (0 == lRet)
+        {
+            mCount --;
+        }
     }
     mZone0.Leave();
 

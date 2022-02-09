@@ -4,6 +4,8 @@ Copyright (C) 2021-2022 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
+- Fix internal semaphore implementation (Darwin and Linux)
+
 1.1.5 Darwin i386 2022-01-25
 - EthCAN::Device
     - CAN_Reset
