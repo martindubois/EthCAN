@@ -2,7 +2,7 @@
 
 rem Author    KMS - Martin Dubois, P.Eng.
 rem Copyright (C) 2021 KMS
-rem Product   EthCMD
+rem Product   EthCAN
 rem File      Import.cmd
 rem Usage     .\Import.cmd
 
@@ -46,4 +46,4 @@ if ERRORLEVEL 1 (
 
 rem  ===== End ==============================================================
 
-echo  OK
+echo OK
