@@ -62,7 +62,7 @@ Config IP
 Config IP 256.0.0.1 0.0.0.0 256.0.0.0
 
 Error Clear
-Config IP 0.0.0.0 0.0.0.0
+Config IP 192.168.0.102 192.168.0.1 255.255.255.0
 Error Exit
 
 Echo == Config Name [Name]

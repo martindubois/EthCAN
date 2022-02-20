@@ -4,6 +4,8 @@ Copyright (C) 2021-2022 KMS
 Product   EthCAN
 File      EthCAN_Lib/_DocUser/EthCAN.EthCAN_Lib.ReadMe.txt
 
+1.1.7 Windows x64 2022-02-20
+
 1.1.6 Darwin i386 2022-02-08
 - Fix internal semaphore implementation (Darwin and Linux)
 
