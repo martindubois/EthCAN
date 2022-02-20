@@ -4,6 +4,9 @@ Copyright (C) 2021-2022 KMS
 Product   EthCAN
 File      Firmware0/_DocUser/EthCAN.Firmware0.ReadMe.txt
 
+1.1.9
+- Fix static IP with wired Ethernet
+
 1.1.5
 - EthCAN_REQUEST_DEVICE_RESET
 

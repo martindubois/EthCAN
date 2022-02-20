@@ -1,10 +1,10 @@
 
-// Author    KMS - Martin Dubois, P.Eng.
-// Copyright (C) 2021 KMS
-// Product   EthCan
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
+// Product   EthCAN
 // File      Firmware0/Firmware0.ino
 
-// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P.Eng.
+// CODE REVIEW 2021-03-24 KMS - Martin Dubois, P. Eng.
 
 #include <ETH.h>
 
@@ -42,17 +42,22 @@ void setup()
 
     Config_Load();
 
-    if (0 != gConfig.mIPv4_Address)
-    {
-        WiFi.config(gConfig.mIPv4_Address, gConfig.mIPv4_Gateway, gConfig.mIPv4_NetMask);
-    }
-
     if ('\0' == gConfig.mWiFi_Name[0])
     {
         ETH.begin();
+
+        if (0 != gConfig.mIPv4_Address)
+        {
+            ETH.config(gConfig.mIPv4_Address, gConfig.mIPv4_Gateway, gConfig.mIPv4_NetMask);
+        }
     }
     else
     {
+        if (0 != gConfig.mIPv4_Address)
+        {
+            WiFi.config(gConfig.mIPv4_Address, gConfig.mIPv4_Gateway, gConfig.mIPv4_NetMask);
+        }
+
         if (0 == (gConfig.mWiFi_Flags & EthCAN_FLAG_WIFI_AP))
         {
             WiFi.setHostname(gConfig.mName);
