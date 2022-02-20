@@ -1053,6 +1053,11 @@ bool Parse_IPv4(KmsLib::ToolBase* aToolBase, const char** aArg, uint32_t* aOut)
 
     *aOut = lOut;
 
+    while ((**aArg == ' ') || (**aArg == '\t'))
+    {
+        (*aArg)++;
+    }
+
     while (((**aArg >= '0') && (**aArg <= '9')) || (**aArg == '.'))
     {
         (*aArg)++;

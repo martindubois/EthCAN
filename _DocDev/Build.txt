@@ -1,6 +1,6 @@
 
-Author    KMS - Martin Dubois, P.Eng.
-Copyright (C) 2021 KMS
+Author    KMS - Martin Dubois, P. Eng.
+Copyright (C) 2021-2022 KMS
 Product   EthCAN
 File      _DocDev/Build.txt
 
@@ -8,7 +8,7 @@ Name                _________________________________________________________
 
 Date and time       20 ______ - ______ - ______               ______ : ______
 
-Operating system    [ ] OS X          [ ] Ubuntu 18.04         [ ] Windows 10
+Operating system    [ ] Darwin         [ ] Ubuntu 18.04        [ ] Windows 10
 
 Processor           [ ] amd64    [ ] arm     [ ] arm64    [ ] i386    [ ] x64
 
@@ -22,11 +22,13 @@ Version             ______ . ______ . ______ . ______ - _____________________
 [ ] Disconnect all EthCAN from the computer or network
 
 ===== Darwin only ===========================================================
+[ ] File "User.mk" - Set in release mode
 [ ] Tool "Terminal" - In the product folder
         ./Build.sh
 [ ] Copy the exported file to the server
 
 ===== Linux only ============================================================
+[ ] File "User.mk" - Set in release mode
 [ ] File "Scripts/control"
 [ ] Tool "Terminal" - In the product folder
         ./RunDoxygen.sh

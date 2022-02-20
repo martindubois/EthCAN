@@ -56,13 +56,13 @@ cp RunDoxygen.sh                                      $DST_FOLDER
 if [ "Darwin" = "$OS" ]
 then
 # KmsVersion "kms-ethcan_" ".pkg" 13
-cp Packages/kms-ethcan_1.1-4.pkg                      $DST_FOLDER/Packages
+cp Packages/kms-ethcan_1.1-8.pkg                      $DST_FOLDER/Packages
 fi
 
 if [ "Linux" = "$OS" ]
 then
 # KmsVersion "kms-ethcan_" ".deb" 13
-cp Packages/kms-ethcan_1.1-4.deb                      $DST_FOLDER/Packages
+cp Packages/kms-ethcan_1.1-8.deb                      $DST_FOLDER/Packages
 fi
 
 # ===== End =================================================================

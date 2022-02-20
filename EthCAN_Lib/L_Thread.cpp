@@ -1,6 +1,6 @@
 
-// Author    KMS - Martin Dubois, P,Eng.
-// Copyright (C) 2021 KMS
+// Author    KMS - Martin Dubois, P. Eng.
+// Copyright (C) 2021-2022 KMS
 // Product   EthCAN
 // File      EthCAN_Lib/L_Thread.cpp
 
@@ -45,7 +45,10 @@ void Thread::Sem_Wait(unsigned int aTimeout_ms)
             lRet = pthread_cond_timedwait(&mCond, mZone0.GetInternal(), &lAbsTime);
         }
 
-        mCount --;
+        if (0 == lRet)
+        {
+            mCount --;
+        }
     }
     mZone0.Leave();
 
