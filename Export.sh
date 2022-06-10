@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Author    KMS - Martin Dubois, P.Eng.
-# Copyright (C) 2021 KMS
+# Author    KMS - Martin Dubois, P. Eng.
+# Copyright (C) 2021-2022 KMS
 # Product   EthCAN
 # File      Export.sh
 # Usage     ./Export.sh
@@ -15,13 +15,28 @@ echo Executing  Export.sh $1 $2  ...
 
 OS=`uname`
 
-if [ "$2" = "" ] ; then
-    DST_FOLDER=~/Export/EthCAN/$1_$OS
+EXPORT=~/Export
+
+EXP_PROD=$EXPORT/EthCAN
+
+if [ "$2" = "" ]
+then
+    DST_FOLDER=$EXP_PROD/$1_$OS
 else
-    DST_FOLDER=~/Export/EthCAN/$1_$2_$OS
+    DST_FOLDER=$EXP_PROD/$1_$2_$OS
 fi
 
 # ===== Execution ===========================================================
+
+if [ ! -d $EXPORT ]
+then
+    mkdir $EXPORT
+fi
+
+if [ ! -d $EXP_PROD ]
+then
+    mkdir $EXP_PROD
+fi
 
 mkdir $DST_FOLDER
 if [ 0 != $? ] ; then
@@ -56,13 +71,13 @@ cp RunDoxygen.sh                                      $DST_FOLDER
 if [ "Darwin" = "$OS" ]
 then
 # KmsVersion "kms-ethcan_" ".pkg" 13
-cp Packages/kms-ethcan_1.1-8.pkg                      $DST_FOLDER/Packages
+cp Packages/kms-ethcan_1.1-10.pkg                      $DST_FOLDER/Packages
 fi
 
 if [ "Linux" = "$OS" ]
 then
 # KmsVersion "kms-ethcan_" ".deb" 13
-cp Packages/kms-ethcan_1.1-8.deb                      $DST_FOLDER/Packages
+cp Packages/kms-ethcan_1.1-10.deb                      $DST_FOLDER/Packages
 fi
 
 # ===== End =================================================================

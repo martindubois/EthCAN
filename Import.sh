@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Author    KMS - Martin Dubois, P.Eng.
-# Copyright (C) 2021 KMS
+# Author    KMS - Martin Dubois, P. Eng.
+# Copyright (C) 2021-2022 KMS
 # Product   EthCAN
 # File      Import.sh
 # Usage     ./Import.sh
@@ -24,7 +24,12 @@ echo $PROCESSOR
 
 if [ "Darwin" = "$OS" ]
 then
-    KMS_BASE=$EXPORT_FOLDER/KmsBase/3.0.32_Darwin
+    if [ "arm" = "$PROCESSOR" ]
+    then
+        KMS_BASE=$EXPORT_FOLDER/KmsBase/3.0.34_Darwin_arm64
+    else
+        KMS_BASE=$EXPORT_FOLDER/KmsBase/3.0.32_Darwin
+    fi
 fi
 
 if [ "Linux" = "$OS" ]

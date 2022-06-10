@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Author    KMS - Martin Dubois, P.Eng.
-# Copyright (C) 2021 KMS
+# Author    KMS - Martin Dubois, P. Eng.
+# Copyright (C) 2021-2022 KMS
 # Product   EthCAN
 # File      Make.sh
 # Usage     ./Make.sh
@@ -25,6 +25,16 @@ Make()
 }
 
 # ===== Execution ===========================================================
+
+if [ ! -d Binaries ]
+then
+    mkdir Binaries
+fi
+
+if [ ! -d Libraries ]
+then
+    mkdir Libraries
+fi
 
 Make EthCAN_Lib
 Make EthCAN_Lib_Test
